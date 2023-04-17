@@ -1,5 +1,8 @@
 from back.interfaces import User
+from back.database import models
 
 
 def get_users(db) -> list[User]:
-    return [User(id=1, last_name="Doe", first_name="John"), User(id=2, last_name="Doe", first_name="Jane")]
+    """Get all users."""
+    users = db.query(models.User).all()
+    return [User(keycloak_id=user.keycloak_id) for user in users]
