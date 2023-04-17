@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from "react";
 import {useTable} from 'react-table'
 import {Api} from "../utils/Api";
+import {User} from "../utils/types";
 
 export function PageAdmin() {
 
-    const [users, setUsers] = useState([])
+    const [users, setUsers] = useState([] as User[])
 
 
     useEffect(() => {
@@ -18,53 +19,34 @@ export function PageAdmin() {
 
             <div className="card">
                 <h2>Users</h2>
-                {
-                    users && users.length>0 && users.map((item:any)=><p>{item.id}</p>)
-                }
-
+                <UsersTable data={users}/>
             </div>
 
-            <TestTable/>
 
         </div>
     )
 }
 
 
-
-function TestTable() {
-    const data = React.useMemo(
-        () => [
-            {
-                prenom: 'Hello',
-                nom: 'World',
-                adresse: '1234',
-            },
-            {
-                col1: 'react-table',
-                col2: 'rocks',
-            },
-            {
-                col1: 'whatever',
-                col2: 'you want',
-            },
-        ],
-        []
-    )
+function UsersTable({data}: { data: User[] }) {
 
     const columns = React.useMemo(
         () => [
             {
+                Header: 'ID',
+                accessor: 'id',
+            },
+            {
                 Header: 'Prenom',
-                accessor: 'prenom', // accessor is the "key" in the data
+                accessor: 'prenom',
             },
             {
                 Header: 'Nom',
                 accessor: 'nom',
             },
             {
-                Header: 'Adresse',
-                accessor: 'adresse',
+                Header: 'Adresse mail',
+                accessor: 'mail',
             },
         ],
         []
@@ -80,8 +62,6 @@ function TestTable() {
 
     return (
         <div>
-            <p> TODO : à merge avec admin pour afficher les users sous forme de table </p>
-
             <table {...getTableProps()}>
                 <thead>
                 {headerGroups.map(headerGroup => (
