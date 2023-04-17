@@ -1,23 +1,18 @@
 import React, {useEffect, useState} from "react";
-import { useTable } from 'react-table'
+import {useTable} from 'react-table'
+import {Api} from "../utils/Api";
+
 export function PageAdmin() {
 
     const [users, setUsers] = useState([])
-    const fetchUsers = async () => {
-        const response = await fetch("http://localhost:8000/users")
-        const users = await response.json()
-        console.log(users)
-        setUsers(users)
-    }
-
-    useEffect(()=>{
-        fetchUsers()
-    },[])
 
 
+    useEffect(() => {
+        Api.fetchUsers().then(users => setUsers(users))
+    }, [])
 
-    return (
-        <div>
+
+    return (<div>
             <h1>Admin</h1>
             <p> NB : Il faut lancer le backend sur localhost:8000 pour faire marcher ce code.</p>
 
