@@ -3,6 +3,7 @@ import {BrowserRouter, Routes, Route, Outlet, Link} from "react-router-dom";
 import {Button} from "@mui/material";
 
 import './App.css'
+import TestTable from "./TestTable";
 
 function App() {
     return (
@@ -12,6 +13,7 @@ function App() {
                     <Route index element={<Home />} />
                     <Route path="admin" element={<Admin />} />
                     <Route path="abonne" element={<Abonne />} />
+                    <Route path="test_tables" element={<TestTable />} />
                 </Route>
             </Routes>
         </BrowserRouter>
@@ -29,6 +31,9 @@ function Layout() {
             </Button>
             <Button variant="outlined">
                 <Link to="/abonne">Espace abonné</Link>
+            </Button>
+            <Button variant="outlined">
+                <Link to="/test_tables">Test Tables</Link>
             </Button>
 
             <Outlet/>
@@ -79,21 +84,6 @@ function Abonne() {
         <h1>Espace abonné</h1>
     )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export default App
