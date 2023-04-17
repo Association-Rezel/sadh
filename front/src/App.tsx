@@ -1,22 +1,22 @@
-import './App.css'
+import { useState, useEffect } from 'react';
 import {BrowserRouter, Routes, Route, Outlet, Link} from "react-router-dom";
 import {Button} from "@mui/material";
 
-function App() {
-  return (
-    <BrowserRouter>
-        <Routes>
-            <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="admin" element={<Admin />} />
-                <Route path="abonne" element={<Abonne />} />
-            </Route>
-        </Routes>
-    </BrowserRouter>
-  )
-}
+import './App.css'
 
-export default App
+function App() {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />} />
+                    <Route path="admin" element={<Admin />} />
+                    <Route path="abonne" element={<Abonne />} />
+                </Route>
+            </Routes>
+        </BrowserRouter>
+    )
+}
 
 function Layout() {
     return (
@@ -43,8 +43,35 @@ function Home() {
 }
 
 function Admin() {
+
+    const [users, setUsers] = useState([])
+    const fetchUsers = async () => {
+        const response = await fetch("http://localhost:8000/users")
+        const users = await response.json()
+        console.log(users)
+        setUsers(users)
+    }
+
+    useEffect(()=>{
+        fetchUsers()
+    },[])
+
+
+
     return (
-        <h1>Admin</h1>
+        <div>
+            <h1>Admin</h1>
+            <p> NB : Il faut lancer le backend sur localhost:8000 pour faire marcher ce code.</p>
+
+            <div className="card">
+                <h2>Users</h2>
+                {
+                    users && users.length>0 && users.map((item:any)=><p>{item.id}</p>)
+                }
+
+            </div>
+
+        </div>
     )
 }
 function Abonne() {
@@ -52,3 +79,21 @@ function Abonne() {
         <h1>Espace abonné</h1>
     )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export default App
