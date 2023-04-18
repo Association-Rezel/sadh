@@ -1,7 +1,7 @@
 """Environment definitions for the back-end."""
 from os import getenv
 from dotenv import load_dotenv
-from pydantic import PostgresDsn
+from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
 
 def get_or_raise(key: str) -> str:
