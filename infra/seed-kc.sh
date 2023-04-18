@@ -16,4 +16,5 @@ docker compose exec keycloak bash -c 'cat <<EOS | bash
 while ! curl -fsL localhost:8080 -w "%{http_code}\n" -o/dev/null; do sleep 1; done
 cd /opt/jboss/keycloak/bin/
 ./kcadm.sh config credentials --server http://localhost:8080/auth --realm master --user admin --password admin
+./kcadm.sh create realms -s realm=users -s enabled=true -s registrationAllowed=true -s registrationEmailAsUsername=true
 EOS'
