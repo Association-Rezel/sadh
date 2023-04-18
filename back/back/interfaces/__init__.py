@@ -21,3 +21,15 @@ class LoginUrl(BaseModel):
         """Config"""
 
         schema_extra = {"example": {"url": "https://example.com/login"}}
+
+
+class LoginSuccess(BaseModel):
+    """A request to log to the keycloak server."""
+
+    success: bool = True
+    jwt: str
+
+class LoginError(BaseModel):
+    """A request to log to the keycloak server."""
+
+    success: bool = False
