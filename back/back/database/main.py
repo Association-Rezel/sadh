@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from back.env import ENV
 
-engine = create_engine(ENV.database_url, connect_args={"check_same_thread": False})
+engine = create_engine(ENV.database_url, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

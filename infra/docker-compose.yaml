@@ -4,7 +4,17 @@ version: '3.9'
 services:
   postgres:
     image: postgres:13.2
-    restart: unless-stopped
+    # to reset the postgres database, run :
+    # docker compose down -v
+    environment:
+      POSTGRES_DB: database
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+
+  keycloak-postgres:
+    image: postgres:13.2
     # to reset the postgres database, run :
     # docker compose down -v
     environment:
@@ -13,16 +23,14 @@ services:
       POSTGRES_PASSWORD: admin
 
   keycloak:
+    image: jboss/keycloak:latest
     depends_on:
-      - postgres
-    container_name: local_keycloak
+      - keycloak-postgres
     environment:
       DB_VENDOR: postgres
-      DB_ADDR: postgres
+      DB_ADDR: keycloak-postgres
       DB_DATABASE: database
       DB_USER: admin
       DB_PASSWORD: admin
-    image: jboss/keycloak:latest
     ports:
       - "8080:8080"
-    restart: unless-stopped
