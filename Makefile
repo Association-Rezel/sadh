@@ -1,0 +1,50 @@
+# COLORS
+GREEN  := $(shell tput -Txterm setaf 2)
+YELLOW := $(shell tput -Txterm setaf 3)
+RESET  := $(shell tput -Txterm sgr0)
+
+.PHONY: help
+help:
+	@echo ''
+	@echo 'RTFM'
+	@echo ''
+
+###################
+# INSTALL
+
+.PHONY: install
+install: i-back i-front
+	@echo ''
+	@echo '  ${YELLOW}Done !${RESET}'
+	@echo ''
+
+
+back/.venv:
+	@bash -c 'cd back && python3 -m venv .venv'
+
+.PHONY: i-back
+i-back: back/.venv
+	@bash -c 'cd back && source .venv/bin/activate && pip install -r requirements.txt'
+
+.PHONY: i-front
+i-front:
+	@bash -c 'cd front && npm install'
+
+###################
+# RUN
+
+.PHONY: up
+up:
+	@bash -c 'docker compose -f infra/docker-compose.yaml up -d'
+
+.PHONY: down
+down:
+	@bash -c 'docker compose -f infra/docker-compose.yaml down'
+
+.PHONY: start-back
+start-back: up
+	@bash -c 'cd back && source .venv/bin/activate && python -m uvicorn --factory back:make_app --reload'
+
+.PHONY: start-front
+start-front:
+	@bash -c 'cd front && npm run dev'

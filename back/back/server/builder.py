@@ -3,11 +3,6 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-
-
-
-
-
 from back.server.user import router as user_router
 
 
