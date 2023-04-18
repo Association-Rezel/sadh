@@ -1,6 +1,7 @@
 """Environment definitions for the back-end."""
 from os import getenv
 from dotenv import load_dotenv
+from keycloak import KeycloakOpenID
 from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
 
@@ -22,7 +23,8 @@ def get_or_none(key: str) -> str | None:
 
 class Env:
     """Check environment variables types and constraints."""
-    database_url: str
+    database_url: PostgresDsn
+    keycloak: KeycloakOpenID
 
     def __init__(self) -> None:
         load_dotenv()
@@ -36,6 +38,12 @@ class Env:
             host=get_or_raise("DB_ADDR"),
             port=get_or_none("DB_PORT"),
             path=_database,
+        )
+        self.keycloak = KeycloakOpenID(
+            server_url=get_or_raise("KC_URL"),
+            client_id=get_or_raise("KC_CLIENT_ID"),
+            client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
+            realm_name="users"
         )
 
 ENV = Env()
