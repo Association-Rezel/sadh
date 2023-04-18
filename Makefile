@@ -47,7 +47,7 @@ down:
 
 .PHONY: start-back
 start-back: up
-	@bash -c 'cd back && source .venv/bin/activate && python -m uvicorn --factory back:make_app --reload --port 8000'
+	@bash -c 'cd back && source .venv/bin/activate && python -m uvicorn --factory back:make_app --reload --port 8000 --log-level debug'
 
 .PHONY: start-front
 start-front:
