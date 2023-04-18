@@ -6,7 +6,10 @@ RESET  := $(shell tput -Txterm sgr0)
 .PHONY: help
 help:
 	@echo ''
-	@echo 'RTFM'
+	@echo 'Les commandes disponibles sont :'
+	@echo '  ${YELLOW}make install${RESET}     : ${GREEN}Installe les dependences.${RESET}'
+	@echo '  ${YELLOW}make start-front${RESET} : ${GREEN}Start le front.${RESET}'
+	@echo '  ${YELLOW}make start-back${RESET}  : ${GREEN}Start le back.${RESET}'
 	@echo ''
 
 ###################
