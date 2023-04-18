@@ -10,6 +10,7 @@ help:
 	@echo '  ${YELLOW}make install${RESET}     : ${GREEN}Installe les dependences.${RESET}'
 	@echo '  ${YELLOW}make start-front${RESET} : ${GREEN}Start le front.${RESET}'
 	@echo '  ${YELLOW}make start-back${RESET}  : ${GREEN}Start le back.${RESET}'
+	@echo '  ${YELLOW}make seed${RESET}        : ${GREEN}Prepare les BDDs.${RESET}'
 	@echo ''
 
 ###################
@@ -51,3 +52,10 @@ start-back: up
 .PHONY: start-front
 start-front:
 	@bash -c 'cd front && npm run dev'
+
+###################
+# Seed
+
+.PHONY: seed
+seed:
+	@bash infra/seed-kc.sh

@@ -1,18 +1,32 @@
 ---
 version: '3.9'
 
-services:
-  keycloak-postgres: &postgres
-    image: postgres:13.2
-    environment:
-      POSTGRES_DB: database
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-    healthcheck:
-      test: pg_isready -U admin -d database
-      interval: 10s
-      timeout: 3s
+x-pg: &postgres
+  image: postgres:13.2
+  environment:
+    POSTGRES_DB: database
+    POSTGRES_USER: admin
+    POSTGRES_PASSWORD: admin
+  healthcheck:
+    test: pg_isready -U admin -d database
+    interval: 10s
+    timeout: 3s
 
+x-redis: &redis
+  image: redis:7-alpine
+  command: [ "sh", "-c", "redis-server --appendonly yes --requirepass admin" ]
+  environment:
+    REDIS_PASSWORD: admin
+  healthcheck:
+    test: redis-cli ping
+    interval: 1s
+    timeout: 10s
+    retries: 10
+    start_period: 5s
+
+
+services:
+  keycloak-postgres: *postgres
   keycloak:
     image: jboss/keycloak:latest
     depends_on:
@@ -25,25 +39,13 @@ services:
       DB_PASSWORD: admin
     healthcheck:
       timeout: 3s
-      interval: 15s
+      interval: 1s
       test: "curl -f http://localhost:8080/auth/ || exit 1"
     ports:
       - "8080:8080"
 
-  netbox-redis:
-    image: redis:7-alpine
-    command: [ "sh", "-c", "redis-server --appendonly yes --requirepass admin" ]
-    environment:
-      REDIS_PASSWORD: admin
-    healthcheck:
-      test: redis-cli ping
-      interval: 1s
-      timeout: 10s
-      retries: 10
-      start_period: 5s
-
+  netbox-redis: *redis
   netbox-postgres: *postgres
-
   netbox:
     image: netboxcommunity/netbox:v3.4-2.5.3
     depends_on:
@@ -67,7 +69,7 @@ services:
       - "8002:8080"
     healthcheck:
       timeout: 3s
-      interval: 15s
+      interval: 1s
       test: "curl -f http://localhost:8080/ || exit 1"
 
   postgres:
