@@ -25,6 +25,8 @@ class Env:
     """Check environment variables types and constraints."""
     database_url: PostgresDsn
     keycloak: KeycloakOpenID
+    login_redirect_url: str
+    frontend_url: str
 
     def __init__(self) -> None:
         load_dotenv()
@@ -45,5 +47,7 @@ class Env:
             client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
             realm_name="users"
         )
+        self.frontend_url = get_or_raise("FRONTEND_URL")
+        self.login_redirect_url = f"{self.frontend_url}/auth/login"
 
 ENV = Env()
