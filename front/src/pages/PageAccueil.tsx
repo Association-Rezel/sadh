@@ -1,5 +1,0 @@
-export function PageAccueil() {
-    return (
-        <h1>Home</h1>
-    )
-}
