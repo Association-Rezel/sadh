@@ -1,6 +1,7 @@
 export interface User {
     id: number;
     isAdmin: boolean;
+    name: string;
 }
 
 export interface ApiInterface {
