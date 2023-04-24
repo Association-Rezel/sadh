@@ -51,7 +51,6 @@ function AdminDashboard() {
                 </Toolbar>
                 <Divider />
                 <List component="nav">
-                    
                     <Link to={""}>
                         <ListItemButton>
                             <ListItemIcon>
@@ -98,7 +97,9 @@ function AdminDashboard() {
                 }}
             >
                 <Toolbar />
-                <Outlet />
+                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <Outlet />
+                </Container>
             </Box>
         </Box>
     );
