@@ -22,6 +22,8 @@ import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import RouterIcon from "@mui/icons-material/Router";
+import { Link as RouterLink } from "react-router-dom";
 
 function AccountDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -54,6 +56,14 @@ function AccountDashboard() {
                         </ListItemIcon>
                         <ListItemText primary="Orders" />
                     </ListItemButton>
+                    <RouterLink to={"boxe"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <RouterIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Boxe" />
+                        </ListItemButton>
+                    </RouterLink>
 
                     <Divider sx={{ my: 1 }} />
                     {secondaryListItems}
@@ -70,44 +80,9 @@ function AccountDashboard() {
                 }}
             >
                 <Toolbar />
-                <Outlet />
 
                 <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                    <Grid container spacing={3}>
-                        {/* Chart */}
-                        <Grid item xs={12} md={8} lg={9}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    height: 240,
-                                }}
-                            >
-                                <Chart />
-                            </Paper>
-                        </Grid>
-                        {/* Recent Deposits */}
-                        <Grid item xs={12} md={4} lg={3}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    height: 240,
-                                }}
-                            >
-                                <Deposits />
-                            </Paper>
-                        </Grid>
-                        {/* Recent Orders */}
-                        <Grid item xs={12}>
-                            <Paper sx={{ p: 2, display: "flex", flexDirection: "column" }}>
-                                <Orders />
-                            </Paper>
-                        </Grid>
-                    </Grid>
-                    <Copyright sx={{ pt: 4 }} />
+                    <Outlet />
                 </Container>
             </Box>
         </Box>
