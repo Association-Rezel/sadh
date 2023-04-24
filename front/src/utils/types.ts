@@ -2,6 +2,7 @@ export interface User {
     id: number;
     isAdmin: boolean;
     name: string;
+    residence: string;
 }
 
 export interface ApiInterface {
