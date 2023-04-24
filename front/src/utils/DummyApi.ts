@@ -10,16 +10,19 @@ export class DummyApi implements ApiInterface {
                 id: 1,
                 isAdmin: false,
                 name: "toto",
+                residence: "Kley",
             },
             {
                 id: 2,
                 isAdmin: false,
                 name: "tata",
+                residence: "Kley",
             },
             {
                 id: 3,
                 isAdmin: false,
                 name: "tutu",
+                residence: "ALJT",
             },
         ];
     }
@@ -28,6 +31,7 @@ export class DummyApi implements ApiInterface {
             id: 7897,
             isAdmin: true, // TODO change to an admin
             name: "itsme",
+            residence: "Kley",
         };
     }
 }

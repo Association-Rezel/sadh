@@ -103,7 +103,7 @@ export function TableUsers({ rows }: TableUsersProps) {
                                     {row.name}
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {row.id}
+                                    {row.residence}
                                 </TableCell>
                             </TableRow>
                         ))}
