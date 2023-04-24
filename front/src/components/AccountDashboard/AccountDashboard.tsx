@@ -11,16 +11,16 @@ import IconButton from "@mui/material/IconButton";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
-import Link from "@mui/material/Link";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { secondaryListItems } from "../../pages/account/listItems";
 import Chart from "../../pages/account/Chart";
 import Deposits from "../../pages/account/Deposits";
-import Orders from "../../pages/account/Orders";
+import Orders from "../Orders/Orders";
 import HeaderDashboard from "../Dashboard/HeaderDashboard";
 import { Copyright } from "@mui/icons-material";
 import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
+import { Link, Outlet } from "react-router-dom";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 function AccountDashboard() {
@@ -54,6 +54,7 @@ function AccountDashboard() {
                         </ListItemIcon>
                         <ListItemText primary="Orders" />
                     </ListItemButton>
+
                     <Divider sx={{ my: 1 }} />
                     {secondaryListItems}
                 </List>
@@ -69,6 +70,8 @@ function AccountDashboard() {
                 }}
             >
                 <Toolbar />
+                <Outlet />
+
                 <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
                     <Grid container spacing={3}>
                         {/* Chart */}

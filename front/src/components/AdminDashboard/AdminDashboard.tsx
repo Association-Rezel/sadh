@@ -20,7 +20,6 @@ import LayersIcon from "@mui/icons-material/Layers";
 import { secondaryListItems } from "../../pages/account/listItems";
 import Chart from "../../pages/account/Chart";
 import Deposits from "../../pages/account/Deposits";
-import Orders from "../../pages/account/Orders";
 import { drawerWidth } from "../../utils/constants";
 import HeaderDashboard from "../Dashboard/HeaderDashboard";
 import Drawer from "../Dashboard/Drawer";
@@ -52,6 +51,7 @@ function AdminDashboard() {
                 </Toolbar>
                 <Divider />
                 <List component="nav">
+                    
                     <Link to={""}>
                         <ListItemButton>
                             <ListItemIcon>
@@ -60,12 +60,7 @@ function AdminDashboard() {
                             <ListItemText primary="Dashboard" />
                         </ListItemButton>
                     </Link>
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <ShoppingCartIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Orders" />
-                    </ListItemButton>
+
                     <Link to={"users"}>
                         <ListItemButton>
                             <ListItemIcon>
@@ -74,12 +69,14 @@ function AdminDashboard() {
                             <ListItemText primary="Customers" />
                         </ListItemButton>
                     </Link>
+
                     <ListItemButton>
                         <ListItemIcon>
                             <BarChartIcon />
                         </ListItemIcon>
                         <ListItemText primary="Reports" />
                     </ListItemButton>
+
                     <ListItemButton>
                         <ListItemIcon>
                             <LayersIcon />

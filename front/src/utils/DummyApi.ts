@@ -1,4 +1,4 @@
-import { User, ApiInterface } from "./types";
+import { User, ApiInterface, Order } from "./types";
 
 export class DummyApi implements ApiInterface {
     /*
@@ -33,5 +33,52 @@ export class DummyApi implements ApiInterface {
             name: "itsme",
             residence: "Kley",
         };
+    }
+
+    async fetchOrders(): Promise<Order[]> {
+        return [
+            {
+                id: 1,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+            {
+                id: 2,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+            {
+                id: 3,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+            {
+                id: 4,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+            {
+                id: 5,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+            {
+                id: 6,
+                date: "16 Mar, 2019",
+                name: "Elvis Presley",
+                paymentMethod: "VISA ⠀•••• 3719",
+                amount: 312.44,
+            },
+        ];
     }
 }
