@@ -3,6 +3,9 @@ GREEN  := $(shell tput -Txterm setaf 2)
 YELLOW := $(shell tput -Txterm setaf 3)
 RESET  := $(shell tput -Txterm sgr0)
 
+.DEFAULT:
+	@$(MAKE) -s help
+
 .PHONY: help
 help:
 	@echo ''
