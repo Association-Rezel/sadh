@@ -1,5 +1,5 @@
 import { Config } from "./Config";
-import { User, ApiInterface } from "./types";
+import { User, ApiInterface, Order } from "./types";
 
 const myFetcher = async (url: string) => {
     const response = await fetch(Config.API_URL + url);
@@ -9,16 +9,23 @@ const myFetcher = async (url: string) => {
 export class RemoteApi implements ApiInterface {
     async fetchUsers(): Promise<User[]> {
         try {
-            await myFetcher("/users");
+            return await myFetcher("/users");
         } catch (e) {
             return [];
         }
     }
     async fetchMe(): Promise<User> {
         try {
-            await myFetcher("/user");
+            return await myFetcher("/user");
         } catch (e) {
             return null;
+        }
+    }
+    async fetchOrders(): Promise<Order[]> {
+        try {
+            return await myFetcher("/orders");
+        } catch (e) {
+            return [];
         }
     }
 }
