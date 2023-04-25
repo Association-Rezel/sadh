@@ -27,6 +27,8 @@ class Env:
     keycloak: KeycloakOpenID
     login_redirect_url: str
     frontend_url: str
+    frontend_host: str
+    frontend_port: str
 
     def __init__(self) -> None:
         load_dotenv()
@@ -47,7 +49,9 @@ class Env:
             client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
             realm_name="users"
         )
-        self.frontend_url = get_or_raise("FRONTEND_URL")
+        self.frontend_port = get_or_raise("FRONTEND_PORT")
+        self.frontend_host = get_or_raise("FRONTEND_HOST")
+        self.frontend_url = f"http://{self.frontend_host}:{self.frontend_port}"
         self.login_redirect_url = f"{self.frontend_url}/auth/login"
 
 ENV = Env()
