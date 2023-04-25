@@ -1,5 +1,6 @@
-from pydantic import BaseModel, networks
 from ipaddress import IPv4Address, IPv6Address
+
+from pydantic import BaseModel
 
 
 class IPAddresses46(BaseModel):
@@ -12,6 +13,6 @@ class IPAddresses46(BaseModel):
         schema_extra = {
             "example": {
                 "ipv4": "127.0.0.1",
-                "ipv6": "::1"
-            }
+                "ipv6": "::1",
+            },
         }

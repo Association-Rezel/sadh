@@ -140,7 +140,7 @@
 
 # @app.get("/api/auth/keycloak/callback")
 # def auth_callback(code: str, state: str="", session_state: str="", callbackUrl: str = ""):
-#     # On vérifie que le code est valide 
+#     # On vérifie que le code est valide
 #     # On récupère le token
 #     try:
 #         access_token = keycloak_openid.token(
@@ -187,6 +187,6 @@
 #         time.sleep(60)
 
 
-    
+
 
 # # uvicorn main:app --reload --port 80 --host

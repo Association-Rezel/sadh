@@ -1,8 +1,9 @@
 """Get or edit users."""
 from fastapi import APIRouter, Depends
+
 from back.core import users
-from back.interfaces import User
 from back.database import get_db
+from back.interfaces import User
 
 router = APIRouter(prefix="/users", tags=["users"])
 

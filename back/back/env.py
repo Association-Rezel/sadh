@@ -1,5 +1,6 @@
 """Environment definitions for the back-end."""
 from os import getenv
+
 from dotenv import load_dotenv
 from keycloak import KeycloakOpenID
 from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
@@ -47,7 +48,7 @@ class Env:
             server_url=get_or_raise("KC_URL"),
             client_id=get_or_raise("KC_CLIENT_ID"),
             client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
-            realm_name="users"
+            realm_name="users",
         )
         self.frontend_port = get_or_raise("FRONTEND_PORT")
         self.frontend_host = get_or_raise("FRONTEND_HOST")

@@ -1,13 +1,13 @@
 """Build the server."""
 import logging
+
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from back.server.auth import router as auth_router
-from back.server.user import router as user_router
 from back.server.box import router as box_router
-
+from back.server.user import router as user_router
 
 logger = logging.getLogger("uvicorn")
 
@@ -35,6 +35,6 @@ def build() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(box_router)
 
-    logger.info('Server built')
+    logger.info("Server built")
 
     return app

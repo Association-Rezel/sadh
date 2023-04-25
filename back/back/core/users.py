@@ -1,5 +1,5 @@
-from back.interfaces import User
 from back.database import models
+from back.interfaces import User
 
 
 def get_users(db) -> list[User]:

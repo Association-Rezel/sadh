@@ -6,6 +6,5 @@ import uvicorn
 from back import make_app
 from back.env import ENV
 
-
 app = make_app()
 uvicorn.run(app, host="0.0.0.0", port=int(ENV.frontend_port))
