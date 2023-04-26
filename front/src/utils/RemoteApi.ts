@@ -1,5 +1,5 @@
 import { Config } from "./Config";
-import { User, ApiInterface, Order } from "./types";
+import { User, ApiInterface, Order, Device } from "./types";
 
 const myFetcher = async (url: string) => {
     const response = await fetch(Config.API_URL + url);
@@ -24,6 +24,14 @@ export class RemoteApi implements ApiInterface {
     async fetchOrders(): Promise<Order[]> {
         try {
             return await myFetcher("/orders");
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async fetchDevices(): Promise<Device[]> {
+        try {
+            return await myFetcher("/devices");
         } catch (e) {
             return [];
         }

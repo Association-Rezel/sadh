@@ -7,7 +7,7 @@ import { SearchBar } from "./SearchBar";
 let residenceSelected = "";
 let searchSelected = "";
 
-const Users = () => {
+function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [usersFiltered, setUsersFiltered] = useState<User[]>([]);
 

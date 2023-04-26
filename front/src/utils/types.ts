@@ -16,5 +16,14 @@ export interface Order {
 export interface ApiInterface {
     fetchUsers(): Promise<User[]>;
     fetchMe(): Promise<User>;
-    fetchOrders(): Promise<Order[]>
+    fetchOrders(): Promise<Order[]>;
+    fetchDevices(): Promise<Device[]>;
+}
+
+export interface Device {
+    id: number;
+    name: string;
+    description: string;
+    ip: string;
+    mac: string;
 }

@@ -1,9 +1,10 @@
 import { Toolbar, IconButton, Typography, Badge } from "@mui/material";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
+import ExitToApp from "@mui/icons-material/ExitToApp";
 import { styled } from "@mui/material/styles";
 import { drawerWidth } from "../../utils/constants";
+import { Link } from "react-router-dom";
 
 interface HeaderDashboardProps {
     title: string;
@@ -57,9 +58,11 @@ const HeaderDashboard = ({ title, toggleDrawer, open }: HeaderDashboardProps) =>
                     {title}
                 </Typography>
                 <IconButton color="inherit">
-                    <Badge badgeContent={4} color="secondary">
-                        <NotificationsIcon />
-                    </Badge>
+                    <Link to={"../"} style={{ color: '#FFF' }}>
+                        <Badge color="secondary">
+                            <ExitToApp />
+                        </Badge>
+                    </Link>
                 </IconButton>
             </Toolbar>
         </AppBar>
