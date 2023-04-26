@@ -14,9 +14,7 @@ Vous devez coder dans une branche et faire une "Merge Request" pour fusionner vo
 
 - Chef de sous-projet : Thibaud Labat
 
-To-do, bugs à résoudre (interface Trello-like) : [board](https://gitlab.com/rezel/faipp/site/front/-/boards).
-
-- [Cahier des charges](CAHIER_DES_CHARGES.md)
+To-do, bugs à résoudre (interface Trello-like) : [board](https://gitlab.com/rezel/faipp/site/site/-/boards).
 
 ## Getting started
 
