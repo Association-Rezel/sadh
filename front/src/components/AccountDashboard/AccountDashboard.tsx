@@ -56,6 +56,14 @@ function AccountDashboard() {
                         </ListItemIcon>
                         <ListItemText primary="Orders" />
                     </ListItemButton>
+                    <Link to={"DHCP"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <ShoppingCartIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="DHCP" />
+                        </ListItemButton>
+                    </Link>
                     <RouterLink to={"boxe"}>
                         <ListItemButton>
                             <ListItemIcon>

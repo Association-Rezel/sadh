@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order } from "./types";
+import { User, ApiInterface, Order, Device } from "./types";
 
 export class DummyApi implements ApiInterface {
     /*
@@ -80,5 +80,24 @@ export class DummyApi implements ApiInterface {
                 amount: 312.44,
             },
         ];
+    }
+
+    async fetchDevices(): Promise<Device[]> {
+        return [
+            {
+                id: 1,
+                name: "Device 1",
+                description: "Description 1",
+                ip: "255:255:255:255",
+                mac: "00:00:00:00:00:00",
+            },
+            {
+                id: 2,
+                name: "Device 2",
+                description: "Description 2 blalfl lkfld kld d lkdlf",
+                ip: "255:255:255:2",
+                mac: "00:00:00:00:00:01",
+            },
+        ]
     }
 }
