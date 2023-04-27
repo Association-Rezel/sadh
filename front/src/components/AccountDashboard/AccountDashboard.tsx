@@ -15,7 +15,6 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { secondaryListItems } from "../../pages/account/listItems";
 import Chart from "../../pages/account/Chart";
 import Deposits from "../../pages/account/Deposits";
-import Orders from "../Orders/Orders";
 import HeaderDashboard from "../Dashboard/HeaderDashboard";
 import { Copyright } from "@mui/icons-material";
 import Drawer from "../Dashboard/Drawer";
@@ -50,12 +49,14 @@ function AccountDashboard() {
                 </Toolbar>
                 <Divider />
                 <List component="nav">
+                    <Link to={"orders"}>
                     <ListItemButton>
                         <ListItemIcon>
                             <ShoppingCartIcon />
                         </ListItemIcon>
                         <ListItemText primary="Orders" />
                     </ListItemButton>
+                    </Link>
                     <Link to={"DHCP"}>
                         <ListItemButton>
                             <ListItemIcon>

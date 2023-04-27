@@ -6,7 +6,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Title from "../../pages/account/Title";
-import { Box, TableFooter, TablePagination } from "@mui/material";
+import { Box, Paper, TableContainer, TableFooter, TablePagination } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
@@ -88,9 +88,8 @@ export function TableOrders({ rows }: TableOrdersProps) {
     };
 
     return (
-        <React.Fragment>
-            <Title>Historique des factures</Title>
-            <Table size="small" sx={{ minWidth: 500 }}>
+        <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
                 <TableHead>
                     <TableRow>
                         <TableCell>Date</TableCell>
@@ -122,7 +121,7 @@ export function TableOrders({ rows }: TableOrdersProps) {
                     <TableRow>
                         <TablePagination
                             rowsPerPageOptions={[5, 10, { label: "All", value: -1 }]}
-                            colSpan={3}
+                            colSpan={4}
                             count={rows.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
@@ -139,6 +138,6 @@ export function TableOrders({ rows }: TableOrdersProps) {
                     </TableRow>
                 </TableFooter>
             </Table>
-        </React.Fragment>
+        </TableContainer>
     );
 }
