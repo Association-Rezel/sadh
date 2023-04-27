@@ -23,7 +23,7 @@ def build() -> FastAPI:
     """Build the app from interfaces."""
     init_logger()
     app = FastAPI()
-    origins = ["*"]
+    origins = ["http://localhost:5173", "http://localhost:8080", "http://localhost:8000"]
 
     app.add_middleware(
         CORSMiddleware,

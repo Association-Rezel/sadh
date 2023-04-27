@@ -2,7 +2,6 @@
 from os import getenv
 
 from dotenv import load_dotenv
-from keycloak import KeycloakOpenID
 from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
 
@@ -37,9 +36,12 @@ class Env:
     """Check environment variables types and constraints."""
 
     database_url: PostgresDsn
+<<<<<<< HEAD
+=======
 
     # Keycloak
     keycloak: KeycloakOpenID
+>>>>>>> master
     login_redirect_url: str
 
     # Frontend
@@ -67,21 +69,19 @@ class Env:
             port=get_or_none("DB_PORT"),
             path=_database,
         )
-        self.keycloak = KeycloakOpenID(
-            server_url=get_or_raise("KC_URL"),
-            client_id=get_or_raise("KC_CLIENT_ID"),
-            client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
-            realm_name="users",
-        )
+
         self.frontend_port = get_or_raise("FRONTEND_PORT")
         self.frontend_host = get_or_raise("FRONTEND_HOST")
         self.frontend_url = f"http://{self.frontend_host}:{self.frontend_port}"
         self.login_redirect_url = f"{self.frontend_url}/auth/login"
 
+<<<<<<< HEAD
+=======
         self.netbox_url = get_or_raise("NETBOX_URL")
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
 
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
 
+>>>>>>> master
 
 ENV = Env()

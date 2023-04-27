@@ -14,10 +14,14 @@ export interface Order {
 }
 
 export interface ApiInterface {
+    token: string
     fetchUsers(): Promise<User[]>;
     fetchMe(): Promise<User>;
     fetchOrders(): Promise<Order[]>;
     fetchDevices(): Promise<Device[]>;
+    refreshState(): void;
+    login(): any;
+    logout(): any;
 }
 
 export interface Device {
