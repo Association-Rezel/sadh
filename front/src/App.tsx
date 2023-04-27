@@ -3,6 +3,7 @@ import { PageAdmin } from "./pages/admin/PageAdmin";
 import { PageAccueil } from "./pages/account/PageAccueil";
 import DHCP from "./components/DHCP/DHCP";
 import { PageBoxe } from "./pages/account/PageBoxe";
+import Orders from "./components/Orders/Orders";
 import Index from "./pages/index";
 
 import "./App.css";
@@ -23,6 +24,7 @@ function App() {
                     {user && (
                         <Route path="account" element={<AccountDashboard />}>
                             <Route index Component={PageAccueil} />
+                            <Route path="orders" Component={Orders} />
                             <Route path="DHCP" Component={DHCP} />
                             <Route path="boxe" Component={PageBoxe} />
                         </Route>

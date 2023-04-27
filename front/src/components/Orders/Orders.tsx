@@ -12,6 +12,7 @@ const Orders = () => {
 
     return (
         <div className="card">
+            <h1>Historique des factures</h1>
             <TableOrders rows={orders} />
         </div>
     );
