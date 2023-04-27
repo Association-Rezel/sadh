@@ -1,17 +1,13 @@
-import React, { useEffect, useState } from "react";
-
-import { Api } from "../../utils/Api";
-import { User } from "../../utils/types";
-import { useUser } from "../../utils/hooks";
-import AdminDashboard from "../../components/AdminDashboard/AdminDashboard";
+import React, {useContext} from "react";
+import {AppStateContext} from "../../utils/AppState";
 
 export function PageAdmin() {
-    const user = useUser();
+    const appState = useContext(AppStateContext);
 
     return (
         <div>
             <h1>Admin</h1>
-            {JSON.stringify(user)}
+            {JSON.stringify(appState)}
             <p> NB : Il faut lancer le backend sur localhost:8000 pour faire marcher ce code.</p>
         </div>
     );

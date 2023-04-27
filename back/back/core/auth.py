@@ -1,30 +1,24 @@
-"""Keycloak options."""
-from keycloak import KeycloakError
+# https://pypi.org/project/python-keycloak/
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from keycloak import KeycloakOpenID
 
-from back.env import ENV
+from back.env import get_or_raise
 
+keycloak_url = get_or_raise("KC_URL")
+realm = "users"
+keycloak_openid  = KeycloakOpenID(
+    server_url=keycloak_url,
+    client_id=get_or_raise("KC_CLIENT_ID"),
+    client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
+    realm_name=realm,
+    verify=True
+)
 
-def auth_login(redirect_to: str) -> str:
-    """Get login endpoint."""
-    auth_url = ENV.keycloak.auth_url(
-        redirect_uri=redirect_to,
-        scope="openid profile email",
-    )
-    return auth_url
+config_well_known = keycloak_openid.well_known()
 
+KEYCLOAK_PUBLIC_KEY = "-----BEGIN PUBLIC KEY-----\n" + keycloak_openid.public_key() + "\n-----END PUBLIC KEY-----"
 
-def check_auth_code(code: str) -> str | None:
-    """Check if the given auth code is valid.
-
-    If the auth code is valid, return the JWT.
-    Else, return None.
-    """
-    try:
-        access_token = ENV.keycloak.token(
-            grant_type="authorization_code",
-            code=code,
-        )
-        user_info = ENV.keycloak.userinfo(token=access_token["access_token"])
-    except KeycloakError:
-        return None
-    return str(user_info)
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=f"{keycloak_url}realms/{realm}/protocol/openid-connect/auth",
+    tokenUrl=f"{keycloak_url}realms/{realm}/protocol/openid-connect/token",
+)

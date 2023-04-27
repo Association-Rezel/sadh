@@ -1,28 +1,40 @@
 """Get or edit users."""
-from fastapi import APIRouter, Response, status
 
-from back.core import auth
-from back.env import ENV
-from back.interfaces import LoginError, LoginSuccess, LoginUrl
+# https://github.com/tiangolo/fastapi/discussions/9066
+
+from fastapi import APIRouter, status, Depends, HTTPException, Security
+from pydantic import Json
+
+from back.core.auth import keycloak_openid, KEYCLOAK_PUBLIC_KEY, oauth2_scheme
 
 router = APIRouter(prefix="/auth", tags=["users"])
 
 
-@router.get("/login")
-def login() -> LoginUrl:
-    """This is some docs"""
-    return LoginUrl(
-        url=auth.auth_login(ENV.login_redirect_url),
-    )
+async def get_auth(token: str = Security(oauth2_scheme)) -> Json:
+    try:
+        return keycloak_openid.decode_token(
+            token,
+            key=KEYCLOAK_PUBLIC_KEY,
+            options={
+                "verify_signature": True,
+                "verify_aud": False,  # TODO : verify audience (mettre sur True et corriger les erreurs)
+                "exp": True
+            }
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e),  # "Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
-@router.get("/check", responses={
-    200: {"model": LoginSuccess},
-    403: {"model": LoginError},
-})
-def check(_code: str, response: Response):
-    """This is some docs"""
-    response.status_code = status.HTTP_201_CREATED
-    return LoginSuccess(
-        jwt="",
-    )
+@router.get("/user")
+async def get_current_user(
+        identity: Json = Depends(get_auth)
+):
+    # TODO : Renvoyer les informations utiles à l'utilisateur ; cf le type "User" du front
+    return {
+        "id": identity["sub"],
+        "isAdmin": True
+    }

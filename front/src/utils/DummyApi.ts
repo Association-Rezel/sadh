@@ -1,9 +1,24 @@
-import { User, ApiInterface, Order, Device } from "./types";
+import {ApiInterface, Device, Order, User} from "./types";
+import {updateAppState} from "./AppState";
 
-export class DummyApi implements ApiInterface {
-    /*
+
+/*
     Implémentation locale de l'API pour les tests
-     */
+*/
+export class DummyApi implements ApiInterface {
+    token: string;
+
+    async logout(): Promise<void> {
+        updateAppState({logged: false, user: null, token: ""});
+    }
+
+    async login(): Promise<void> {
+        updateAppState({logged: true, user: await this.fetchMe(), token: "token-keycloak-dummy"});
+    }
+
+    refreshState(): void {
+    }
+
     async fetchUsers(): Promise<User[]> {
         return [
             {
@@ -29,7 +44,7 @@ export class DummyApi implements ApiInterface {
     async fetchMe(): Promise<User> {
         return {
             id: 7897,
-            isAdmin: true, // TODO change to an admin
+            isAdmin: true,
             name: "itsme",
             residence: "Kley",
         };
@@ -100,4 +115,5 @@ export class DummyApi implements ApiInterface {
             },
         ]
     }
+
 }
