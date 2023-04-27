@@ -36,12 +36,6 @@ class Env:
     """Check environment variables types and constraints."""
 
     database_url: PostgresDsn
-<<<<<<< HEAD
-=======
-
-    # Keycloak
-    keycloak: KeycloakOpenID
->>>>>>> master
     login_redirect_url: str
 
     # Frontend
@@ -75,13 +69,8 @@ class Env:
         self.frontend_url = f"http://{self.frontend_host}:{self.frontend_port}"
         self.login_redirect_url = f"{self.frontend_url}/auth/login"
 
-<<<<<<< HEAD
-=======
         self.netbox_url = get_or_raise("NETBOX_URL")
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
-
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
-
->>>>>>> master
 
 ENV = Env()
