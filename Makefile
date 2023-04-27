@@ -43,11 +43,15 @@ i-front:
 
 .PHONY: up
 up:
-	@bash -c 'docker compose -f infra/docker-compose.yaml up -d'
+	@bash -c 'docker compose -f infra/docker-compose.yaml up -d --wait'
 
 .PHONY: down
 down:
 	@bash -c 'docker compose -f infra/docker-compose.yaml down'
+
+.PHONY: down-v
+down-v:
+	@bash -c 'docker compose -f infra/docker-compose.yaml down -v'
 
 .PHONY: start-back
 start-back: up

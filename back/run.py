@@ -3,7 +3,7 @@ Ce fichier sert à lancer directement le serveur depuis un IDE (ex: Pycharm), af
 """
 import uvicorn
 
-from back import make_app
+from back import make_app  # type: ignore
 from back.env import ENV
 
 app = make_app()

@@ -5,9 +5,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
+from back.netbox_client.main import NetBoxClient
 from back.server.auth import router as auth_router
 from back.server.box import router as box_router
 from back.server.user import router as user_router
+from back.utils.logger import init_logger
 
 logger = logging.getLogger("uvicorn")
 
@@ -19,6 +21,7 @@ def root():
 
 def build() -> FastAPI:
     """Build the app from interfaces."""
+    init_logger()
     app = FastAPI()
     origins = ["*"]
 
@@ -36,5 +39,7 @@ def build() -> FastAPI:
     app.include_router(box_router)
 
     logger.info("Server built")
+
+    NetBoxClient()
 
     return app
