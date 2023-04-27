@@ -6,11 +6,22 @@ from keycloak import KeycloakOpenID
 from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
 
+class EnvError(OSError):
+    """Any error related to environment variables."""
+
+
+class MissingEnv(EnvError):
+    """An environment variable is missing."""
+
+    def __init__(self, key: str):
+        super().__init__(f"{key} is not set")
+
+
 def get_or_raise(key: str) -> str:
     """Get value from environment or raise an error."""
     value = getenv(key)
     if not value:
-        raise EnvironmentError(f"{key} is not set")
+        raise MissingEnv(key)
     return value
 
 
@@ -24,12 +35,24 @@ def get_or_none(key: str) -> str | None:
 
 class Env:
     """Check environment variables types and constraints."""
+
     database_url: PostgresDsn
+
+    # Keycloak
     keycloak: KeycloakOpenID
     login_redirect_url: str
+
+    # Frontend
     frontend_url: str
     frontend_host: str
     frontend_port: str
+
+    # Netbox
+    netbox_url: str
+    netbox_token: str
+
+    # Logs
+    log_level: str
 
     def __init__(self) -> None:
         load_dotenv()
@@ -54,5 +77,11 @@ class Env:
         self.frontend_host = get_or_raise("FRONTEND_HOST")
         self.frontend_url = f"http://{self.frontend_host}:{self.frontend_port}"
         self.login_redirect_url = f"{self.frontend_url}/auth/login"
+
+        self.netbox_url = get_or_raise("NETBOX_URL")
+        self.netbox_token = get_or_raise("NETBOX_TOKEN")
+
+        self.log_level = get_or_none("LOG_LEVEL") or "INFO"
+
 
 ENV = Env()

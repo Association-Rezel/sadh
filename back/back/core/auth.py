@@ -24,7 +24,7 @@ def check_auth_code(code: str) -> str | None:
             grant_type="authorization_code",
             code=code,
         )
-        user_info = ENV.keycloak.userinfo(token = access_token["access_token"])
+        user_info = ENV.keycloak.userinfo(token=access_token["access_token"])
     except KeycloakError:
         return None
     return str(user_info)
