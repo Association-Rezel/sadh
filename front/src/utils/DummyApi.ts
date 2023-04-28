@@ -1,12 +1,62 @@
-import {ApiInterface, Device, Order, User} from "./types";
-import {updateAppState} from "./AppState";
+import { User, ApiInterface, Order, Device, DHCPLease } from "./types";
+import {getAppState, updateAppState} from "./AppState";
 
-
-/*
-    Implémentation locale de l'API pour les tests
-*/
 export class DummyApi implements ApiInterface {
     token: string;
+    dhcpList : DHCPLease[] = [ {
+        id: 1,
+        name: "Device 1",
+        description: "Description 1",
+        ip: "255:255:255:255",
+        mac: "00:00:00:00:00:00",
+    },
+    {
+        id: 2,
+        name: "Device 2",
+        description: "Description 2 blalfl lkfld kld d lkdlf",
+        ip: "255:255:255:2",
+        mac: "00:00:00:00:00:01",
+    }];
+
+    deviceList: Device[] = [{
+        id: 1,
+        name: "Device 1",
+        ip: "255:255:255:255",
+        mac: "00:00:00:00:00:00",
+    },
+    {
+        id: 2,
+        name: "Device 2",
+        ip: "255:255:255:2",
+        mac: "00:00:00:00:00:01",
+    }
+    ]
+
+    async addDHCPLease(dhcp: DHCPLease): Promise<void> {
+        dhcp.id=Math.floor(Math.random()*10000);
+        this.dhcpList.push(dhcp);
+        console.log(this.dhcpList)
+        
+    }
+
+    async deleteDHCPLease(id: number): Promise<void> {
+        const newDhcpList = []
+        for (var dhcpLease of this.dhcpList) {
+            if (dhcpLease.id !== id) {
+                newDhcpList.push(dhcpLease);
+            }
+        }
+        this.dhcpList = newDhcpList;
+    }
+        /*
+    import {ApiInterface, Device, Order, User} from "./types";
+    import {updateAppState} from "./AppState";
+
+
+    /*
+        Implémentation locale de l'API pour les tests
+    */
+    
 
     async logout(): Promise<void> {
         updateAppState({logged: false, user: null, token: ""});
@@ -97,23 +147,22 @@ export class DummyApi implements ApiInterface {
         ];
     }
 
+    async fetchDHCPLeases(): Promise<DHCPLease[]> {
+        return this.dhcpList;
+    }
+
     async fetchDevices(): Promise<Device[]> {
-        return [
-            {
-                id: 1,
-                name: "Device 1",
-                description: "Description 1",
-                ip: "255:255:255:255",
-                mac: "00:00:00:00:00:00",
-            },
-            {
-                id: 2,
-                name: "Device 2",
-                description: "Description 2 blalfl lkfld kld d lkdlf",
-                ip: "255:255:255:2",
-                mac: "00:00:00:00:00:01",
-            },
-        ]
+        return this.deviceList;
+    }
+
+    async fetchDHCPLease(id:number): Promise<DHCPLease> {
+        const dhcpLeases = await this.fetchDHCPLeases();
+        
+        for (var dhcpLease of dhcpLeases) {
+            if (dhcpLease.id === id) {
+                return dhcpLease;
+            }
+        }
     }
 
 }
