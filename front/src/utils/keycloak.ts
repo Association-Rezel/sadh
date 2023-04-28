@@ -1,6 +1,7 @@
 import Keycloak from "keycloak-js";
 import {updateAppState} from "./AppState";
 import {Api} from "./Api";
+import { Config } from "./Config";
 
 export const keycloak = new Keycloak({
     url: 'http://localhost:8080/auth',
@@ -9,6 +10,8 @@ export const keycloak = new Keycloak({
 });
 
 
+
+if (Config.API_DUMMY==false)
 // TODO : que faire quand le token expire ?
 keycloak.init({
     //token: localStorage.getItem("keycloak-token"),
