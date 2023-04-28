@@ -23,6 +23,7 @@ import { Link, Outlet } from "react-router-dom";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import RouterIcon from "@mui/icons-material/Router";
 import { Link as RouterLink } from "react-router-dom";
+import PushPinIcon from '@mui/icons-material/PushPin';
 
 function AccountDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -60,7 +61,7 @@ function AccountDashboard() {
                     <Link to={"DHCP"}>
                         <ListItemButton>
                             <ListItemIcon>
-                                <ShoppingCartIcon />
+                                <PushPinIcon />
                             </ListItemIcon>
                             <ListItemText primary="DHCP" />
                         </ListItemButton>
