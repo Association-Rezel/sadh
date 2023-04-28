@@ -5,3 +5,13 @@
 .device-address {
     color: grey;
 }
+
+.dhcp-dialog-input {
+    width: 300px;
+}
+
+.dhcp-dialog-button {
+    display: flex;
+    justify-content: right;
+    margin: 10px;
+}

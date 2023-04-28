@@ -1,10 +1,30 @@
+import { User, ApiInterface, Order, Device, DHCPLease } from "./types";
 import {Config} from "./Config";
-import {ApiInterface, Device, Order, User} from "./types";
 import {getAppState, updateAppState} from "./AppState";
 import {keycloak} from "./keycloak";
 
 
 export class RemoteApi implements ApiInterface {
+
+    //TODO: implement funcs
+    fetchDHCPLeases(): Promise<DHCPLease[]> {
+        throw new Error("Method not implemented.");
+    }
+    fetchDHCPLease(id: number): Promise<DHCPLease> {
+        throw new Error("Method not implemented.");
+    }
+    addDHCPLease(device: DHCPLease): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    deleteDHCPLease(id: number): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    addDHCP(Device: any): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    deleteDHCP(id: number): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
     token: string;
 
     async logout(): Promise<void> {
