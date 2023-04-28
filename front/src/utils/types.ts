@@ -30,6 +30,10 @@ export interface DHCPLease {
 
 
 export interface ApiInterface {
+    logout(): void;
+    login(): void;
+    refreshState(): unknown;
+
     token: string;
     fetchUsers(): Promise<User[]>;
     fetchMe(): Promise<User>;
