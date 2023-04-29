@@ -11,6 +11,7 @@ import Page404 from "./components/Page404";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import AccountDashboard from "./components/AccountDashboard/AccountDashboard";
 import Users from "./components/Users/Users";
+import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
 
@@ -24,6 +25,7 @@ function AppRouter() {
                 <Route path="account" element={<AccountDashboard />}>
                     <Route index Component={PageAccueil} />
                     <Route path="orders" Component={Orders} />
+                    <Route path="devices" Component={ConnectedDevices} />
                     <Route path="DHCP" Component={DHCP} />
                     <Route path="boxe" Component={PageBoxe} />
                 </Route>
