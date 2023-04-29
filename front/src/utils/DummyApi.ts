@@ -165,4 +165,8 @@ export class DummyApi implements ApiInterface {
         }
     }
 
+    async fetchConnectedDevices(): Promise<Device[]> {
+        const devices = await this.fetchDevices();
+        return devices;
+    }
 }

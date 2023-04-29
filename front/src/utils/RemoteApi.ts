@@ -1,7 +1,7 @@
 import { User, ApiInterface, Order, Device, DHCPLease } from "./types";
-import {Config} from "./Config";
-import {getAppState, updateAppState} from "./AppState";
-import {keycloak} from "./keycloak";
+import { Config } from "./Config";
+import { getAppState, updateAppState } from "./AppState";
+import { keycloak } from "./keycloak";
 
 
 export class RemoteApi implements ApiInterface {
@@ -28,7 +28,7 @@ export class RemoteApi implements ApiInterface {
     token: string;
 
     async logout(): Promise<void> {
-        updateAppState({logged: false, user: null, token: ""});
+        updateAppState({ logged: false, user: null, token: "" });
     }
 
     async login(): Promise<void> {
@@ -70,9 +70,9 @@ export class RemoteApi implements ApiInterface {
         const user = await this.fetchMe();
         console.log("user", user);
         if (user?.id) {
-            updateAppState({user: user})
+            updateAppState({ user: user })
         } else
-            updateAppState({logged: false, user: null, token: ""});
+            updateAppState({ logged: false, user: null, token: "" });
     }
 
     async fetchUsers(): Promise<User[]> {
@@ -91,4 +91,7 @@ export class RemoteApi implements ApiInterface {
         return await this.fetchOrDefault("/devices", []);
     }
 
+    async fetchConnectedDevices(): Promise<Device[]> {
+        throw new Error("Method not implemented.");
+    }
 }

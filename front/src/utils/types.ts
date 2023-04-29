@@ -33,16 +33,15 @@ export interface ApiInterface {
     logout(): void;
     login(): void;
     refreshState(): unknown;
-
     token: string;
     fetchUsers(): Promise<User[]>;
     fetchMe(): Promise<User>;
     fetchOrders(): Promise<Order[]>;
-    fetchDevices(): Promise<Device[]>;
     fetchDHCPLeases(): Promise<DHCPLease[]>;
     fetchDHCPLease(id:number): Promise<DHCPLease>;
     addDHCPLease(device:DHCPLease): Promise<void>;
     deleteDHCPLease(id:number): Promise<void>;
+    fetchConnectedDevices(): Promise<Device[]>;
 }
 
 
