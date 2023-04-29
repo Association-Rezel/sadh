@@ -40,6 +40,7 @@ services:
     healthcheck:
       timeout: 3s
       interval: 1s
+      start_period: 300s # thibaud : démarre en 37s chez moi
       test: "curl -f http://localhost:8080/auth/ || exit 1"
     ports:
       - "8080:8080"
@@ -70,6 +71,7 @@ services:
     healthcheck:
       timeout: 3s
       interval: 1s
+      start_period: 300s # thibaud : démarre en 190s chez moi
       test: "curl -f http://localhost:8080/ || exit 1"
 
   postgres:
