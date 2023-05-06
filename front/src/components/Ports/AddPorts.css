@@ -1,0 +1,17 @@
+.device-name {
+    margin-bottom: 10px;
+}
+
+.port-address {
+    color: grey;
+}
+
+.port-dialog-input {
+    width: 300px;
+}
+
+.port-dialog-button {
+    display: flex;
+    justify-content: right;
+    margin: 10px;
+}

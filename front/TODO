@@ -1,6 +1,19 @@
-Panel Boxe : 
-[x] boxe - mettre nom wifi et mot de passe   
-[] afficher ip publique
-[] ouverture des ports faire une liste ports 
-[] admin change addr IP
+Panel Box : 
+[x] box - mettre nom wifi et mot de passe   
+[x] afficher ip publique
+[x] ouverture des ports faire une liste ports 
 [] admin reboot
+[x] Vérification de la confirmation du mot de passe
+[x] Creer des objets UserFront et UserBox avec des interfaces qui communiquent avec le back
+[] Vérifier la sécurité du MDP (WPS ? WPA ?)
+
+
+Roles : 
+[] Admin
+[] User
+[] Gérer les accès
+
+UI :
+[] Ajouter une icone notification
+[] Gérer les notifications (nouvelle facture, nouveau message, etc)
+

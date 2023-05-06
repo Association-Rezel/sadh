@@ -25,6 +25,7 @@ import RouterIcon from "@mui/icons-material/Router";
 import { Link as RouterLink } from "react-router-dom";
 import PushPinIcon from '@mui/icons-material/PushPin';
 import DevicesIcon from '@mui/icons-material/Devices';
+import CableIcon from '@mui/icons-material/Cable';
 
 function AccountDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -75,12 +76,20 @@ function AccountDashboard() {
                             <ListItemText primary="DHCP" />
                         </ListItemButton>
                     </Link>
-                    <RouterLink to={"boxe"}>
+                    <RouterLink to={"box"}>
                         <ListItemButton>
                             <ListItemIcon>
                                 <RouterIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Boxe" />
+                            <ListItemText primary="Box" />
+                        </ListItemButton>
+                    </RouterLink>
+                    <RouterLink to={"ports"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <CableIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Ports" />
                         </ListItemButton>
                     </RouterLink>
 
