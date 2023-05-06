@@ -2,9 +2,10 @@ import {BrowserRouter, Route, Routes} from "react-router-dom";
 import {PageAdmin} from "./pages/admin/PageAdmin";
 import {PageAccueil} from "./pages/account/PageAccueil";
 import DHCP from "./components/DHCP/DHCP";
-import { PageBoxe } from "./pages/account/PageBoxe";
+import BoxConfig from "./components/Box/BoxConfig";
 import Orders from "./components/Orders/Orders";
 import Index from "./pages/index";
+import {Ports} from "./components/Ports/Ports";
 
 import "./App.css";
 import Page404 from "./components/Page404";
@@ -27,7 +28,8 @@ function AppRouter() {
                     <Route path="orders" Component={Orders} />
                     <Route path="devices" Component={ConnectedDevices} />
                     <Route path="DHCP" Component={DHCP} />
-                    <Route path="boxe" Component={PageBoxe} />
+                    <Route path="box" Component={BoxConfig} />
+                    <Route path="ports" Component={Ports} />
                 </Route>
             )}
             {appState.logged && appState.user?.isAdmin && (

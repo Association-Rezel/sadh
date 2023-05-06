@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Device } from "../../utils/types";
 import { Api } from "../../utils/Api";
 import { TableConnectedDevices } from "./TableConnectedDevices";
-import React from "react";
 
 
 

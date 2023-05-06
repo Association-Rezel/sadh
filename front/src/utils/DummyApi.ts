@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
@@ -30,7 +30,44 @@ export class DummyApi implements ApiInterface {
         ip: "255:255:255:2",
         mac: "00:00:00:00:00:01",
     }
-    ]
+    ];
+    openPortsList: PortRule[] = [
+        {
+            id:0, 
+            isActive:true, 
+            service:'Minecraft Server', 
+            internPort:25565, 
+            externPort:25565, 
+            protocol:'TCP'
+        },
+        {
+            id:1, 
+            isActive:false, 
+            service:'Mon NAS', 
+            internPort:420, 
+            externPort:69, 
+            protocol:'UDP'
+        }
+
+        ];
+    
+    user1 : User = {
+        id: 1,
+        isAdmin: false,
+        name: "Denis Fouchard",
+        residence: "ALJT",
+    };
+    
+    box : Box = 
+        {id: 1,
+        owner: this.user1,
+        ip: "187.98.13.29",
+        SSID: "Box de Denis",
+        passwordHash: "123456789",
+        connectedDevices: this.deviceList.length,
+        openPorts: this.openPortsList
+    };
+
 
     async addDHCPLease(dhcp: DHCPLease): Promise<void> {
         dhcp.id=Math.floor(Math.random()*10000);
@@ -98,6 +135,18 @@ export class DummyApi implements ApiInterface {
             name: "itsme",
             residence: "Kley",
         };
+    }
+
+    async fetchMyBox(id: number): Promise<Box> {
+        return this.box;
+    }
+
+    async updateMyBox(box: Box): Promise<void> {
+        this.box = box;
+    }
+
+    async fetchBoxes(): Promise<Box[]> {
+        return [this.box];
     }
 
     async fetchOrders(): Promise<Order[]> {
@@ -168,5 +217,16 @@ export class DummyApi implements ApiInterface {
     async fetchConnectedDevices(): Promise<Device[]> {
         const devices = await this.fetchDevices();
         return devices;
+    }
+
+    async fetchOpenPorts(): Promise<PortRule[]> {
+
+        return this.openPortsList;
+    }
+
+    async addOpenPort(port: PortRule): Promise<void> {
+        const ports = await this.fetchOpenPorts();
+        port.id = ports.length;
+        ports.push(port);
     }
 }
