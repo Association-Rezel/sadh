@@ -8,8 +8,11 @@ Les champs précédés d'un chapeau `^` peuvent être modifiés par les admins.
 Tous les autres champs sont constants.
 """
 from enum import Enum, auto
+from ipaddress import IPv4Interface, IPv6Interface
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, root_validator, validator
+
+from back.netbox_client.errors import DifferentIpTypeError, PortOutOfRangeError
 
 
 class Adherent(str):
@@ -105,3 +108,50 @@ class Box(BaseModel):
 
     location: Chambre
     adherent: Adherent
+
+
+class Protocols(Enum):
+    """Protocles pour une ouverture de ports."""
+
+    TCP = auto()
+    UDP = auto()
+
+
+class PortBinding(BaseModel):
+    """
+    ## Port
+
+    Une ouverture de port est représentée par un [service](https://docs.netbox.dev/en/stable/models/ipam/service/)
+    sur netbox.
+
+    Pour l'ouverture, il faut :
+
+    - IP interne
+    - Port interne
+    - IP externe
+    - Port externe
+    - Protocole
+
+    En plus de cela, il nous faut :
+
+    """
+
+    ext_ip: IPv4Interface | IPv6Interface
+    ext_port: int
+    int_ip: IPv4Interface | IPv6Interface
+    int_port: int
+    proto: Protocols
+
+    @root_validator()
+    def ips_must_be_v4_or_v6(cls, values: dict) -> dict:
+        EXT_IP, INT_IP = "ext_ip", "int_ip"
+        if not isinstance(values[EXT_IP], type(values[INT_IP])):
+            raise DifferentIpTypeError(EXT_IP, INT_IP)
+        return values
+
+    @validator("ext_port", "int_port")
+    def ports_must_be_in_range(cls, value: int) -> int:
+        MIN_PORT, MAX_PORT = 1, 65535
+        if not MIN_PORT < value < MAX_PORT:
+            raise PortOutOfRangeError(value)
+        return value
