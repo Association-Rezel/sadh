@@ -153,7 +153,7 @@ class PortBinding(BaseModel):
 
     @validator("ext_port", "int_port")
     def ports_must_be_in_range(cls, value: int) -> int:
-        MIN_PORT, MAX_PORT = 1, 65535
+        MIN_PORT, MAX_PORT = 0, 2**16
         if not MIN_PORT < value < MAX_PORT:
             raise PortOutOfRangeError(value)
         return value
