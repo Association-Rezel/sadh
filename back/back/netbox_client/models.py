@@ -110,6 +110,17 @@ class Box(BaseModel):
     adherent: Adherent
 
 
+class IPv4(IPv4Interface):
+    """An ipv4 address."""
+
+
+class IPv6(IPv6Interface):
+    """An ipv6 address."""
+
+
+IP = IPv4 | IPv6
+
+
 class Protocols(Enum):
     """Protocles pour une ouverture de ports."""
 
@@ -138,9 +149,9 @@ class PortBinding(BaseModel):
     """
 
     name: str
-    ext_ip: IPv4Interface | IPv6Interface
+    ext_ip: IP
     ext_port: int
-    int_ip: IPv4Interface | IPv6Interface
+    int_ip: IP
     int_port: int
     proto: Protocols
 
