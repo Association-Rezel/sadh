@@ -143,6 +143,7 @@ class PortBinding(BaseModel):
     - IP externe
     - Port externe
     - Protocole
+    - Adherent
 
     En plus de cela, il nous faut :
 
@@ -154,6 +155,7 @@ class PortBinding(BaseModel):
     int_ip: IP
     int_port: int
     proto: Protocols
+    adherent: Adherent
 
     @root_validator()
     def ips_must_be_v4_or_v6(cls, values: dict) -> dict:
@@ -168,3 +170,23 @@ class PortBinding(BaseModel):
         if not MIN_PORT < value < MAX_PORT:
             raise PortOutOfRangeError(value)
         return value
+
+
+class DHCPLease(BaseModel):
+    """
+    ## DHCP Lease
+
+    Une lease DHCP est représentée par un [IP](https://docs.netbox.dev/en/stable/models/ipam/ipaddress/) sur netbox.
+
+    Pour la lease, il faut :
+
+    - IP
+    - MAC
+    - Nom du device
+    - Adherent
+    """
+
+    ip: IP
+    mac: str
+    device_name: str
+    adherent: Adherent
