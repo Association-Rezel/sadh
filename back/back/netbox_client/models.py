@@ -126,6 +126,7 @@ class PortBinding(BaseModel):
 
     Pour l'ouverture, il faut :
 
+    - Nom du port binding pour l'utilisateur
     - IP interne
     - Port interne
     - IP externe
@@ -136,6 +137,7 @@ class PortBinding(BaseModel):
 
     """
 
+    name: str
     ext_ip: IPv4Interface | IPv6Interface
     ext_port: int
     int_ip: IPv4Interface | IPv6Interface
