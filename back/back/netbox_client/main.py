@@ -4,8 +4,8 @@ import logging
 from pynetbox import RequestError
 from pynetbox.core.api import Api
 
-from back.netbox_client.errors import NetBoxConnectionError
 from back.env import ENV
+from back.netbox_client.errors import NetBoxConnectionError
 from back.netbox_client.setup import assert_requires
 
 logger = logging.getLogger(__name__)
