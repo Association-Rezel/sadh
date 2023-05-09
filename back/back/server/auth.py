@@ -37,7 +37,7 @@ async def get_auth(token: str = Security(oauth2_scheme)) -> Json:
 @router.get("/user")
 async def get_current_user(
     identity: Json = Depends(get_auth),
-):
+) -> dict:
     """Get the current user's identity.
 
     TODO : Renvoyer les informations utiles à l'utilisateur ; cf le type "User" du front

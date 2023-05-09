@@ -9,10 +9,11 @@ class EnvError(OSError):
     """Any error related to environment variables."""
 
 
-class MissingEnv(EnvError):
+class MissingEnvError(EnvError):
     """An environment variable is missing."""
 
-    def __init__(self, key: str):
+    def __init__(self, key: str) -> None:
+        """An environment variable is missing."""
         super().__init__(f"{key} is not set")
 
 
@@ -20,7 +21,7 @@ def get_or_raise(key: str) -> str:
     """Get value from environment or raise an error."""
     value = getenv(key)
     if not value:
-        raise MissingEnv(key)
+        raise MissingEnvError(key)
     return value
 
 
@@ -32,7 +33,7 @@ def get_or_none(key: str) -> str | None:
     return value
 
 
-class Env:
+class Env:  # pylint: disable=too-many-instance-attributes
     """Check environment variables types and constraints."""
 
     database_url: PostgresDsn
@@ -51,6 +52,7 @@ class Env:
     log_level: str
 
     def __init__(self) -> None:
+        """Load all variables."""
         load_dotenv()
         _database = get_or_raise("DB_DATABASE")
         if not _database.startswith("/"):
@@ -72,5 +74,6 @@ class Env:
         self.netbox_url = get_or_raise("NETBOX_URL")
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
+
 
 ENV = Env()

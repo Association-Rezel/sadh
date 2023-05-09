@@ -1,3 +1,4 @@
+"""User CRUDs."""
 from sqlalchemy.orm import Session
 
 from back.database import models

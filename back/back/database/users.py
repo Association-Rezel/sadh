@@ -1,3 +1,4 @@
+"""User model."""
 from sqlalchemy import Boolean, Column, Integer
 
 from back.database.main import Base

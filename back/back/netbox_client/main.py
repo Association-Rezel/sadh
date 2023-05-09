@@ -17,6 +17,7 @@ class NetBoxClient:
     api: Api
 
     def __init__(self) -> None:
+        """Init the netbox client."""
         self.api = Api(ENV.netbox_url, token=ENV.netbox_token)
         logger.warning("Starting netbox requirements check.")
         try:

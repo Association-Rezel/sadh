@@ -12,6 +12,7 @@ disable = [
     "R0903",
     "W0611",
     "W0511",
+    "E0213",
 ]
 
 [tool.black]
@@ -30,11 +31,11 @@ select = [
     "W",          # pycodestyle - Warning             https://beta.ruff.rs/docs/rules/#warning-w
     "C90",        # mccabe                            https://beta.ruff.rs/docs/rules/#mccabe-c90
     "I",          # isort                             https://beta.ruff.rs/docs/rules/#isort-i
-    # "N",          # pep8-naming                       https://beta.ruff.rs/docs/rules/#pep8-naming-n
-    # "D",          # pydocstyle                        https://beta.ruff.rs/docs/rules/#pydocstyle-d
+    "N",          # pep8-naming                       https://beta.ruff.rs/docs/rules/#pep8-naming-n
+    "D",          # pydocstyle                        https://beta.ruff.rs/docs/rules/#pydocstyle-d
     "UP",         # pyupgrade                         https://beta.ruff.rs/docs/rules/#pyupgrade-up
     "YTT",        # flake8-2020                       https://beta.ruff.rs/docs/rules/#flake8-2020-ytt
-    # "ANN",        # flake8-annotations                https://beta.ruff.rs/docs/rules/#flake8-annotations-ann
+    "ANN",        # flake8-annotations                https://beta.ruff.rs/docs/rules/#flake8-annotations-ann
     "S",          # flake8-bandit                     https://beta.ruff.rs/docs/rules/#flake8-bandit-s
     "BLE",        # flake8-blind-except               https://beta.ruff.rs/docs/rules/#flake8-blind-except-ble
     "FBT",        # flake8-boolean-trap               https://beta.ruff.rs/docs/rules/#flake8-boolean-trap-fbt
@@ -64,7 +65,7 @@ select = [
     "TCH",        # flake8-type-checking              https://beta.ruff.rs/docs/rules/#flake8-type-checking-tch
     "ARG",        # flake8-unused-arguments           https://beta.ruff.rs/docs/rules/#flake8-unused-arguments-arg
     "PTH",        # flake8-use-pathlib                https://beta.ruff.rs/docs/rules/#flake8-use-pathlib-pth
-    # "ERA",        # eradicate                         https://beta.ruff.rs/docs/rules/#eradicate-era
+    "ERA",        # eradicate                         https://beta.ruff.rs/docs/rules/#eradicate-era
     "PD",         # pandas-vet                        https://beta.ruff.rs/docs/rules/#pandas-vet-pd
     "PGH",        # pygrep-hooks                      https://beta.ruff.rs/docs/rules/#pygrep-hooks-pgh
     "PL",         # Pylint                            https://beta.ruff.rs/docs/rules/#pylint-pl
@@ -87,7 +88,9 @@ exclude = [
 ignore = [
     "E999",
     "UP015",
-    "RET504"
+    "RET504",
+    "N805",
+    "ANN101",
 ]
 line-length = 120
 target-version = "py311"

@@ -1,3 +1,4 @@
+"""IP ifaces."""
 from ipaddress import IPv4Address, IPv6Address
 
 from pydantic import BaseModel
@@ -10,7 +11,7 @@ class IPAddresses46(BaseModel):
     ipv6: IPv6Address
 
     class Config:
-        """Config"""
+        """Config."""
 
         schema_extra = {
             "example": {

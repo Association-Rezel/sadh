@@ -14,7 +14,7 @@ from back.utils.logger import init_logger
 logger = logging.getLogger(__name__)
 
 
-def root():
+def root() -> RedirectResponse:
     """Redirect to the docs."""
     return RedirectResponse(url="/docs")
 

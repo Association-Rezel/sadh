@@ -4,7 +4,7 @@ import logging
 from back.env import ENV
 
 
-def init_logger():
+def init_logger() -> None:
     """Setup the logger."""
     level = ENV.log_level
 

@@ -1,4 +1,4 @@
-# https://pypi.org/project/python-keycloak/
+"""https://pypi.org/project/python-keycloak/."""
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from keycloak import KeycloakOpenID
 
@@ -6,7 +6,7 @@ from back.env import get_or_raise
 
 keycloak_url = get_or_raise("KC_URL")
 realm = "users"
-keycloak_openid  = KeycloakOpenID(
+keycloak_openid = KeycloakOpenID(
     server_url=keycloak_url,
     client_id=get_or_raise("KC_CLIENT_ID"),
     client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
