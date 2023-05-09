@@ -188,5 +188,5 @@ class DHCPLease(BaseModel):
 
     ip: IP
     mac: str
-    device_name: str
+    hostname: str | None
     adherent: Adherent
