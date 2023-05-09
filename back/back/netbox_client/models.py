@@ -124,8 +124,8 @@ IP = IPv4 | IPv6
 class Protocols(Enum):
     """Protocles pour une ouverture de ports."""
 
-    TCP = auto()
-    UDP = auto()
+    TCP = "TCP"
+    UDP = "UDP"
 
 
 class PortBinding(BaseModel):
@@ -157,9 +157,27 @@ class PortBinding(BaseModel):
     proto: Protocols
     adherent: Adherent
 
+    class Config:
+        """Config"""
+
+        schema_extra = {
+            "example": {
+                "name": "Minecraft",
+                "ext_ip": "1.1.1.1/0",
+                "ext_port": 25565,
+                "int_ip": "192.168.1.42/24",
+                "int_port": 25575,
+                "proto": "TCP",
+                "adherent": "id_keycloak",
+            },
+        }
+
     @root_validator()
     def ips_must_be_v4_or_v6(cls, values: dict) -> dict:
         EXT_IP, INT_IP = "ext_ip", "int_ip"
+        if not values.get(EXT_IP) or not values.get(INT_IP):
+            # Raises will be handled by pydantic
+            return values
         if not isinstance(values[EXT_IP], type(values[INT_IP])):
             raise DifferentIpTypeError(EXT_IP, INT_IP)
         return values
