@@ -1,6 +1,9 @@
-"""Get or edit users."""
+"""Get or edit users.
 
-# https://github.com/tiangolo/fastapi/discussions/9066
+Keycloak integration as been discussed in the following issue:
+    https://github.com/tiangolo/fastapi/discussions/9066
+"""
+
 
 from fastapi import APIRouter, Depends, HTTPException, Security, status
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
