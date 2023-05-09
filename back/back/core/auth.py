@@ -11,7 +11,7 @@ keycloak_openid  = KeycloakOpenID(
     client_id=get_or_raise("KC_CLIENT_ID"),
     client_secret_key=get_or_raise("KC_CLIENT_SECRET"),
     realm_name=realm,
-    verify=True
+    verify=True,
 )
 
 config_well_known = keycloak_openid.well_known()
