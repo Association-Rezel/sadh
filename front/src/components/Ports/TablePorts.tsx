@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 import OptionMenu from './OptionMenu';
 
 
-export default function DenseTable({openPorts, setOpenPorts}) {
+export default function DenseTable({openPorts, setOpenPorts, setRefreshKey}) {
     
     return (
     <TableContainer component={Paper}>
@@ -20,7 +20,7 @@ export default function DenseTable({openPorts, setOpenPorts}) {
             <TableCell align="left">Port Externe</TableCell>
             <TableCell align="left">Protocole</TableCell>
             <TableCell align="left">Status</TableCell>
-           
+            <TableCell align="center"></TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -36,11 +36,14 @@ export default function DenseTable({openPorts, setOpenPorts}) {
               <TableCell align="left">{row.externPort}</TableCell>
               <TableCell align="left">{row.protocol}</TableCell>
               <TableCell align="left">{row.isActive ? "Activé" : "Desactivé"}</TableCell>
-              <OptionMenu 
-                openPorts={openPorts} 
-                setOpenPorts={setOpenPorts} 
-                id={row.id}/>
-            
+              <TableCell align="left">
+                <OptionMenu 
+                    openPorts={openPorts} 
+                    setOpenPorts={setOpenPorts} 
+                    id={row.id}
+                    setRefreshKey={setRefreshKey}
+                    />
+            </TableCell>
             </TableRow>
           ))}
         </TableBody>
