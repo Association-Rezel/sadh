@@ -67,6 +67,7 @@ export interface ApiInterface {
     fetchConnectedDevices(): Promise<Device[]>;
     fetchOpenPorts(): Promise<PortRule[]>;
     addOpenPort(port:PortRule): Promise<void>;
+    setOpenPorts(ports:PortRule[]): Promise<void>;
 }
 
 

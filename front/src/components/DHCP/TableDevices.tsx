@@ -44,7 +44,6 @@ export function TableDevices({ rows, setRefreshKey }: TableDeviceProps) {
                                 </TableCell>
                                 <TableCell style={{ width: 120 }} align="right">
                                     <IconButton aria-label="Modifier" onClick={() => {
-                                        console.log(row.mac);
                                         selectedId = row.id;
                                         setOpen(true);
                                     }}>

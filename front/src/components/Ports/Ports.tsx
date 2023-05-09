@@ -11,9 +11,9 @@ export function Ports(){
     const [refreshKey, setRefreshKey] = React.useState<number>(0);
     useEffect(() => {
         Api.fetchOpenPorts().then((openPorts) => {
-            setOpenPorts(openPorts)
+            setOpenPorts(openPorts);
         })
-    }, [refreshKey]);
+    }, [refreshKey, openPorts]);
     return (
         <div>
             <h1 style={{ float: "left", marginLeft: "25px" }}>
@@ -23,7 +23,7 @@ export function Ports(){
                 <AddPort setRefreshKey={setRefreshKey} />
             </div>
             
-            <TablePorts openPorts={openPorts} setOpenPorts={setOpenPorts}></TablePorts>
+            <TablePorts openPorts={openPorts} setOpenPorts={setOpenPorts} setRefreshKey={setRefreshKey}></TablePorts>
         </div>
     )
 }

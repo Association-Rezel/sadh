@@ -224,6 +224,11 @@ export class DummyApi implements ApiInterface {
         return this.openPortsList;
     }
 
+    async setOpenPorts(ports: PortRule[]): Promise<void> {
+        this.openPortsList = ports;
+        return Promise.resolve();
+    }
+
     async addOpenPort(port: PortRule): Promise<void> {
         const ports = await this.fetchOpenPorts();
         port.id = ports.length;

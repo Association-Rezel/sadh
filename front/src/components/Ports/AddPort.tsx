@@ -25,7 +25,6 @@ const DialogContent = ({ onClose, setRefreshKey }) => {
     const [externPortEdit, setExternPortEdit] = React.useState<number>(null);
     const [protocolEdit, setProtocolEdit] = React.useState<number>(0);
 
-    //TODO: check if mac already exist
     const handleSave = () => {
         // generate unique id based on the date and time
         const id = new Date().getTime();
@@ -39,8 +38,9 @@ const DialogContent = ({ onClose, setRefreshKey }) => {
                 isActive: true,
            } 
         );
-        onClose();
         setRefreshKey((x) => x + 1);
+        onClose();
+        
     };
 
     return (
