@@ -11,10 +11,10 @@ from back.server.box import router as box_router
 from back.server.user import router as user_router
 from back.utils.logger import init_logger
 
-logger = logging.getLogger("uvicorn")
+logger = logging.getLogger(__name__)
 
 
-def root():
+def root() -> RedirectResponse:
     """Redirect to the docs."""
     return RedirectResponse(url="/docs")
 

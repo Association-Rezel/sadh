@@ -4,8 +4,8 @@ import logging
 from pynetbox import RequestError
 from pynetbox.core.api import Api
 
-from back.netbox_client.errors import NetBoxConnectionError
 from back.env import ENV
+from back.netbox_client.errors import NetBoxConnectionError
 from back.netbox_client.setup import assert_requires
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,7 @@ class NetBoxClient:
     api: Api
 
     def __init__(self) -> None:
+        """Init the netbox client."""
         self.api = Api(ENV.netbox_url, token=ENV.netbox_token)
         logger.warning("Starting netbox requirements check.")
         try:

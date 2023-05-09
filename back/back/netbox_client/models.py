@@ -1,5 +1,4 @@
-"""
-# Modèle Netbox FAIPP
+"""# Modèle Netbox FAIPP.
 
 Comment on représente les équipements dans [Netbox](netbox.faipp.net).
 
@@ -15,17 +14,20 @@ from pydantic import BaseModel, root_validator, validator
 from back.netbox_client.errors import DifferentIpTypeError, PortOutOfRangeError
 
 
+def slug(value: str) -> str:
+    """Return the slug of a value."""
+    return value.lower().replace(" ", "-")
+
+
 class Adherent(str):
-    """
-    ## Adhérents
+    """## Adhérents.
 
     Tag: Chaque adhérent est représenté par un tag au format : `user_<keycloak_id>`
     """
 
 
 class Residence(Enum):
-    """
-    ## Résidences
+    """## Résidences.
 
     Une residence est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) sur netbox.
 
@@ -36,8 +38,7 @@ class Residence(Enum):
 
 
 class Chambre(BaseModel):
-    """
-    ## Chambre
+    """## Chambre.
 
     Une chambre d'adhérent est représentée par une [location](https://docs.netbox.dev/en/stable/models/dcim/location/)
     sur netbox.
@@ -51,27 +52,21 @@ class Chambre(BaseModel):
     name: str
     adherent: Adherent
 
+    _slug = validator("name", allow_reuse=True)(slug)
 
-# pylint: disable=C0116,C0103,E0213
+
 class BM(BaseModel):
-    """A box model must define Name and Manufacturer"""
+    """A box model must define Name and Manufacturer."""
 
     name: str
     manufacturer: str
     nb_ifaces: int
 
-    @validator("name")
-    def name_lower(value: str):  # type: ignore[misc]
-        return value.lower()
-
-    @validator("manufacturer")
-    def manufacturer_lower(value: str):  # type: ignore[misc]
-        return value.lower()
+    _slug = validator("name", "manufacturer", allow_reuse=True)(slug)
 
 
 class BoxModel(Enum):
-    """
-    ## Box model
+    """## Box model.
 
     Un type de box est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/devicetype/) sur netbox.
 
@@ -83,8 +78,7 @@ class BoxModel(Enum):
 
 
 class Box(BaseModel):
-    """
-    ## Box
+    """## Box.
 
     Une box est représentée par un [device](https://docs.netbox.dev/en/stable/models/dcim/device/) sur netbox.
 
@@ -124,13 +118,12 @@ IP = IPv4 | IPv6
 class Protocols(Enum):
     """Protocles pour une ouverture de ports."""
 
-    TCP = auto()
-    UDP = auto()
+    TCP = "TCP"
+    UDP = "UDP"
 
 
 class PortBinding(BaseModel):
-    """
-    ## Port
+    """## Port.
 
     Une ouverture de port est représentée par un [service](https://docs.netbox.dev/en/stable/models/ipam/service/)
     sur netbox.
@@ -157,24 +150,43 @@ class PortBinding(BaseModel):
     proto: Protocols
     adherent: Adherent
 
+    class Config:
+        """Config."""
+
+        schema_extra = {
+            "example": {
+                "name": "Minecraft",
+                "ext_ip": "1.1.1.1/0",
+                "ext_port": 25565,
+                "int_ip": "192.168.1.42/24",
+                "int_port": 25575,
+                "proto": "TCP",
+                "adherent": "id_keycloak",
+            },
+        }
+
     @root_validator()
-    def ips_must_be_v4_or_v6(cls, values: dict) -> dict:
-        EXT_IP, INT_IP = "ext_ip", "int_ip"
-        if not isinstance(values[EXT_IP], type(values[INT_IP])):
-            raise DifferentIpTypeError(EXT_IP, INT_IP)
+    def ips_must_be_v4_or_v6(values: dict) -> dict:  # type: ignore[misc]
+        """Cant bind an ipv4 to an ipv6."""
+        ext_ip, int_ip = "ext_ip", "int_ip"
+        if not values.get(ext_ip) or not values.get(int_ip):
+            # Raises will be handled by pydantic
+            return values
+        if not isinstance(values[ext_ip], type(values[int_ip])):
+            raise DifferentIpTypeError(ext_ip, int_ip)
         return values
 
     @validator("ext_port", "int_port")
-    def ports_must_be_in_range(cls, value: int) -> int:
-        MIN_PORT, MAX_PORT = 0, 2**16
-        if not MIN_PORT < value < MAX_PORT:
+    def ports_must_be_in_range(value: int) -> int:  # type: ignore[misc]
+        """Port must be in range 1-65535."""
+        _mi, _ma = 0, 2**16
+        if not _mi < value < _ma:
             raise PortOutOfRangeError(value)
         return value
 
 
 class DHCPLease(BaseModel):
-    """
-    ## DHCP Lease
+    """## DHCP Lease.
 
     Une lease DHCP est représentée par un [IP](https://docs.netbox.dev/en/stable/models/ipam/ipaddress/) sur netbox.
 

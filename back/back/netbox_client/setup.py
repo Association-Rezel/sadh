@@ -1,3 +1,4 @@
+"""Assert all requirements are meet to be able to add info to netbox."""
 import logging
 from typing import Any
 
@@ -9,8 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str, api_resource: str, api: Api) -> None:
-    """
-    Sync an object list with netbox.
+    """Sync an object list with netbox.
 
     `objects_to_sync` must follow the format :
     {
@@ -27,7 +27,6 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
 
 def assert_requires(api: Api) -> None:
     """Assert all requirements are meet."""
-
     assert_residences(api)
     assert_box_models(api)
 
