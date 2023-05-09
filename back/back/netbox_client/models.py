@@ -166,7 +166,7 @@ class PortBinding(BaseModel):
         }
 
     @root_validator()
-    def ips_must_be_v4_or_v6(values: dict) -> dict:  # type: ignore[misc]
+    def ips_must_be_v4_or_v6(cls, values: dict) -> dict:  # type: ignore[misc]
         """Cant bind an ipv4 to an ipv6."""
         ext_ip, int_ip = "ext_ip", "int_ip"
         if not values.get(ext_ip) or not values.get(int_ip):
