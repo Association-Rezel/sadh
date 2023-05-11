@@ -23,7 +23,11 @@ def build() -> FastAPI:
     """Build the app from interfaces."""
     init_logger()
     app = FastAPI()
-    origins = ["http://localhost:5173", "http://localhost:8080", "http://localhost:8000"]
+    origins = [
+        "http://localhost:5173", 
+        "http://localhost:8080", 
+        "http://localhost:8000"
+    ]
 
     app.add_middleware(
         CORSMiddleware,
@@ -32,6 +36,13 @@ def build() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
+    origins = [
+    "http://localhost",
+    "http://localhost:8000",
+    "http://localhost:5173"
+    ]
+    
 
     app.get("/")(root)
     app.include_router(user_router)
