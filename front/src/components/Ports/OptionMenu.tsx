@@ -25,7 +25,6 @@ export default function OptionMenu({openPorts, setOpenPorts, port, setRefreshKey
     const handleChangeActivation = () => {
         const newOpenPorts = [...openPorts]
         const newPortRule = newOpenPorts[newOpenPorts.find((p) => p.id === port.id)] = !port.isActive;
-        port.isActive = !port.isActive;
         // Not really clean but will be fixed in the TODO (copy openPorts is needed)
         Api.setOpenPort(port).then((r) => {
             setOpenPorts(newOpenPorts);
