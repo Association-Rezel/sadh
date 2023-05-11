@@ -16,16 +16,15 @@ export class RemoteApi implements ApiInterface {
     updateMyBox(box: Box): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    fetchOpenPorts(): Promise<PortRule[]> {
-        throw new Error("Method not implemented.");
+    async fetchOpenPorts(): Promise<PortRule[]> {
+        return await this.fetchOrDefault("/box/openPorts", []);
     }
-    addOpenPort(port: PortRule): Promise<void> {
-        throw new Error("Method not implemented.");
+    async setOpenPort(port: PortRule): Promise<void> {
+        return await this.fetchOrDefault("/box/setOpenPort/"+port, null);
     }
-    setOpenPorts(ports: PortRule[]): Promise<void> {
-        throw new Error("Method not implemented.");
+    async deleteOpenPort(id: number): Promise<void> {
+        return await this.fetchOrDefault("/box/deleteOpenPort/"+id, null);
     }
-
     async fetchDHCPLeases(): Promise<DHCPLease[]> {
         return await this.fetchOrDefault("/box/dhcpLeases", []);
     }
@@ -33,10 +32,10 @@ export class RemoteApi implements ApiInterface {
         return await this.fetchOrDefault("/box/dhcpLease/"+id, null);
     }
     async addDHCPLease(device: DHCPLease): Promise<void> {
-        return await this.fetchOrDefault("/box/addDhcpLease/", null);
+        return await this.fetchOrDefault("/box/addDhcpLease/"+device, null);
     }
     async deleteDHCPLease(id: number): Promise<void> {
-        return await this.fetchOrDefault("/box/deleteDhcpLease/", null);
+        return await this.fetchOrDefault("/box/deleteDhcpLease/"+id, null);
     }
     token: string;
 

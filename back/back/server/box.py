@@ -1,6 +1,6 @@
 """Gestion d'une box."""
 from fastapi import APIRouter
-from sqlalchemy import null
+from sqlalchemy import null, true
 from back.interfaces.box import IPAddresses46
 
 router = APIRouter(prefix="/box", tags=["box"])
@@ -58,13 +58,44 @@ def get_dhcpLease(id: int):
     }
     
     
-@router.get("/addDhcpLease")
-def add_DhcpLease():
+@router.get("/addDhcpLease/{device}")
+def add_DhcpLease(device):
     """Tmp."""
     return null
 
 
-@router.get("/deleteDhcpLease")
-def delete_DhcpLease():
+@router.get("/deleteDhcpLease/{id}")
+def delete_DhcpLease(id: int):
     """Tmp."""
     return null
+
+@router.get("/openPorts")
+def get_openPorts():
+    """Tmp."""
+    return [{
+        "id": 0,
+        "service": "dksdjks",
+        "internPort": 82,
+        "externPort": 89,
+        "protocol": "fdoflkdl",
+        "isActive": True,
+    },
+    {
+        "id": 1,
+        "service": "lsddklsk",
+        "internPort": 48,
+        "externPort": 89,
+        "protocol": "dsddgd",
+        "isActive": True,
+    }]
+
+@router.get("/setOpenPort/{port}")
+def set_openPort(port):
+    """Tmp."""
+    return null
+
+@router.get("/deleteOpenPort/{id}")
+def set_openPort(id):
+    """Tmp."""
+    return null
+

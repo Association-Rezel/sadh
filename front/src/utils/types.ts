@@ -39,7 +39,7 @@ export interface Box {
 }
 
 export interface PortRule {
-    id: number;
+    id?: number;
     service: string;
     internPort: number;
     externPort: number;
@@ -66,8 +66,8 @@ export interface ApiInterface {
     deleteDHCPLease(id:number): Promise<void>;
     fetchConnectedDevices(): Promise<Device[]>;
     fetchOpenPorts(): Promise<PortRule[]>;
-    addOpenPort(port:PortRule): Promise<void>;
-    setOpenPorts(ports:PortRule[]): Promise<void>;
+    setOpenPort(port:PortRule): Promise<void>;
+    deleteOpenPort(id:number): Promise<void>;
 }
 
 

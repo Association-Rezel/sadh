@@ -40,7 +40,7 @@ export default function DenseTable({openPorts, setOpenPorts, setRefreshKey}) {
                 <OptionMenu 
                     openPorts={openPorts} 
                     setOpenPorts={setOpenPorts} 
-                    id={row.id}
+                    port={row}
                     setRefreshKey={setRefreshKey}
                     />
             </TableCell>

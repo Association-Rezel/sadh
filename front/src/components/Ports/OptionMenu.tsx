@@ -8,9 +8,7 @@ import { Api } from '../../utils/Api';
 import { IconButton } from '@mui/material';
 
 
-export default function OptionMenu({openPorts, setOpenPorts, id, setRefreshKey}) {
-
-    const portRule : PortRule = openPorts.find(portRule => portRule.id === id);
+export default function OptionMenu({openPorts, setOpenPorts, port, setRefreshKey}) {
 
     const [anchorEl, setAnchorEl] = React.useState(null);
     const open = Boolean(anchorEl);
@@ -26,19 +24,20 @@ export default function OptionMenu({openPorts, setOpenPorts, id, setRefreshKey})
 
     const handleChangeActivation = () => {
         const newOpenPorts = [...openPorts]
-        const newPortRule = newOpenPorts.find(r => r.id === id);
+        const newPortRule = newOpenPorts[newOpenPorts.find((p) => p.id === port.id)] = !port.isActive;
+        port.isActive = !port.isActive;
         // Not really clean but will be fixed in the TODO (copy openPorts is needed)
-        newPortRule.isActive = !newPortRule.isActive;
-        Api.setOpenPorts(newOpenPorts).then((r) => {
+        Api.setOpenPort(port).then((r) => {
             setOpenPorts(newOpenPorts);
             setRefreshKey( (refreshKey) => refreshKey + 1);
         });
     }
 
     const handleDelete = () => {
-        const newOpenPorts = openPorts.filter(r => r.id === id);
-        Api.setOpenPorts(newOpenPorts).then((r) => {
-            // setOpenPorts(newOpenPorts);
+        const newOpenPorts = []
+        openPorts.forEach((p) => { if (p.id !== port.id) newOpenPorts.push(p); });
+        Api.deleteOpenPort(port.id).then((r) => {
+            setOpenPorts(newOpenPorts);
             setRefreshKey( (refreshKey) => refreshKey + 1);
         });
     }
@@ -64,7 +63,7 @@ export default function OptionMenu({openPorts, setOpenPorts, id, setRefreshKey})
                     'aria-labelledby': 'basic-button',
                 }}
             >
-                <MenuItem onClick={handleChangeActivation}>{portRule.isActive ? "Desactiver" : "Activer"}</MenuItem>
+                <MenuItem onClick={handleChangeActivation}>{port.isActive ? "Desactiver" : "Activer"}</MenuItem>
                 <MenuItem onClick={handleDelete}>Supprimer</MenuItem>
             </Menu>
         </>
