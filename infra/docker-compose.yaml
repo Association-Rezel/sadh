@@ -48,7 +48,7 @@ services:
   netbox-redis: *redis
   netbox-postgres: *postgres
   netbox:
-    image: netboxcommunity/netbox:v3.4-2.5.3
+    image: dbdc0c4053cc14f76a38aad7fd5d1ec9901f9b30a76ae63c342dc07c7bffb3c6
     depends_on:
       - netbox-postgres
     volumes:
