@@ -8,6 +8,14 @@ Il se divise en trois parties :
 - back : Le backend, en Python/FastAPI
 - infra : Du code d'infrastructure (Docker)
 
+## Getting started
+
+Pour ouvrir le repo, clonnez lancer le workspace [VS-Code](https://code.visualstudio.com/insiders/):
+
+```bash
+code all.code-workspace
+```
+
 ## Front-end
 
 Pour lancer le front-end, il vous faudra :
