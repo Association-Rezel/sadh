@@ -1,5 +1,7 @@
 """User model."""
-from sqlalchemy import Boolean, Column, Integer
+from uuid import UUID
+
+from sqlalchemy import Boolean, Column, String, Uuid
 
 from back.database.main import Base
 
@@ -9,5 +11,9 @@ class User(Base):
 
     __tablename__ = "users"
 
-    keycloak_id = Column(Integer, primary_key=True, index=True)
-    is_active = Column(Boolean, default=False)
+    keycloak_id: UUID = Column(Uuid, primary_key=True, index=True)  # type: ignore[assignment]
+
+    name: str = Column(String)  # type: ignore[assignment]
+
+    is_active: bool = Column(Boolean, default=True)  # type: ignore[assignment]
+    is_admin: bool = Column(Boolean, default=False)  # type: ignore[assignment]

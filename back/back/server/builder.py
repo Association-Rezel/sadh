@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
 from back.netbox_client.main import NetBoxClient
-from back.server.auth import router as auth_router
 from back.server.box import router as box_router
 from back.server.user import router as user_router
 from back.utils.logger import init_logger
@@ -35,7 +34,6 @@ def build() -> FastAPI:
 
     app.get("/")(root)
     app.include_router(user_router)
-    app.include_router(auth_router)
     app.include_router(box_router)
 
     logger.info("Server built")

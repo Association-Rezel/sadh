@@ -1,16 +1,26 @@
 """Some models."""
+import uuid
+
 from pydantic import BaseModel
+
+from back.database.models import User as DBUser
 
 
 class User(BaseModel):
     """A user model."""
 
-    keycloak_id: str
+    keycloak_id: uuid.UUID
+    is_admin: bool
+    name: str
 
-    class Config:
-        """Config."""
-
-        schema_extra = {"example": {"keycloak_id": "123456789"}}
+    @classmethod
+    def from_orm(cls, obj: DBUser) -> "User":
+        """Create a User json response from a User DB schema."""
+        return cls(
+            keycloak_id=obj.keycloak_id,
+            is_admin=obj.is_admin,
+            name=obj.name,
+        )
 
 
 class LoginUrl(BaseModel):
