@@ -42,6 +42,7 @@ class Token:
     """Keyclak JWT unlock."""
 
     sub: str
+    preferred_username: str
 
 
 def __decode(token: str) -> dict:
@@ -59,7 +60,7 @@ def __decode(token: str) -> dict:
 
 def __extract_token(jwt: dict) -> Token:
     """Extract subject from JWT."""
-    return Token(sub=jwt["sub"])
+    return Token(sub=jwt["sub"], preferred_username=jwt["preferred_username"])
 
 
 class Unauthorized(HTTPException):

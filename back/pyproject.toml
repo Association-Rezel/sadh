@@ -92,6 +92,7 @@ ignore = [
     "RET504",
     "N805",
     "ANN101",
+    "ANN102",
 ]
 line-length = 120
 target-version = "py311"
