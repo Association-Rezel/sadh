@@ -10,7 +10,7 @@
 			"path": "infra"
 		},
 		{
-			"path": "schemas"
+			"path": "documentation"
 		},
 		{
 			"path": "./"
@@ -27,7 +27,7 @@
 			"back": true,
 			"front": true,
 			"infra": true,
-			"schemas": true
+			"documentation": true
 		}
 	}
 }
