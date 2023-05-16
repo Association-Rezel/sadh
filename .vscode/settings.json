@@ -1,0 +1,15 @@
+{
+    "mypy.enabled": false,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "front": true,
+        "back": true,
+        "infra": true,
+        "documentation": true
+    }
+}
