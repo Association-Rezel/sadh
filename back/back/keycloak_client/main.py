@@ -42,7 +42,6 @@ class Token:
     """Keyclak JWT unlock."""
 
     sub: str
-    is_admin: bool
 
 
 def __decode(token: str) -> dict:
@@ -60,13 +59,10 @@ def __decode(token: str) -> dict:
 
 def __extract_token(jwt: dict) -> Token:
     """Extract subject from JWT."""
-    return Token(
-        sub=jwt["sub"],
-        is_admin=True,
-    )
+    return Token(sub=jwt["sub"])
 
 
-class UNAUTHORIZED(HTTPException):
+class Unauthorized(HTTPException):
     """Unauthorized."""
 
     def __init__(self) -> None:
@@ -86,4 +82,4 @@ def protect(token: str = Security(__scheme)) -> Token:  # noqa: B008
     except Exception as e:  # noqa: BLE001
         __logger.debug("Error validating JWT.")
         __logger.debug(e)
-        raise UNAUTHORIZED  # noqa: B904
+        raise Unauthorized  # noqa: B904
