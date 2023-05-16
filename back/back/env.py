@@ -4,6 +4,8 @@ from os import getenv
 from dotenv import load_dotenv
 from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
+__all__ = ["EnvError", "ENV"]
+
 
 class EnvError(OSError):
     """Any error related to environment variables."""
@@ -36,7 +38,7 @@ def get_or_none(key: str) -> str | None:
 class Env:  # pylint: disable=too-many-instance-attributes
     """Check environment variables types and constraints."""
 
-    database_url: PostgresDsn
+    database_url: str
     login_redirect_url: str
 
     # Frontend
@@ -50,6 +52,11 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     # Logs
     log_level: str
+
+    # Keycloak
+    kc_url: str
+    kc_client_id: str
+    kc_client_secret: str
 
     def __init__(self) -> None:
         """Load all variables."""
@@ -73,7 +80,12 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.netbox_url = get_or_raise("NETBOX_URL")
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
+
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
+
+        self.kc_url = get_or_raise("KC_URL")
+        self.kc_client_id = get_or_raise("KC_CLIENT_ID")
+        self.kc_client_secret = get_or_raise("KC_CLIENT_SECRET")
 
 
 ENV = Env()
