@@ -1,8 +1,6 @@
 """Keycloak definition."""
-from back.keycloak_client.main import Token, Unauthorized, protect
+from back.keycloak_client.main import decode
 
 __all__ = [
-    "protect",
-    "Token",
-    "Unauthorized",
+    "decode",
 ]

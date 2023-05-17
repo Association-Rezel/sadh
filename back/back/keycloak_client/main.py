@@ -9,14 +9,14 @@ Needed env :
 
 
 import logging
-from dataclasses import dataclass
 
-from fastapi import Depends, HTTPException, Security
+from fastapi import Depends, Security
 from fastapi.security import OAuth2AuthorizationCodeBearer
+from jose.exceptions import ExpiredSignatureError, JWTClaimsError, JWTError
 from keycloak import KeycloakOpenID
-from starlette.status import HTTP_401_UNAUTHORIZED
 
 from back.env import ENV
+from back.http_errors import Unauthorized
 
 __realm = "users"
 __logger = logging.getLogger(__name__)
@@ -37,50 +37,18 @@ __scheme = OAuth2AuthorizationCodeBearer(
 __public_key = f"-----BEGIN PUBLIC KEY-----\n{__kc.public_key()}\n-----END PUBLIC KEY-----"
 
 
-@dataclass
-class Token:
-    """Keyclak JWT unlock."""
-
-    sub: str
-    preferred_username: str
-
-
-def __decode(token: str) -> dict:
-    """Decode token."""
-    return __kc.decode_token(
-        token,
-        key=__public_key,
-        options={
-            "verify_signature": True,
-            "verify_aud": False,  # TODO : verify audience (mettre sur True et corriger les erreurs)
-            "exp": True,
-        },
-    )
-
-
-def __extract_token(jwt: dict) -> Token:
-    """Extract subject from JWT."""
-    return Token(sub=jwt["sub"], preferred_username=jwt["preferred_username"])
-
-
-class Unauthorized(HTTPException):
-    """Unauthorized."""
-
-    def __init__(self) -> None:
-        """Init default args."""
-        super().__init__(
-            status_code=HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-
 @Depends
-def protect(token: str = Security(__scheme)) -> Token:  # noqa: B008
-    """Get the user's identity from the token or terminate the request."""
+def decode(token: str = Security(__scheme)) -> dict:  # noqa: B008
+    """Decode token."""
     try:
-        return __extract_token(__decode(token))
-    except Exception as e:  # noqa: BLE001
-        __logger.debug("Error validating JWT.")
-        __logger.debug(e)
+        return __kc.decode_token(
+            token,
+            key=__public_key,
+            options={
+                "verify_signature": True,
+                "verify_aud": False,  # TODO : verify audience (mettre sur True et corriger les erreurs)
+                "exp": True,
+            },
+        )
+    except (JWTError, ExpiredSignatureError, JWTClaimsError):
         raise Unauthorized  # noqa: B904
