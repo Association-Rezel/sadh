@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 
 from back.netbox_client.main import NetBoxClient
 from back.server.box import router as box_router
-from back.server.user import router as user_router
+from back.server.users import router as user_router
 from back.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
