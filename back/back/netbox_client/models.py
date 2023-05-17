@@ -52,7 +52,7 @@ class Chambre(BaseModel):
     name: str
     adherent: Adherent
 
-    _slug = validator("name", allow_reuse=True)(slug)
+    __slug = validator("name", allow_reuse=True)(slug)
 
 
 class BM(BaseModel):
@@ -62,7 +62,7 @@ class BM(BaseModel):
     manufacturer: str
     nb_ifaces: int
 
-    _slug = validator("name", "manufacturer", allow_reuse=True)(slug)
+    __slug = validator("name", "manufacturer", allow_reuse=True)(slug)
 
 
 class BoxModel(Enum):
