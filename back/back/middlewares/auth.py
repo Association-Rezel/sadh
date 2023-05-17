@@ -3,7 +3,7 @@
 
 from fastapi import Depends
 
-from back.interfaces.auth import Token
+from back.interfaces.auth import KeycloakId, Token
 from back.keycloak_client import decode
 
 
@@ -19,6 +19,6 @@ def token(raw_token: dict = decode) -> Token:
     ```
     """
     return Token(
-        keycloak_id=raw_token["sub"],
+        keycloak_id=KeycloakId(raw_token["sub"]),
         name=raw_token["preferred_username"],
     )

@@ -1,43 +1,34 @@
 """Gestion d'une box."""
 
-from fastapi import APIRouter
 
+from back.middlewares.netbox import box
 from back.netbox_client.models import (
     Adherent,
     Box,
-    BoxModel,
-    Chambre,
     DHCPLease,
     IPv4,
     PortBinding,
     Protocols,
-    Residence,
 )
+from back.utils.router_manager import ROUTEURS
 
-router = APIRouter(prefix="/box", tags=["box"])
-
-
-# TODO: implements
-# - Conneced devices
+router = ROUTEURS.new("box")
 
 
 @router.get("/")
-def _() -> Box:
+def get(_box: Box = box) -> Box:
     """Return the current user box."""
-    return Box(
-        model=BoxModel.XIAOMI_AC2350,
-        serial_number="123",
-        location=Chambre(
-            residence=Residence.ALJT,
-            name="404",
-            adherent=Adherent("123"),
-        ),
-        adherent=Adherent("123"),
-    )
+    return _box
 
 
-@router.get("/lease")
-def _lease() -> DHCPLease:
+@router.get("/leases")
+def list_leases() -> list[int]:
+    """Return the current user box."""
+    return [1, 2, 3]
+
+
+@router.get("/lease/{id}")
+def get_lease(id: int) -> DHCPLease:
     """Return the current user box."""
     return DHCPLease(
         ip=IPv4("192.168.1.1"),
@@ -48,7 +39,7 @@ def _lease() -> DHCPLease:
 
 
 @router.get("/port")
-def _port() -> PortBinding:
+def get_port() -> PortBinding:
     """Return the current user box."""
     return PortBinding(
         name="Minecraft",

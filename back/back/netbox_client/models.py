@@ -8,6 +8,7 @@ Tous les autres champs sont constants.
 """
 from enum import Enum, auto
 from ipaddress import IPv4Interface, IPv6Interface
+from typing import Any
 
 from pydantic import BaseModel, root_validator, validator
 
@@ -45,7 +46,7 @@ class Chambre(BaseModel):
 
     - **Site:** `{residence}` (ALJT, ASS etc.)
     - **Name:** `{numero de chambre}`
-    - **^Tag:** `{tag_adherent}`
+    - **adherent:** `user_<keycloak_id>`
     """
 
     residence: Residence
@@ -97,11 +98,19 @@ class Box(BaseModel):
     TODO: add this
     """
 
-    model: BoxModel
+    model: BM
     serial_number: str
 
     location: Chambre
     adherent: Adherent
+
+    @validator("model")
+    def model_must_be_in_enum(value: Any) -> BM:
+        """Model must be in enum."""
+        for _model in BoxModel:
+            if _model.value == value:
+                return value
+        raise ValueError(f"Model {value} is not in BoxModel enum")  # noqa: EM102
 
 
 class IPv4(IPv4Interface):
