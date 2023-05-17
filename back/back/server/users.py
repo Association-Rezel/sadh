@@ -1,19 +1,19 @@
 """Get or edit users."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from back.core.users import get_users
-from back.database import Session, get_db
+from back.database import Session
 from back.interfaces import User
-from back.middlewares.db import must_be_admin, user
+from back.middlewares import db, must_be_admin, user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/")
-def _(db: Session = Depends(get_db), _: None = must_be_admin) -> list[User]:
+def _(_db: Session = db, _: None = must_be_admin) -> list[User]:
     """This is some docs."""
-    return get_users(db)
+    return get_users(_db)
 
 
 @router.get("/me")
