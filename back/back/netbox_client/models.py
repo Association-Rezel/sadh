@@ -10,7 +10,7 @@ from enum import Enum, auto
 from ipaddress import IPv4Interface, IPv6Interface
 from typing import Any
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, Field, root_validator, validator
 
 from back.interfaces.auth import KeycloakId
 from back.netbox_client.errors import DifferentIpTypeError, PortOutOfRangeError
@@ -35,21 +35,28 @@ class Chambre(BaseModel):
 
     Une chambre d'adhérent est représentée par une [location](https://docs.netbox.dev/en/stable/models/dcim/location/)
     sur netbox.
-
-    - **residence:** [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) (ALJT, ASS etc.)
-    - **name:** Numero de chambre
-    - **adherent:** Adherent a qui appartient la chambre
     """
 
     residence: Residence
-    name: str
-    adherent: KeycloakId
+    name: str = Field(
+        None,
+        description="Numero de chambre.",
+    )
+    adherent: KeycloakId = Field(
+        None,
+        description="Adherent a qui appartient la chambre.",
+    )
 
     __slug = validator("name", allow_reuse=True)(slug)
 
 
 class BoxModel(BaseModel):
-    """A box model must define Name and Manufacturer."""
+    """A box model must define Name and Manufacturer.
+
+    - **name:** Nom de la box.
+    - **manufacturer:** Manufacturer.
+    - **nb_ifaces:** Nombre de port ethernet (sans compter l'entrée).
+    """
 
     name: str
     manufacturer: str
@@ -59,7 +66,7 @@ class BoxModel(BaseModel):
 
 
 class Models(Enum):
-    """## Box model.
+    """Box model.
 
     Un type de box est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/devicetype/) sur netbox.
 
@@ -71,23 +78,27 @@ class Models(Enum):
 
 
 class Box(BaseModel):
-    """## Box.
+    """Box.
 
     Une box est représentée par un [device](https://docs.netbox.dev/en/stable/models/dcim/device/) sur netbox.
 
     ### Device
 
-    - **Device Type:** `{box_model}` (au cas où on en utilise différentes box dans le futur)
-    - **Serial number:** `{box_serial}` Numéro de série de la box
+    Information sur la box.
+
+    - **model:** Device Type
+    - **serial_number:** Numéro de série de la box
 
     ### User
 
-    - **^Location:** Chambre
-    - **^Tag:** `{tag_adherent}`
+    Information sur l'utilisateur de la box.
+
+    - **location:** Chambre
+    - **adherent:** Adherent a qui appartient la box.
 
     ### Interfaces réseau
 
-    TODO: add this
+    Configuration des interfaces réseau de la box.
     """
 
     model: BoxModel
