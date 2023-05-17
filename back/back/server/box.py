@@ -10,3 +10,10 @@ router = APIRouter(prefix="/box", tags=["box"])
 def get_ip() -> IPAddresses46:
     """Tmp."""
     return IPAddresses46(ipv4="127.0.0.1", ipv6="::1")
+
+
+# TODO: implements
+# - Box
+# - DHCPLease
+# - Device
+# - PortRule
