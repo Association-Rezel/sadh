@@ -3,7 +3,6 @@
 
 from back.middlewares.netbox import box
 from back.netbox_client.models import (
-    Adherent,
     Box,
     DHCPLease,
     IPv4,
@@ -34,7 +33,7 @@ def get_lease(id: int) -> DHCPLease:
         ip=IPv4("192.168.1.1"),
         mac="00:00:00:00:00:00",
         hostname="pc1.local",
-        adherent=Adherent("123"),
+        adherent="123",
     )
 
 
@@ -48,5 +47,5 @@ def get_port() -> PortBinding:
         int_ip=IPv4("192.168.1.42/24"),
         int_port=25575,
         proto=Protocols.TCP,
-        adherent=Adherent("123"),
+        adherent="123",
     )

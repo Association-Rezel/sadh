@@ -12,6 +12,7 @@ from typing import Any
 
 from pydantic import BaseModel, root_validator, validator
 
+from back.interfaces.auth import KeycloakId
 from back.netbox_client.errors import DifferentIpTypeError, PortOutOfRangeError
 
 
@@ -20,43 +21,34 @@ def slug(value: str) -> str:
     return value.lower().replace(" ", "-")
 
 
-class Adherent(str):
-    """## Adhérents.
-
-    Tag: Chaque adhérent est représenté par un tag au format : `user_<keycloak_id>`
-    """
-
-
 class Residence(Enum):
-    """## Résidences.
+    """Résidence.
 
     Une residence est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) sur netbox.
-
-    La valeur de l'enum en lowercase donne le nom du site et son slug.
     """
 
     ALJT = auto()
 
 
 class Chambre(BaseModel):
-    """## Chambre.
+    """Chambre.
 
     Une chambre d'adhérent est représentée par une [location](https://docs.netbox.dev/en/stable/models/dcim/location/)
     sur netbox.
 
-    - **Site:** `{residence}` (ALJT, ASS etc.)
-    - **Name:** `{numero de chambre}`
-    - **adherent:** `user_<keycloak_id>`
+    - **residence:** [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) (ALJT, ASS etc.)
+    - **name:** Numero de chambre
+    - **adherent:** Adherent a qui appartient la chambre
     """
 
     residence: Residence
     name: str
-    adherent: Adherent
+    adherent: KeycloakId
 
     __slug = validator("name", allow_reuse=True)(slug)
 
 
-class BM(BaseModel):
+class BoxModel(BaseModel):
     """A box model must define Name and Manufacturer."""
 
     name: str
@@ -66,7 +58,7 @@ class BM(BaseModel):
     __slug = validator("name", "manufacturer", allow_reuse=True)(slug)
 
 
-class BoxModel(Enum):
+class Models(Enum):
     """## Box model.
 
     Un type de box est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/devicetype/) sur netbox.
@@ -74,8 +66,8 @@ class BoxModel(Enum):
     La valeur de l'enum en lowercase donne le nom du device type et son slug.
     """
 
-    XIAOMI_AC2350 = BM(manufacturer="XIAOMI", name="AC2350", nb_ifaces=4)
-    TP_LINK_ARCHER_C6V3 = BM(manufacturer="TP_LINK", name="C6V3", nb_ifaces=5)
+    XIAOMI_AC2350 = BoxModel(manufacturer="XIAOMI", name="AC2350", nb_ifaces=4)
+    TP_LINK_ARCHER_C6V3 = BoxModel(manufacturer="TP_LINK", name="C6V3", nb_ifaces=5)
 
 
 class Box(BaseModel):
@@ -98,19 +90,19 @@ class Box(BaseModel):
     TODO: add this
     """
 
-    model: BM
+    model: BoxModel
     serial_number: str
 
     location: Chambre
-    adherent: Adherent
+    adherent: KeycloakId
 
     @validator("model")
-    def model_must_be_in_enum(value: Any) -> BM:
+    def model_must_be_in_enum(value: Any) -> BoxModel:
         """Model must be in enum."""
-        for _model in BoxModel:
+        for _model in Models:
             if _model.value == value:
                 return value
-        raise ValueError(f"Model {value} is not in BoxModel enum")  # noqa: EM102
+        raise ValueError(f"Model {value} is not in Models enum")  # noqa: EM102
 
 
 class IPv4(IPv4Interface):
@@ -157,7 +149,7 @@ class PortBinding(BaseModel):
     int_ip: IP
     int_port: int
     proto: Protocols
-    adherent: Adherent
+    adherent: KeycloakId
 
     class Config:
         """Config."""
@@ -210,4 +202,4 @@ class DHCPLease(BaseModel):
     ip: IP
     mac: str
     hostname: str | None
-    adherent: Adherent
+    adherent: KeycloakId

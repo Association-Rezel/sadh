@@ -4,7 +4,7 @@ from typing import Any
 
 from pynetbox.core.api import Api
 
-from back.netbox_client.models import BoxModel, Residence
+from back.netbox_client.models import Models, Residence
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +42,8 @@ def assert_residences(api: Api) -> None:
 
 
 def assert_box_models(api: Api) -> None:
-    """Assert all BoxModels exists."""
-    models = [mod.value for mod in BoxModel]
+    """Assert all Modelss exists."""
+    models = [mod.value for mod in Models]
     _sync_nb_objects(
         {mod.manufacturer: {"name": mod.manufacturer} for mod in models},
         "dcim",
