@@ -7,7 +7,7 @@ Les champs précédés d'un chapeau `^` peuvent être modifiés par les admins.
 Tous les autres champs sont constants.
 """
 from enum import Enum, auto
-from ipaddress import IPv4Interface, IPv6Interface
+from ipaddress import IPv4Interface, IPv4Network, IPv6Interface, IPv6Network
 from typing import Any
 
 from pydantic import BaseModel, Field, root_validator, validator
@@ -19,6 +19,14 @@ from back.netbox_client.errors import DifferentIpTypeError, PortOutOfRangeError
 def slug(value: str) -> str:
     """Return the slug of a value."""
     return value.lower().replace(" ", "-")
+
+
+class PublicSubnets(Enum):
+    """Subnets publiques dispo a rezel."""
+
+    telecom4 = IPv4Network("137.194.8.0/22")
+    telecom6 = IPv6Network("2a09:6847::/32")
+    exte4 = IPv4Network("195.14.28.0/24")
 
 
 class Residence(Enum):
