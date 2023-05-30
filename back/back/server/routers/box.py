@@ -8,7 +8,12 @@ from back.utils.router_manager import ROUTEURS
 router = ROUTEURS.new("box")
 
 
-@router.get("/")
+@router.get(
+    "/",
+    responses={
+        404: {"model": None, "description": "Box not found."},
+    },
+)
 def get(_box: Box = box) -> Box:
     """Return the current user box."""
     return _box

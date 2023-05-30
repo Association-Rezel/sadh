@@ -56,14 +56,16 @@ class Chambre(BaseModel):
 
 
 class BoxModel(BaseModel):
-    """A box model must define Name and Manufacturer.
+    """A box model must define Name and Manufacturer."""
 
-    - **name:** Nom de la box.
-    - **manufacturer:** Manufacturer.
-    """
-
-    name: str
-    manufacturer: str
+    name: str = Field(
+        None,
+        description="Nom du modele de la box.",
+    )
+    manufacturer: str = Field(
+        None,
+        description="Nom du constructeur de la box.",
+    )
 
     __slug = validator("name", "manufacturer", allow_reuse=True)(slug)
 
