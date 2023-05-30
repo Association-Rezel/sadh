@@ -1,14 +1,8 @@
 """Gestion d'une box."""
 
 
+from back.interfaces.box import Box, DHCPLease, IPv4, PortBinding, Protocols
 from back.middlewares.netbox import box
-from back.netbox_client.models import (
-    Box,
-    DHCPLease,
-    IPv4,
-    PortBinding,
-    Protocols,
-)
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("box")
@@ -21,31 +15,27 @@ def get(_box: Box = box) -> Box:
 
 
 @router.get("/leases")
-def list_leases() -> list[int]:
+def get_leases(_box: Box = box) -> list[DHCPLease]:
     """Return the current user box."""
-    return [1, 2, 3]
+    return [
+        DHCPLease(
+            ip=IPv4("192.168.1.15"),
+            mac="00:00:00:00:00:00",
+            hostname="PC1",
+        ),
+    ]
 
 
-@router.get("/lease/{id}")
-def get_lease(_box: Box = box) -> DHCPLease:
+@router.get("/ports")
+def get_ports(_box: Box = box) -> list[PortBinding]:
     """Return the current user box."""
-    return DHCPLease(
-        ip=IPv4("192.168.1.1"),
-        mac="00:00:00:00:00:00",
-        hostname="pc1.local",
-        adherent=_box.adherent,
-    )
-
-
-@router.get("/port")
-def get_port(_box: Box = box) -> PortBinding:
-    """Return the current user box."""
-    return PortBinding(
-        name="Minecraft",
-        ext_ip=IPv4("1.1.1.1/0"),
-        ext_port=25565,
-        int_ip=IPv4("192.168.1.42/24"),
-        int_port=25575,
-        proto=Protocols.TCP,
-        adherent=_box.adherent,
-    )
+    return [
+        PortBinding(
+            name="Minecraft",
+            ext_ip=IPv4("137.194.8.6"),
+            ext_port=25565,
+            int_ip=IPv4("192.168.1.15"),
+            int_port=25565,
+            proto=Protocols.TCP,
+        ),
+    ]

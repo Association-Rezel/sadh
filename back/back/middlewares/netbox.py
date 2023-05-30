@@ -5,9 +5,11 @@ import logging
 
 from fastapi import Depends
 
+from back.http_errors import NotFound
 from back.interfaces import User
+from back.interfaces.box import Box
 from back.middlewares.db import user
-from back.netbox_client.models import Box, Chambre, Models, Residence
+from back.netbox_client import NETBOX
 
 logger = logging.getLogger(__name__)
 
@@ -15,14 +17,7 @@ logger = logging.getLogger(__name__)
 @Depends
 def box(_user: User = user) -> Box:
     """Return the current user box."""
-    _box = Box(
-        model=Models.XIAOMI_AC2350.value,
-        serial_number="123",
-        location=Chambre(
-            residence=Residence.ALJT,
-            name="404",
-            adherent=_user.keycloak_id,
-        ),
-        adherent=_user.keycloak_id,
-    )
-    return _box
+    maybe_box = NETBOX.get_box_from_user(_user.keycloak_id)
+    if maybe_box is None:
+        raise NotFound
+    return maybe_box

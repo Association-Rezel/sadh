@@ -1,7 +1,7 @@
 """Devices interfaces."""
 from pydantic import BaseModel
 
-from back.netbox_client.models import IP
+from back.interfaces.box import IP
 
 
 class Device(BaseModel):

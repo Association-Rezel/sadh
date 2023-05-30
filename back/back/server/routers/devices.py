@@ -1,9 +1,9 @@
 """Get or edit users."""
 
 
+from back.interfaces.box import Box, IPv4
 from back.interfaces.devices import Device
 from back.middlewares.netbox import box
-from back.netbox_client.models import Box, IPv4
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("devices")

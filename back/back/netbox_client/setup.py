@@ -4,7 +4,7 @@ from typing import Any
 
 from pynetbox.core.api import Api
 
-from back.netbox_client.models import Models, PublicSubnets, Residence
+from back.interfaces.box import DeviceRoles, Models, PublicSubnets, Residence
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +31,7 @@ def assert_requires(api: Api) -> None:
     assert_residences(api)
     assert_box_models(api)
     assert_ips(api)
+    assert_device_role(api)
 
 
 def assert_residences(api: Api) -> None:
@@ -67,5 +68,15 @@ def assert_ips(api: Api) -> None:
         {str(sub.value): {"prefix": str(sub.value), "status": "reserved"} for sub in PublicSubnets},
         "ipam",
         "prefixes",
+        api,
+    )
+
+
+def assert_device_role(api: Api) -> None:
+    """Assert all public ips exists."""
+    _sync_nb_objects(
+        {role.name.lower(): {"name": role.name.lower()} for role in DeviceRoles},
+        "dcim",
+        "device-roles",
         api,
     )
