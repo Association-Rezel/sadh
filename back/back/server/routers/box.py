@@ -27,18 +27,18 @@ def list_leases() -> list[int]:
 
 
 @router.get("/lease/{id}")
-def get_lease(id: int) -> DHCPLease:
+def get_lease(_box: Box = box) -> DHCPLease:
     """Return the current user box."""
     return DHCPLease(
         ip=IPv4("192.168.1.1"),
         mac="00:00:00:00:00:00",
         hostname="pc1.local",
-        adherent="123",
+        adherent=_box.adherent,
     )
 
 
 @router.get("/port")
-def get_port() -> PortBinding:
+def get_port(_box: Box = box) -> PortBinding:
     """Return the current user box."""
     return PortBinding(
         name="Minecraft",
@@ -47,5 +47,5 @@ def get_port() -> PortBinding:
         int_ip=IPv4("192.168.1.42/24"),
         int_port=25575,
         proto=Protocols.TCP,
-        adherent="123",
+        adherent=_box.adherent,
     )
