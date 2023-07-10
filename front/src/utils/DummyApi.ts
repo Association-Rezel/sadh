@@ -2,6 +2,14 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box } from "./t
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    deleteOpenPort(id: number): Promise<void> {
+        return null;
+    }
+    [x: string]: any;
+
+    setOpenPort(port: PortRule): Promise<void> {
+        return null;
+    }
     token: string;
     dhcpList : DHCPLease[] = [ {
         id: 1,

@@ -1,29 +1,41 @@
-import { User, ApiInterface, Order, Device, DHCPLease } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule } from "./types";
 import { Config } from "./Config";
 import { getAppState, updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
 
 
 export class RemoteApi implements ApiInterface {
+    [x: string]: any;
 
-    //TODO: implement funcs
-    fetchDHCPLeases(): Promise<DHCPLease[]> {
+    fetchBoxes(): Promise<Box[]> {
         throw new Error("Method not implemented.");
     }
-    fetchDHCPLease(id: number): Promise<DHCPLease> {
+    fetchMyBox(id: number): Promise<Box> {
         throw new Error("Method not implemented.");
     }
-    addDHCPLease(device: DHCPLease): Promise<void> {
+    updateMyBox(box: Box): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    deleteDHCPLease(id: number): Promise<void> {
-        throw new Error("Method not implemented.");
+    async fetchOpenPorts(): Promise<PortRule[]> {
+        return await this.fetchOrDefault("/box/openPorts", []);
     }
-    addDHCP(Device: any): Promise<void> {
-        throw new Error("Method not implemented.");
+    async setOpenPort(port: PortRule): Promise<void> {
+        return await this.fetchOrDefault("/box/setOpenPort/"+port, null);
     }
-    deleteDHCP(id: number): Promise<void> {
-        throw new Error("Method not implemented.");
+    async deleteOpenPort(id: number): Promise<void> {
+        return await this.fetchOrDefault("/box/deleteOpenPort/"+id, null);
+    }
+    async fetchDHCPLeases(): Promise<DHCPLease[]> {
+        return await this.fetchOrDefault("/box/dhcpLeases", []);
+    }
+    async fetchDHCPLease(id: number): Promise<DHCPLease> {
+        return await this.fetchOrDefault("/box/dhcpLease/"+id, null);
+    }
+    async addDHCPLease(device: DHCPLease): Promise<void> {
+        return await this.fetchOrDefault("/box/addDhcpLease/"+device, null);
+    }
+    async deleteDHCPLease(id: number): Promise<void> {
+        return await this.fetchOrDefault("/box/deleteDhcpLease/"+id, null);
     }
     token: string;
 
@@ -87,11 +99,8 @@ export class RemoteApi implements ApiInterface {
         return await this.fetchOrDefault("/orders", []);
     }
 
-    async fetchDevices(): Promise<Device[]> {
-        return await this.fetchOrDefault("/devices", []);
-    }
 
     async fetchConnectedDevices(): Promise<Device[]> {
-        throw new Error("Method not implemented.");
+        return await this.fetchOrDefault("/box/connectedDevices", []);
     }
 }

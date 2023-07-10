@@ -27,10 +27,8 @@ const DialogContent = ({ onClose, setRefreshKey }) => {
 
     const handleSave = () => {
         // generate unique id based on the date and time
-        const id = new Date().getTime();
-        Api.addOpenPort(
+        Api.setOpenPort(
            {
-                id,
                 service: serviceEdit,
                 internPort: internPortEdit,
                 externPort: externPortEdit,
