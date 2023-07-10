@@ -19,8 +19,8 @@ function Copyright(props: any) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
             {"Copyright © "}
-            <Link color="inherit" href="https://mui.com/">
-                Your Website
+            <Link color="inherit" href="https://rezel.net/">
+                Rezel
             </Link>{" "}
             {new Date().getFullYear()}
             {"."}
@@ -30,26 +30,20 @@ function Copyright(props: any) {
 
 const tiers = [
     {
-        title: "Free",
-        price: "0",
-        description: ["10 users included", "2 GB of storage", "Help center access", "Email support"],
-        buttonText: "Sign up for free",
-        buttonVariant: "outlined",
-    },
-    {
-        title: "Pro",
-        subheader: "Most popular",
-        price: "15",
-        description: ["20 users included", "10 GB of storage", "Help center access", "Priority email support"],
-        buttonText: "Get started",
+        title: "Box",
+        subheader: "",
+        price: "20",
+        description: ["Votre propre box chez vous", "Configuration de vos ports", "Serveur minecraft fourni"],
+        buttonText: "je me soumet",
         buttonVariant: "contained",
     },
     {
-        title: "Enterprise",
-        price: "30",
-        description: ["50 users included", "30 GB of storage", "Help center access", "Phone & email support"],
-        buttonText: "Contact us",
-        buttonVariant: "outlined",
+        title: "WiFi",
+        subheader: "",
+        price: "10",
+        description: ["WiFi accessible à distance", "(sous réserve de disponibilité)","slip anti-ondes inclus"],
+        buttonText: "jaccepte",
+        buttonVariant: "contained",
     },
 ];
 const footers = [
@@ -77,16 +71,18 @@ function PricingContent() {
             {/* Hero unit */}
             <Container disableGutters maxWidth="sm" component="main" sx={{ pt: 8, pb: 6 }}>
                 <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                    Pricing
+                    Formes d'adhésion
                 </Typography>
                 <Typography variant="h5" align="center" color="text.secondary" component="p">
-                    Quickly build an effective pricing table for your potential customers with this layout. It&apos;s
-                    built with default MUI components with little customization.
+                    Rezel vous propose plusieurs formes d'adhésion, à vous de choisir celle qui vous convient le mieux !
                 </Typography>
             </Container>
             {/* End hero unit */}
             <Container maxWidth="md" component="main">
-                <Grid container spacing={5} alignItems="flex-end">
+                <Grid 
+                    container spacing={5} 
+                    alignItems="flex-end"
+                    justifyContent="center">
                     {tiers.map((tier) => (
                         // Enterprise card is full width at sm breakpoint
                         <Grid item key={tier.title} xs={12} sm={tier.title === "Enterprise" ? 12 : 6} md={4}>
@@ -116,10 +112,10 @@ function PricingContent() {
                                         }}
                                     >
                                         <Typography component="h2" variant="h3" color="text.primary">
-                                            ${tier.price}
+                                            {tier.price}€
                                         </Typography>
                                         <Typography variant="h6" color="text.secondary">
-                                            /mo
+                                            /mois
                                         </Typography>
                                     </Box>
                                     <ul>
@@ -146,10 +142,11 @@ function PricingContent() {
                 component="footer"
                 sx={{
                     borderTop: (theme) => `1px solid ${theme.palette.divider}`,
-                    mt: 8,
+                    mt: 6,
                     py: [3, 6],
                 }}
             >
+                {/*
                 <Grid container spacing={4} justifyContent="space-evenly">
                     {footers.map((footer) => (
                         <Grid item xs={6} sm={3} key={footer.title}>
@@ -168,7 +165,8 @@ function PricingContent() {
                         </Grid>
                     ))}
                 </Grid>
-                <Copyright sx={{ mt: 5 }} />
+                */}
+                <Copyright />
             </Container>
             {/* End footer */}
         </React.Fragment>
