@@ -16,7 +16,7 @@ import { secondaryListItems } from "../../pages/account/listItems";
 import Chart from "../../pages/account/Chart";
 import Deposits from "../../pages/account/Deposits";
 import HeaderDashboard from "../Dashboard/HeaderDashboard";
-import { Copyright, Home } from "@mui/icons-material";
+import { Dashboard } from "@mui/icons-material";
 import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
@@ -56,7 +56,7 @@ function AccountDashboard() {
                     <Link to={""}>
                         <ListItemButton>
                             <ListItemIcon>
-                                <Home />
+                                <Dashboard />
                             </ListItemIcon>
                             <ListItemText primary="Dashboard" />
                         </ListItemButton>

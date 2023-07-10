@@ -65,25 +65,9 @@ function AdminDashboard() {
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Customers" />
+                            <ListItemText primary="Adhérents" />
                         </ListItemButton>
                     </Link>
-
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <BarChartIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Reports" />
-                    </ListItemButton>
-
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <LayersIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Integrations" />
-                    </ListItemButton>
-                    <Divider sx={{ my: 1 }} />
-                    {secondaryListItems}
                 </List>
             </Drawer>
             <Box

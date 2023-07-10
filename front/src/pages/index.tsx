@@ -5,13 +5,14 @@ import {useContext, useState} from "react";
 import {keycloak} from "../utils/keycloak";
 import {AppStateContext, updateAppState} from "../utils/AppState";
 import {Api} from "../utils/Api";
+import { Spa } from "@mui/icons-material";
 
 
 function LoggedMenu() {
     const appState = useContext(AppStateContext);
     if (appState.logged) {
         return (
-            <>
+            <div style={{ position: 'absolute', right: 0}}>
                 <Button>
                     <Link to={"/account"}>Mon compte</Link>
                 </Button>
@@ -22,19 +23,17 @@ function LoggedMenu() {
                     { /* TODO : déconnexion auprès du Keycloak également */ }
                     Déconnexion
                 </Button>
-            </>
+            </div>
         );
     }
     return (
-        <>
+        <div style={{ position: 'absolute', right: 0}}>
             <Button onClick={() => Api.login()}>Connexion</Button>
-        </>
+        </div>
     );
 }
 
 export default () => {
-    const [open, setOpen] = useState<boolean>(false);
-
 
     return (
         <>
@@ -46,11 +45,8 @@ export default () => {
                 elevation={0}
                 sx={{borderBottom: (theme) => `1px solid ${theme.palette.divider}`}}
             >
-                <Toolbar sx={{flexWrap: "wrap"}}>
-                    <Typography variant="h6" color="inherit" noWrap sx={{flexGrow: 1}}>
-                        FAIPP
-                    </Typography>
-                    <LoggedMenu/>
+                <Toolbar sx={{flexWrap: "wrap"}} >
+                    <LoggedMenu />
                 </Toolbar>
             </AppBar>
             <Pricing/>
