@@ -16,7 +16,7 @@ import { secondaryListItems } from "../../pages/account/listItems";
 import Chart from "../../pages/account/Chart";
 import Deposits from "../../pages/account/Deposits";
 import HeaderDashboard from "../Dashboard/HeaderDashboard";
-import { Copyright } from "@mui/icons-material";
+import { Copyright, Home } from "@mui/icons-material";
 import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
@@ -52,20 +52,32 @@ function AccountDashboard() {
                 </Toolbar>
                 <Divider />
                 <List component="nav">
+
+                    <Link to={""}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <Home />
+                            </ListItemIcon>
+                            <ListItemText primary="Dashboard" />
+                        </ListItemButton>
+                    </Link>
+
+                    <Divider sx={{ my: 1 }} />
+                    
                     <Link to={"orders"}>
-                    <ListItemButton>
-                        <ListItemIcon>
-                            <ShoppingCartIcon />
-                        </ListItemIcon>
-                        <ListItemText primary="Orders" />
-                    </ListItemButton>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <ShoppingCartIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Factures" />
+                        </ListItemButton>
                     </Link>
                     <Link to={"devices"}>
                         <ListItemButton>
                             <ListItemIcon>
                                 <DevicesIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Devices" />
+                            <ListItemText primary="Appareils" />
                         </ListItemButton>
                     </Link>
                     <Link to={"DHCP"}>
@@ -93,8 +105,6 @@ function AccountDashboard() {
                         </ListItemButton>
                     </RouterLink>
 
-                    <Divider sx={{ my: 1 }} />
-                    {secondaryListItems}
                 </List>
             </Drawer>
             <Box
