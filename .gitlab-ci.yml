@@ -16,7 +16,7 @@ stages:
 buildfrontend:
   stage: build
   script:
-    - docker build -t faipp-frontend .
+    - docker build -t faipp-frontend front/
 
 deployfrontend:
   stage: deploy
