@@ -20,8 +20,7 @@ buildfrontend:
 
 deployfrontend:
   stage: deploy
-  script:
-      before_script:
+  before_script:
     - docker stop faipp-frontend-$CI_PROJECT_NAME || true
     - docker rm faipp-frontend-$CI_PROJECT_NAME || true
   script:
