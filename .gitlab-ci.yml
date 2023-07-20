@@ -1,0 +1,34 @@
+default:
+  image: docker:19.03
+  services:
+    - docker:19.03-dind
+  before_script:
+    - docker info
+
+variables:
+  DOCKER_HOST: unix:///var/run/docker.sock
+
+stages:
+  - build
+  - deploy
+
+
+buildfrontend:
+  stage: build
+  script:
+    - docker build -t faipp-frontend .
+
+deployfrontend:
+  stage: deploy
+  script:
+      before_script:
+    - docker stop faipp-frontend-$CI_PROJECT_NAME || true
+    - docker rm faipp-frontend-$CI_PROJECT_NAME || true
+  script:
+    - docker run --name faipp-frontend-$CI_PROJECT_NAME -d 
+      -e VIRTUAL_HOST=faipp.rezel.net -e LETSENCRYPT_HOST=faipp.rezel.net
+      -v /etc/ssl/certs:/etc/ssl/certs:ro
+      --network reverse_default --restart unless-stopped
+      faipp-frontend:latest
+
+
