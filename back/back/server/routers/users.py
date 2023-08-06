@@ -1,13 +1,13 @@
 """Get or edit users."""
 
-from fastapi import APIRouter
 
 from back.core.users import get_users
 from back.database import Session
 from back.interfaces import User
 from back.middlewares import db, must_be_admin, user
+from back.utils.router_manager import ROUTEURS
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = ROUTEURS.new("users")
 
 
 @router.get("/")

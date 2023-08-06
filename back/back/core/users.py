@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from back.database import models
 from back.interfaces import Token, User
+from back.netbox_client import NETBOX
 
 __logger = logging.getLogger(__name__)
 
@@ -27,4 +28,5 @@ def get_or_create_from_token(db: Session, token: Token) -> User:
         u = models.User(keycloak_id=token.keycloak_id, name=token.name)
         db.add(u)
         db.commit()
+        NETBOX.create_user_tag(token.keycloak_id)
     return User.from_orm(u)

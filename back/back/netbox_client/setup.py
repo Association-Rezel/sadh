@@ -4,7 +4,7 @@ from typing import Any
 
 from pynetbox.core.api import Api
 
-from back.netbox_client.models import BoxModel, Residence
+from back.interfaces.box import DeviceRoles, Models, PublicSubnets, Residence
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,8 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
     }
     """
     _api = getattr(getattr(api, api_group), api_resource)
-    objects_to_add = set(objects_to_sync.keys()) - {s.slug for s in _api.filter(name=list(objects_to_sync.keys()))}
+    objects_present = {str(s) for s in _api.filter(name=list(objects_to_sync.keys()))}
+    objects_to_add = set(objects_to_sync.keys()) - objects_present
     for obj in objects_to_add:
         _api.create(slug=obj, **objects_to_sync[obj])
     logger.debug("Added %s entries in the %s/%s table.", len(objects_to_add), api_group, api_resource)
@@ -29,6 +30,8 @@ def assert_requires(api: Api) -> None:
     """Assert all requirements are meet."""
     assert_residences(api)
     assert_box_models(api)
+    assert_ips(api)
+    assert_device_role(api)
 
 
 def assert_residences(api: Api) -> None:
@@ -42,8 +45,8 @@ def assert_residences(api: Api) -> None:
 
 
 def assert_box_models(api: Api) -> None:
-    """Assert all BoxModels exists."""
-    models = [mod.value for mod in BoxModel]
+    """Assert all Modelss exists."""
+    models = [mod.value for mod in Models]
     _sync_nb_objects(
         {mod.manufacturer: {"name": mod.manufacturer} for mod in models},
         "dcim",
@@ -55,5 +58,25 @@ def assert_box_models(api: Api) -> None:
         {mod.name: {"model": mod.name, "manufacturer": {"name": mod.manufacturer}} for mod in models},
         "dcim",
         "device_types",
+        api,
+    )
+
+
+def assert_ips(api: Api) -> None:
+    """Assert all public ips exists."""
+    _sync_nb_objects(
+        {str(sub.value): {"prefix": str(sub.value), "status": "reserved"} for sub in PublicSubnets},
+        "ipam",
+        "prefixes",
+        api,
+    )
+
+
+def assert_device_role(api: Api) -> None:
+    """Assert all public ips exists."""
+    _sync_nb_objects(
+        {role.name.lower(): {"name": role.name.lower()} for role in DeviceRoles},
+        "dcim",
+        "device-roles",
         api,
     )
