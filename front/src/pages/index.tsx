@@ -10,7 +10,7 @@ import { Spa } from "@mui/icons-material";
 
 function LoggedMenu() {
     const appState = useContext(AppStateContext);
-    if (appState.logged) {
+    if (appState.logged && false) {
         return (
             <div style={{ position: 'absolute', right: 0}}>
                 <Button>

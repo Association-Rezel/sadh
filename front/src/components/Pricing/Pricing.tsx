@@ -33,18 +33,18 @@ const tiers = [
         title: "Box",
         subheader: "",
         price: "20",
-        description: ["Votre propre box chez vous", "Configuration de vos ports", "Serveur minecraft fourni"],
-        buttonText: "je me soumet",
+        description: ["Votre propre box chez vous", "Configuration de vos ports"],
+        buttonText: "J'adhère",
         buttonVariant: "contained",
     },
-    {
+    /*{
         title: "WiFi",
         subheader: "",
         price: "10",
         description: ["WiFi accessible à distance", "(sous réserve de disponibilité)","slip anti-ondes inclus"],
         buttonText: "jaccepte",
         buttonVariant: "contained",
-    },
+    },*/
 ];
 const footers = [
     {
