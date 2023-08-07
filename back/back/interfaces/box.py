@@ -30,13 +30,37 @@ class PublicSubnets(Enum):
     exte4 = IPv4Network("195.14.28.0/24")
 
 
+class Status(Enum):
+    """Statut d'un abonnement.
+
+    - **PENDING_VALIDATION:** En attente de validation
+    - **VALIDATED:** Validé
+    - **REJECTED:** Rejeté
+    - **ACTIVE:** Actif
+    - **PENDING_UNSUBSCRIPTION:** En attente de désabonnement
+    - **UNSUBSCRIBED:** Désabonné
+    """
+
+    PENDING_VALIDATION = auto()
+    VALIDATED = auto()
+    REJECTED = auto()
+    ACTIVE = auto()
+    PENDING_UNSUBSCRIPTION = auto()
+    UNSUBSCRIBED = auto()
+
+
 class Residence(Enum):
     """Résidence.
 
     Une residence est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) sur netbox.
+
+    ALJT; TWENTY_CAMPUS; HACKERHOUSE; KLEY
     """
 
-    ALJT = auto()
+    ALJT = "ALJT"
+    TWENTY_CAMPUS = "TWENTY_CAMPUS"
+    HACKER_HOUSE = "HACKER_HOUSE"
+    KLEY = "KLEY"
 
 
 class Chambre(BaseModel):

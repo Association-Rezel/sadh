@@ -15,7 +15,6 @@ def _(_db: Session = db, _: None = must_be_admin) -> list[User]:
     """This is some docs."""
     return get_users(_db)
 
-
 @router.get("/me")
 async def _me(
     _user: User = user,

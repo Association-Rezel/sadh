@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel
 
-from back.database.models import User as DBUser
+from back.database.users import User as DBUser
 from back.interfaces.auth import KeycloakId
 
 
