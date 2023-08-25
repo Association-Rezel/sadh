@@ -42,6 +42,7 @@ buildbackend:
 
 deploybackend:
   stage: deploy
+  before_script:
     - docker stop faipp-backend-$CI_PROJECT_NAME || true
     - docker rm faipp-backend-$CI_PROJECT_NAME || true
   script:
