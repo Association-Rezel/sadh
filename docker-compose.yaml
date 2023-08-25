@@ -25,7 +25,11 @@ x-redis: &redis
     start_period: 5s
 
 services:
-  keycloak-postgres: *postgres
+  keycloak-postgres: 
+    <<: *postgres
+    volumes:
+      - keycloak-postgres:/var/lib/postgresql/data
+
   keycloak:
     image: jboss/keycloak:latest
     depends_on:
@@ -45,12 +49,14 @@ services:
       start_period: 150s # thibaud : démarre en 37s chez moi
       test: "curl -f http://localhost:8080/auth/ || exit 1"
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8080:8080"      
 
   postgres:
     <<: *postgres
     ports:
       - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres:/var/lib/postgresql/data
 
   adminer:
     image: adminer
@@ -60,5 +66,6 @@ services:
       - "127.0.0.1:8003:8080"
 
 volumes:
-  netbox-media-files:
-    driver: local
+  keycloak-postgres:
+  postgres:
+

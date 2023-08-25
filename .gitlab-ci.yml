@@ -32,6 +32,7 @@ buildinfra:
   stage: build
   script:
     - cat $ENV_VARIABLES > .env
+    - docker compose down
     - docker compose up -d --remove-orphans
 
 buildbackend:
@@ -51,4 +52,3 @@ deploybackend:
       -v /etc/ssl/certs:/etc/ssl/certs:ro
       --network reverse_default --restart unless-stopped
       faipp-backend:latest
-    
