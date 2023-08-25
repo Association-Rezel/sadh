@@ -23,7 +23,9 @@ def build() -> FastAPI:
     origins = [
         "http://localhost:5173", 
         "http://localhost:8080", 
-        "http://localhost:8000"
+        "http://localhost:8000",
+        "https://fai.rezel.net",
+        "https://faipp.rezel.net"
     ]
 
     app.add_middleware(

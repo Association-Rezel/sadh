@@ -49,5 +49,5 @@ deploybackend:
     - docker run --name faipp-backend-$CI_PROJECT_NAME -d 
       -e VIRTUAL_HOST=api.faipp.rezel.net,api.fai.rezel.net -e LETSENCRYPT_HOST=api.faipp.rezel.net,api.fai.rezel.net
       -v /etc/ssl/certs:/etc/ssl/certs:ro
-      --network reverse_keycloak --restart unless-stopped
+      --network reverse_default --restart unless-stopped
       faipp-backend:latest
