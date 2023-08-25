@@ -42,6 +42,8 @@ buildbackend:
 
 deploybackend:
   stage: deploy
+    - docker stop faipp-backend-$CI_PROJECT_NAME || true
+    - docker rm faipp-backend-$CI_PROJECT_NAME || true
   script:
     - docker run --name faipp-backend-$CI_PROJECT_NAME -d 
       -e VIRTUAL_HOST=api.faipp.rezel.net,api.fai.rezel.net -e LETSENCRYPT_HOST=api.faipp.rezel.net,api.fai.rezel.net
