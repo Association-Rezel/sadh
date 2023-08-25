@@ -32,7 +32,6 @@ buildinfra:
   stage: build
   script:
     - cat $ENV_VARIABLES > .env
-    - docker compose down
     - docker compose up -d --remove-orphans
 
 buildbackend:
