@@ -15,6 +15,11 @@ h1 {
   line-height: 1.1;
 }
 
+h4 {
+  font-size: 2em;
+  line-height: 1.1;
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -45,4 +50,60 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+form > div input:not([type="submit"]),
+form > div select {
+  font-size: 16px;
+  line-height: 28px;
+  padding: 8px 16px;
+  width: 90%;
+  min-height: 44px;
+  border: unset;
+  border-radius: 4px;
+  outline-color: rgb(84 105 212 / 0.5);
+  background-color: rgb(255, 255, 255);
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(60, 66, 87, 0.16) 0px 0px 0px 1px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px;
+  margin: 1em;
+}
+
+input[type="submit"] {
+  background-color: rgb(84, 105, 212);
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0.12) 0px 1px 1px 0px, 
+              rgb(84, 105, 212) 0px 0px 0px 1px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
+              rgba(60, 66, 87, 0.08) 0px 2px 5px 0px;
+  color: #fff;
+  font-size: 16px;
+  line-height: 28px;
+  padding: 8px 16px;
+  border-radius: 1em;
+  cursor: pointer;
+} 
+
+button:disabled > a {
+  color: #666 !important;
+}
+div:has(> button:disabled) {
+  cursor: not-allowed !important;
 }

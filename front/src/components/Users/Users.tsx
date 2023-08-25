@@ -23,7 +23,7 @@ function Users() {
 
     const updateUsers = () => {
         const newUsersFiltered = users
-            .filter((oneUser) => oneUser.residence === residenceSelected || residenceSelected === "")
+            //.filter((oneUser) => oneUser.residence === residenceSelected || residenceSelected === "")
             .filter(
                 (oneUser) => oneUser.name.toLowerCase().includes(searchSelected.toLowerCase()) || searchSelected === ""
             );

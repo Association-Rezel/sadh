@@ -1,16 +1,18 @@
 import React, {createContext, useEffect, useState} from "react";
-import {User} from "./types";
+import {Subscription, User} from "./types";
 import {Api} from "./Api";
 
 export interface State {
     logged: boolean,
     user?: User,
+    subscription?: Subscription,
     token?: string
 }
 
 const defaultState: State = {
     logged: false,
     user: undefined,
+    subscription: undefined,
     token: undefined
 };
 
@@ -25,7 +27,10 @@ export const updateAppState = (e: Partial<State>) => {
     setAppState((state: State) => ({...state, ...e}));
 };
 
-export let getAppState = () => defaultState;
+export let getAppState = () => {
+    const state = localStorage.getItem('appState');
+    return state ? JSON.parse(state) : defaultState;
+};
 
 export function AppStateWrapper({children}: { children: any }) {
 
@@ -58,7 +63,10 @@ export function AppStateWrapper({children}: { children: any }) {
 
     useEffect(() => {
         Api.fetchMe().then((me) => {
-            updateAppState({user: me})
+            updateAppState({user: me});
+            Api.fetchMySubscription().then((subscription) => {
+                updateAppState({subscription: subscription})
+            });
         });
     }, []);
 

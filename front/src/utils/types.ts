@@ -1,8 +1,29 @@
 export interface User {
-    id: number;
+    keycloak_id: number;
     isAdmin: boolean;
     name: string;
+}
+
+export enum Status {
+    PENDING_VALIDATION = 1,
+    VALIDATED,
+    REJECTED,
+    ACTIVE,
+    PENDING_UNSUBSCRIPTION,
+    UNSUBSCRIBED
+}
+
+export interface Chambre {
     residence: string;
+    name: string;
+}
+
+export interface Subscription {    
+    subscription_id: string;
+    user_id: string;
+    chambre: Chambre;
+    status: Status;
+    unsubscribe_reason: string;
 }
 
 export interface Order {
@@ -52,6 +73,7 @@ export interface ApiInterface {
     [x: string]: any;
     logout(): void;
     login(): void;
+    loginRedirect(redirectUri:string): void;
     refreshState(): unknown;
     token: string;
     fetchUsers(): Promise<User[]>;
@@ -59,6 +81,9 @@ export interface ApiInterface {
     fetchMyBox(id: number): Promise<Box>;
     updateMyBox(box: Box): Promise<void>;
     fetchMe(): Promise<User>;
+    fetchMySubscription(): Promise<Subscription>;
+    addMySubscription(subscription: any): Promise<void>;
+    modifyMySubscription(subscription: any): Promise<void>;
     fetchOrders(): Promise<Order[]>;
     fetchDHCPLeases(): Promise<DHCPLease[]>;
     fetchDHCPLease(id:number): Promise<DHCPLease>;
