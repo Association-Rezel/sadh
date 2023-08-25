@@ -58,7 +58,7 @@ services:
     volumes:
       - postgres:/var/lib/postgresql/data
     networks:
-      - reverse_default
+      - reverse_keycloak
 
   adminer:
     image: adminer
@@ -72,5 +72,4 @@ volumes:
   postgres:
 
 networks:
-  reverse_default:
-    driver: bridge
+  reverse_keycloak:
