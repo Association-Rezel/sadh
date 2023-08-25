@@ -39,6 +39,7 @@ services:
       DB_ADDR: keycloak-postgres
       DB_DATABASE: database
       DB_USER: admin
+      PROXY_ADDRESS_FORWARDING: true
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       VIRTUAL_HOST: keycloak.fai.rezel.net
       LETSENCRYPT_HOST: keycloak.fai.rezel.net
@@ -49,7 +50,10 @@ services:
       start_period: 150s # thibaud : démarre en 37s chez moi
       test: "curl -f http://localhost:8080/auth/ || exit 1"
     ports:
-      - "127.0.0.1:8080:8080"      
+      - "127.0.0.1:8080:8080"    
+    networks:
+      - default
+      - reverse_keycloak
 
   postgres:
     <<: *postgres
@@ -57,8 +61,6 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres:/var/lib/postgresql/data
-    networks:
-      - reverse_keycloak
 
   adminer:
     image: adminer
@@ -73,3 +75,4 @@ volumes:
 
 networks:
   reverse_keycloak:
+    external: true
