@@ -1,4 +1,4 @@
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
 import {PageAdmin} from "./pages/admin/PageAdmin";
 import {PageAccueil} from "./pages/account/PageAccueil";
 import DHCP from "./components/DHCP/DHCP";
@@ -6,6 +6,7 @@ import BoxConfig from "./components/Box/BoxConfig";
 import Orders from "./components/Orders/Orders";
 import Index from "./pages/index";
 import {Ports} from "./components/Ports/Ports";
+import Subscribe from "./components/Subscription/Subscribe";
 
 import "./App.css";
 import Page404 from "./components/Page404";
@@ -18,11 +19,15 @@ import {useContext} from "react";
 
 function AppRouter() {
     const appState = useContext(AppStateContext);
+    console.log("appState", appState)
     return <BrowserRouter>
     <Routes>
         <Route path="/">
             <Route index element={<Index />} />
-            {appState.logged && (
+            <Route path="subscribe" element={
+                (appState.logged || /.*state=.*&session_state=.*&code=.*/.test(window.location.href)) ? <Subscribe /> : <Navigate to="/" />
+            } />
+            {appState.logged && false && (
                 <Route path="account" element={<AccountDashboard />}>
                     <Route index Component={PageAccueil} />
                     <Route path="orders" Component={Orders} />
