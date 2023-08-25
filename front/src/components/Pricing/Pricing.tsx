@@ -14,6 +14,9 @@ import Typography from "@mui/material/Typography";
 import Link from "@mui/material/Link";
 import GlobalStyles from "@mui/material/GlobalStyles";
 import Container from "@mui/material/Container";
+import { getAppState } from "../../utils/AppState";
+import { Api } from "../../utils/Api";
+import { useLocation } from "react-router-dom";
 
 function Copyright(props: any) {
     return (
@@ -35,6 +38,7 @@ const tiers = [
         price: "20",
         description: ["Votre propre box chez vous", "Configuration de vos ports"],
         buttonText: "J'adhère",
+        buttonRedirectPath: "/subscribe",
         buttonVariant: "contained",
     },
     /*{
@@ -71,10 +75,13 @@ function PricingContent() {
             {/* Hero unit */}
             <Container disableGutters maxWidth="sm" component="main" sx={{ pt: 8, pb: 6 }}>
                 <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                    Formes d'adhésion
+                    FAIPP Rezel
                 </Typography>
-                <Typography variant="h5" align="center" color="text.secondary" component="p">
-                    Rezel vous propose plusieurs formes d'adhésion, à vous de choisir celle qui vous convient le mieux !
+                <Typography variant="h6" align="center" color="text.secondary" component="p">
+                    Vous souhaitez la fibre optique directement dans votre chambre ?
+                </Typography>
+                <Typography variant="h6" align="center" color="text.secondary" component="p">
+                    Rezel propose désormais une offre d'accès à internet à 20€/mois !
                 </Typography>
             </Container>
             {/* End hero unit */}
@@ -127,7 +134,7 @@ function PricingContent() {
                                     </ul>
                                 </CardContent>
                                 <CardActions>
-                                    <Button fullWidth variant={tier.buttonVariant as "outlined" | "contained"}>
+                                    <Button fullWidth variant={tier.buttonVariant as "outlined" | "contained"} onClick={() => {if(!getAppState().logged){return Api.loginRedirect(window.location.href+"subscribe");} window.location.href = tier.buttonRedirectPath}}>
                                         {tier.buttonText}
                                     </Button>
                                 </CardActions>
