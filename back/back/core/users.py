@@ -25,7 +25,7 @@ def get_or_create_from_token(db: Session, token: Token) -> User:
     u = db.get(models.User, token.keycloak_id)
     if not u:
         __logger.info("Creating user %s", token.name)
-        u = models.User(keycloak_id=token.keycloak_id, name=token.name)
+        u = models.User(keycloak_id=token.keycloak_id, name=token.name, email=token.email)
         db.add(u)
         db.commit()
         NETBOX.create_user_tag(token.keycloak_id)

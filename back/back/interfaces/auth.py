@@ -50,3 +50,4 @@ class Token(BaseModel):
 
     keycloak_id: KeycloakId
     name: str
+    email: str

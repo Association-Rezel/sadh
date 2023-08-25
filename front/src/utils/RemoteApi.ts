@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription } from "./types";
 import { Config } from "./Config";
 import { getAppState, updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
@@ -43,6 +43,10 @@ export class RemoteApi implements ApiInterface {
         updateAppState({ logged: false, user: null, token: "" });
     }
 
+    async loginRedirect(redirectUri:string): Promise<void> {
+        keycloak.login({ redirectUri: redirectUri });
+    }
+
     async login(): Promise<void> {
         keycloak.login();
     }
@@ -64,6 +68,30 @@ export class RemoteApi implements ApiInterface {
         }
 
         const response = await fetch(Config.API_URL + url, config);
+        if (!response.ok) {
+            throw new Error("Error while fetching " + url + " : " + response.statusText);
+        }
+        return await response.json();
+    }
+
+    async myAuthenticatedRequest(url: string, body: any, method: string = "POST") {        
+        if (!this.token)
+            throw new Error("Tried to make an authenticated request without being logged in");
+
+        let config : RequestInit = {
+            method: method,
+            credentials: 'include',
+            headers: {
+                'Authorization': 'Bearer ' + this.token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body),
+        };
+
+        const response = await fetch(Config.API_URL + url, config);
+        if (!response.ok) {
+            throw new Error("Error while fetching " + url + " : " + response.statusText);
+        }
         return await response.json();
     }
 
@@ -81,10 +109,14 @@ export class RemoteApi implements ApiInterface {
     async refreshState() {
         const user = await this.fetchMe();
         console.log("user", user);
-        if (user?.id) {
-            updateAppState({ user: user })
-        } else
+        if (user?.keycloak_id) {
+            updateAppState({user: user});
+            this.fetchMySubscription().then((subscription) => {
+                updateAppState({subscription: subscription})
+            });
+        } else{
             updateAppState({ logged: false, user: null, token: "" });
+        }
     }
 
     async fetchUsers(): Promise<User[]> {
@@ -92,7 +124,30 @@ export class RemoteApi implements ApiInterface {
     }
 
     async fetchMe(): Promise<User> {
-        return await this.fetchOrDefault("/auth/user", null, true);
+        return await this.fetchOrDefault("/users/me", null, true);
+    }
+
+    async fetchMySubscription(): Promise<Subscription> {
+        return await this.fetchOrDefault("/users/me/subscription", null, true);
+    }
+
+    async addMySubscription(subscription: any): Promise<void> {
+        let sub = await this.fetchOrDefault("/users/me/subscription", null, true);
+        if (sub) {
+            throw new Error("Subscription already exists");
+        }
+        let response = await this.myAuthenticatedRequest("/users/me/subscription", subscription)
+        console.log("Response", response);
+    }
+
+    async modifyMySubscription(subscription: any): Promise<void> {
+        let sub = await this.fetchOrDefault("/users/me/subscription", null, true);
+        if (!sub) {
+            throw new Error("Subscription does not exists");
+        }
+        console.log("Subscription", subscription);
+        let response = await this.myAuthenticatedRequest("/users/me/subscription", subscription, "PUT")
+        console.log("Response", response);
     }
 
     async fetchOrders(): Promise<Order[]> {
