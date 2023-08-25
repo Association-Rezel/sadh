@@ -22,7 +22,10 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
     objects_present = {str(s) for s in _api.filter(name=list(objects_to_sync.keys()))}
     objects_to_add = set(objects_to_sync.keys()) - objects_present
     for obj in objects_to_add:
-        _api.create(slug=obj, **objects_to_sync[obj])
+        try:
+            _api.create(slug=obj, **objects_to_sync[obj])
+        except Exception e:
+            print(f"Erreur: {e}")
     logger.debug("Added %s entries in the %s/%s table.", len(objects_to_add), api_group, api_resource)
 
 
