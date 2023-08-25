@@ -4,7 +4,7 @@ import {Api} from "./Api";
 import { Config } from "./Config";
 
 export const keycloak = new Keycloak({
-    url: 'http://localhost:8080/auth',
+    url: Config.KC_URL+'/auth',
     realm: 'users',
     clientId: 'back'
 });

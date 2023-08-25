@@ -12,6 +12,7 @@ class User(BaseModel):
     keycloak_id: KeycloakId
     is_admin: bool
     name: str
+    email: str
 
     @classmethod
     def from_orm(cls, obj: DBUser) -> "User":
@@ -20,4 +21,5 @@ class User(BaseModel):
             keycloak_id=KeycloakId(obj.keycloak_id),
             is_admin=obj.is_admin,
             name=obj.name,
+            email=obj.email,
         )
