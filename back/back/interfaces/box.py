@@ -54,7 +54,7 @@ class Residence(Enum):
 
     Une residence est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/site/) sur netbox.
 
-    ALJT; TWENTY_CAMPUS; HACKERHOUSE; KLEY
+    ALJT; TWENTY_CAMPUS; HACKER_HOUSE; KLEY
     """
 
     ALJT = "ALJT"
