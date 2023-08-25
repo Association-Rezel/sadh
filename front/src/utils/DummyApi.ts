@@ -1,7 +1,19 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    loginRedirect(redirectUri: string): void {
+        throw new Error("Method not implemented.");
+    }
+    fetchMySubscription(): Promise<Subscription> {
+        throw new Error("Method not implemented.");
+    }
+    addMySubscription(subscription: any): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    modifyMySubscription(subscription: any): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
     deleteOpenPort(id: number): Promise<void> {
         return null;
     }
@@ -60,10 +72,9 @@ export class DummyApi implements ApiInterface {
         ];
     
     user1 : User = {
-        id: 1,
+        keycloak_id: 1,
         isAdmin: false,
         name: "Denis Fouchard",
-        residence: "ALJT",
     };
     
     box : Box = 
@@ -117,31 +128,27 @@ export class DummyApi implements ApiInterface {
     async fetchUsers(): Promise<User[]> {
         return [
             {
-                id: 1,
+                keycloak_id: 1,
                 isAdmin: false,
                 name: "toto",
-                residence: "Kley",
             },
             {
-                id: 2,
+                keycloak_id: 2,
                 isAdmin: false,
                 name: "tata",
-                residence: "Kley",
             },
             {
-                id: 3,
+                keycloak_id: 3,
                 isAdmin: false,
                 name: "tutu",
-                residence: "ALJT",
             },
         ];
     }
     async fetchMe(): Promise<User> {
         return {
-            id: 7897,
+            keycloak_id: 7897,
             isAdmin: true,
             name: "itsme",
-            residence: "Kley",
         };
     }
 
