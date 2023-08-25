@@ -24,7 +24,7 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
     for obj in objects_to_add:
         try:
             _api.create(slug=obj, **objects_to_sync[obj])
-        except Exception e:
+        except Exception as e:
             print(f"Erreur: {e}")
     logger.debug("Added %s entries in the %s/%s table.", len(objects_to_add), api_group, api_resource)
 
