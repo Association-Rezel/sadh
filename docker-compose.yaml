@@ -38,6 +38,7 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       VIRTUAL_HOST: keycloak.fai.rezel.net
       LETSENCRYPT_HOST: keycloak.fai.rezel.net
+      VIRTUAL_PORT: 8080
     healthcheck:
       timeout: 3s
       interval: 1s
@@ -45,37 +46,6 @@ services:
       test: "curl -f http://localhost:8080/auth/ || exit 1"
     ports:
       - "127.0.0.1:8080:8080"
-
-  netbox-redis: *redis
-  netbox-postgres: *postgres
-  netbox:
-    image: netboxcommunity/netbox:v3.4-2.5.3
-    depends_on:
-      - netbox-postgres
-    volumes:
-    - netbox-media-files:/opt/netbox/netbox/media
-    environment:
-      DB_HOST: netbox-postgres
-      DB_NAME: database
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
-      DB_USER: admin
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      REDIS_HOST: netbox-redis
-      SKIP_SUPERUSER: false
-      SUPERUSER_API_TOKEN: token
-      SUPERUSER_EMAIL: admin@faipp.net
-      SUPERUSER_NAME: admin
-      SUPERUSER_PASSWORD: ${NETBOX_PASSWORD}
-      SECRET_KEY: ${NETBOX_SECRET_KEY}
-      VIRTUAL_HOST: netbox.fai.rezel.net
-      LETSENCRYPT_HOST: netbox.fai.rezel.net
-    ports:
-      - "127.0.0.1:8002:8080"
-    healthcheck:
-      timeout: 3s
-      interval: 1s
-      start_period: 300s # thibaud : démarre en 190s chez moi
-      test: "curl -f http://localhost:8080/ || exit 1"
 
   postgres:
     <<: *postgres
