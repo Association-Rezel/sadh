@@ -78,7 +78,7 @@ function PricingContent() {
                     FAIPP Rezel
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
-                    Vous souhaitez la fibre optique directement dans votre logement ?
+                    Vous souhaitez la fibre optique directement dans votre logement ?
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
                     Rezel propose désormais une offre d'accès à internet à 20€/mois !
