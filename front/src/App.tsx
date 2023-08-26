@@ -37,7 +37,7 @@ function AppRouter() {
                     <Route path="ports" Component={Ports} />
                 </Route>
             )}
-            {appState.logged && appState.user?.isAdmin && (
+            {appState.logged && appState.user?.is_admin && (
                 <Route path="admin" element={<AdminDashboard />}>
                     <Route index Component={PageAdmin} />
                     <Route path="users" Component={Users} />

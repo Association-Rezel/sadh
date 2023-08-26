@@ -7,6 +7,12 @@ import {AppBar, Button, CssBaseline, GlobalStyles, Toolbar} from "@mui/material"
 
 function LoggedMenu() {
     const appState = useContext(AppStateContext);
+
+    const logout = () => {
+        Api.logout();
+        keycloak.logout();
+    }
+    
     if (appState.logged) {
         return (
             <div>
@@ -28,10 +34,12 @@ function LoggedMenu() {
                             <Button disabled>
                                 <Link to={"/account"}>Mon compte</Link>
                             </Button>
-                            <Button>
-                                {appState.user?.isAdmin && <Link to={"/admin"}>Interface admin</Link>}
-                            </Button>
-                            <Button onClick={() => Api.logout()}>
+                            {appState.user?.is_admin && (
+                                <Button>
+                                    <Link to={"/admin"}>Interface admin</Link>
+                                </Button>
+                            )}
+                            <Button onClick={logout}>
                                 { /* TODO : déconnexion auprès du Keycloak également */ }
                                 Déconnexion
                             </Button>
