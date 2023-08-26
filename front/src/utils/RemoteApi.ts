@@ -120,7 +120,7 @@ export class RemoteApi implements ApiInterface {
     }
 
     async fetchUsers(): Promise<User[]> {
-        return await this.fetchOrDefault("/users", []);
+        return await this.fetchOrDefault("/users", null, true);
     }
 
     async fetchMe(): Promise<User> {
