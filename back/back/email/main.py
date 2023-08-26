@@ -11,7 +11,6 @@ from back.env import ENV
 def send_admin_message(subject:str, body:str) -> None:
     """Send admin message."""
     threading.Thread(target=send_matrix, args=(subject, body)).start()
-    threading.Thread(target=send_email, args=(subject, body, "faipp@rezel.net")).start()
 
 def send_email(subject:str, body:str, to:str) -> None:
     """Send email."""
