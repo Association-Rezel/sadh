@@ -7,7 +7,7 @@ from fastapi.responses import Response
 from back.core.users import get_users
 from back.database import Session
 from back.database.subscriptions import DBSubscription
-from back.email import send_email
+from back.email import send_admin_message
 from back.env import ENV
 from back.interfaces import User
 from back.interfaces.box import Chambre, Status
@@ -61,7 +61,7 @@ async def _subscribe(
     )
     _db.add(subscription)
     _db.commit()
-    send_email("Demande d'abonnement", f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/")
+    send_admin_message("Demande d'abonnement", f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/")
     return Subscription.from_orm(subscription)
 
 @router.put("/me/subscription", status_code=200)
@@ -101,5 +101,5 @@ async def _unsubscribe(
     subscription.unsubscribe_reason = unsubscribe_reason
     subscription.status = Status.PENDING_UNSUBSCRIPTION
     _db.commit()
-    send_email("Demande de désabonnement", f"Un utilisateur a demandé à se désabonner : {_user.name} - {_user.email}\n\nPour valider la désinscription, rendez-vous sur {ENV.frontend_url}/admin/")
+    send_admin_message("Demande de désabonnement", f"Un utilisateur a demandé à se désabonner : {_user.name} - {_user.email}\n\nPour valider la désinscription, rendez-vous sur {ENV.frontend_url}/admin/")
     return Subscription.from_orm(subscription)
