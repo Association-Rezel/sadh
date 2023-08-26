@@ -87,5 +87,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.kc_client_id = get_or_raise("KC_CLIENT_ID")
         self.kc_client_secret = get_or_raise("KC_CLIENT_SECRET")
 
+        self.matrix_user = get_or_raise("MATRIX_USER")
+        self.matrix_password = get_or_raise("MATRIX_PASSWORD")
+
 
 ENV = Env()
