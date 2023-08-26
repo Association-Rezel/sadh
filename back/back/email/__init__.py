@@ -1,2 +1,2 @@
 """Email definitions."""
-from back.email.main import send_email
+from back.email.main import send_admin_message
