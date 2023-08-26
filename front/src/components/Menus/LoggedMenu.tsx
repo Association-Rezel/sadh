@@ -28,9 +28,11 @@ function LoggedMenu() {
                             <Button disabled>
                                 <Link to={"/account"}>Mon compte</Link>
                             </Button>
-                            <Button>
-                                {appState.user?.isAdmin && <Link to={"/admin"}>Interface admin</Link>}
-                            </Button>
+                            {appState.user?.isAdmin && (
+                                <Button>
+                                    <Link to={"/admin"}>Interface admin</Link>
+                                </Button>
+                            )}
                             <Button onClick={() => Api.logout()}>
                                 { /* TODO : déconnexion auprès du Keycloak également */ }
                                 Déconnexion
