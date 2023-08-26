@@ -1,6 +1,7 @@
 export interface User {
     keycloak_id: number;
-    isAdmin: boolean;
+    is_admin: boolean;
+    email: string;
     name: string;
 }
 

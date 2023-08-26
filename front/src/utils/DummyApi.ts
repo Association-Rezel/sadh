@@ -73,8 +73,9 @@ export class DummyApi implements ApiInterface {
     
     user1 : User = {
         keycloak_id: 1,
-        isAdmin: false,
+        is_admin: false,
         name: "Denis Fouchard",
+        email: "denis@exaple.com",
     };
     
     box : Box = 
@@ -129,26 +130,30 @@ export class DummyApi implements ApiInterface {
         return [
             {
                 keycloak_id: 1,
-                isAdmin: false,
+                is_admin: false,
                 name: "toto",
+                email: "toto@example.com",
             },
             {
                 keycloak_id: 2,
-                isAdmin: false,
+                is_admin: false,
                 name: "tata",
+                email: "tata@example.com",
             },
             {
                 keycloak_id: 3,
-                isAdmin: false,
+                is_admin: false,
                 name: "tutu",
+                email: "tutu@example.com",
             },
         ];
     }
     async fetchMe(): Promise<User> {
         return {
             keycloak_id: 7897,
-            isAdmin: true,
+            is_admin: true,
             name: "itsme",
+            email: "itsme@example.com",
         };
     }
 

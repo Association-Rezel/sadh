@@ -28,7 +28,7 @@ function LoggedMenu() {
                             <Button disabled>
                                 <Link to={"/account"}>Mon compte</Link>
                             </Button>
-                            {appState.user?.isAdmin && (
+                            {appState.user?.is_admin && (
                                 <Button>
                                     <Link to={"/admin"}>Interface admin</Link>
                                 </Button>
