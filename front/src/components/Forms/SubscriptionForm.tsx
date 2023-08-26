@@ -75,8 +75,8 @@ function SubscriptionForm() {
                     </select>
                 </div>
                 <div>
-                    <label>Numéro de chambre :</label>
-                    <input required type="text" name="name" placeholder="Numéro de chambre" {...register("name")} defaultValue={appState.subscription?.chambre.name} />
+                    <label>Numéro de logement :</label>
+                    <input required type="text" name="name" placeholder="Numéro de logement" {...register("name")} defaultValue={appState.subscription?.chambre.name} />
                 </div>
                 <div>
                     <input type="submit" value="Envoyer" />
