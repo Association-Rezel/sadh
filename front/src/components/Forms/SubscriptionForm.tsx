@@ -64,9 +64,7 @@ function SubscriptionForm() {
         <Typography variant="h5" align="center" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
             <form onSubmit={handleSubmit(appState.subscription?.status == Status.PENDING_VALIDATION ? onModifySubscription : onSubmitSubscription)}>
                 <div>
-                    <label>
-                        Nom de la résidence :
-                    </label>
+                    <label>Nom de la résidence :</label>
                     <select name="residence" id="residence" {...register("residence")} defaultValue={appState.subscription?.chambre.residence}>
                         <option value="ALJT">ALJT</option>
                         <option value="TWENTY_CAMPUS">TWENTY CAMPUS</option>
@@ -75,7 +73,7 @@ function SubscriptionForm() {
                     </select>
                 </div>
                 <div>
-                    <label>Numéro de logement :</label>
+                    <label>Numéro de logement :</label>
                     <input required type="text" name="name" placeholder="Numéro de logement" {...register("name")} defaultValue={appState.subscription?.chambre.name} />
                 </div>
                 <div>
