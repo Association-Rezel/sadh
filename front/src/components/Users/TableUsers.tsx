@@ -15,6 +15,7 @@ import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
 import { User } from "../../utils/types";
+import { Link } from "react-router-dom";
 
 interface TablePaginationActionsProps {
     count: number;
@@ -100,7 +101,9 @@ export function TableUsers({ rows }: TableUsersProps) {
                         ).map((row) => (
                             <TableRow key={row.name}>
                                 <TableCell component="th" scope="row">
-                                    {row.name}
+                                    <Link to={"/admin/users/" + row.keycloak_id}>
+                                        {row.name}
+                                    </Link>
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
                                     {/*row.residence*/}

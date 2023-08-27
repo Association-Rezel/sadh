@@ -7,6 +7,7 @@ from fastapi.responses import Response
 from back.core.users import get_users
 from back.database import Session
 from back.database.subscriptions import DBSubscription
+from back.database.users import User as DBUser
 from back.email import send_admin_message
 from back.env import ENV
 from back.interfaces import User
@@ -18,17 +19,13 @@ from back.utils.router_manager import ROUTEURS
 router = ROUTEURS.new("users")
 
 
-@router.get("/")
-def _(_db: Session = db, _: None = must_be_admin) -> list[User]:
-    """This is some docs."""
-    return get_users(_db)
-
 @router.get("/me")
 async def _me(
     _user: User = user,
 ) -> User:
     """Get the current user's identity."""
     return _user
+
 
 @router.get("/me/subscription")
 async def _get_user_subscriptions(
@@ -42,6 +39,7 @@ async def _get_user_subscriptions(
         response.status_code = 404
         return HTTPException(status_code=404, detail="User has no subscription")
     return Subscription.from_orm(sub)
+
 
 @router.post("/me/subscription", status_code=201)
 async def _subscribe(
@@ -61,8 +59,13 @@ async def _subscribe(
     )
     _db.add(subscription)
     _db.commit()
-    send_admin_message("Demande d'abonnement", f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/")
+
+    send_admin_message(
+        "Demande d'abonnement",
+        f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/",
+    )
     return Subscription.from_orm(subscription)
+
 
 @router.put("/me/subscription", status_code=200)
 async def _update_subscription(
@@ -83,6 +86,7 @@ async def _update_subscription(
     _db.commit()
     return Subscription.from_orm(subscription)
 
+
 @router.delete("/me/subscription", status_code=200)
 async def _unsubscribe(
     response: Response,
@@ -101,5 +105,51 @@ async def _unsubscribe(
     subscription.unsubscribe_reason = unsubscribe_reason
     subscription.status = Status.PENDING_UNSUBSCRIPTION
     _db.commit()
-    send_admin_message("Demande de désabonnement", f"Un utilisateur a demandé à se désabonner : {_user.name} - {_user.email}\n\nPour valider la désinscription, rendez-vous sur {ENV.frontend_url}/admin/")
+
+    send_admin_message(
+        "Demande de désabonnement",
+        f"Un utilisateur a demandé à se désabonner : {_user.name} - {_user.email}\n\nPour valider la désinscription, rendez-vous sur {ENV.frontend_url}/admin/",
+    )
     return Subscription.from_orm(subscription)
+
+
+### ADMIN
+
+
+@router.get("/")
+def _(_db: Session = db, _: None = must_be_admin) -> list[User]:
+    """This is some docs."""
+    return get_users(_db)
+
+
+@router.get("/{keycloak_id}")
+async def _get(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> User:
+    user = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return User.from_orm(user)
+
+
+@router.get("/{keycloak_id}/subscription")
+async def _get_subscription(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> Subscription:
+    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="User has no subscription")
+    return Subscription.from_orm(sub)
+
+
+@router.get("/{keycloak_id}/ont")
+async def _get_ont(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> None:
+    raise HTTPException(status_code=501, detail="Not implemented")
