@@ -16,6 +16,7 @@ import Users from "./components/Users/Users";
 import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
+import User from "./components/Users/User";
 
 function AppRouter() {
     const appState = useContext(AppStateContext);
@@ -41,6 +42,7 @@ function AppRouter() {
                 <Route path="admin" element={<AdminDashboard />}>
                     <Route index Component={PageAdmin} />
                     <Route path="users" Component={Users} />
+                    <Route path="users/:keycloak_id" Component={User} />
                 </Route>
             )}
             <Route path="*" Component={Page404} />

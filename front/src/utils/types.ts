@@ -1,5 +1,5 @@
 export interface User {
-    keycloak_id: number;
+    keycloak_id: string;
     is_admin: boolean;
     email: string;
     name: string;
@@ -60,6 +60,11 @@ export interface Box {
     openPorts: PortRule[];
 }
 
+export interface ONT {
+    serial: string;
+    position_PM: string;
+}
+
 export interface PortRule {
     id?: number;
     service: string;
@@ -94,6 +99,9 @@ export interface ApiInterface {
     fetchOpenPorts(): Promise<PortRule[]>;
     setOpenPort(port:PortRule): Promise<void>;
     deleteOpenPort(id:number): Promise<void>;
+    fetchUser(user_keycloak_id: string): Promise<User>;
+    fetchSubscription(user_keycloak_id: string): Promise<Subscription>;
+    fetchONT(user_keycloak_id: string): Promise<ONT>;
 }
 
 

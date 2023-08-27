@@ -1,7 +1,16 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    fetchUser(user_keycloak_id: string): Promise<User> {
+        throw new Error("Method not implemented.");
+    }
+    fetchSubscription(user_keycloak_id: string): Promise<Subscription> {
+        throw new Error("Method not implemented.");
+    }
+    fetchONT(user_keycloak_id: string): Promise<ONT> {
+        throw new Error("Method not implemented.");
+    }
     loginRedirect(redirectUri: string): void {
         throw new Error("Method not implemented.");
     }
@@ -72,7 +81,7 @@ export class DummyApi implements ApiInterface {
         ];
     
     user1 : User = {
-        keycloak_id: 1,
+        keycloak_id: "1",
         is_admin: false,
         name: "Denis Fouchard",
         email: "denis@exaple.com",
@@ -129,19 +138,19 @@ export class DummyApi implements ApiInterface {
     async fetchUsers(): Promise<User[]> {
         return [
             {
-                keycloak_id: 1,
+                keycloak_id: "1",
                 is_admin: false,
                 name: "toto",
                 email: "toto@example.com",
             },
             {
-                keycloak_id: 2,
+                keycloak_id: "2",
                 is_admin: false,
                 name: "tata",
                 email: "tata@example.com",
             },
             {
-                keycloak_id: 3,
+                keycloak_id: "3",
                 is_admin: false,
                 name: "tutu",
                 email: "tutu@example.com",
@@ -150,7 +159,7 @@ export class DummyApi implements ApiInterface {
     }
     async fetchMe(): Promise<User> {
         return {
-            keycloak_id: 7897,
+            keycloak_id: "7897",
             is_admin: true,
             name: "itsme",
             email: "itsme@example.com",
@@ -254,4 +263,6 @@ export class DummyApi implements ApiInterface {
         port.id = ports.length;
         ports.push(port);
     }
+
+    
 }

@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT } from "./types";
 import { Config } from "./Config";
 import { getAppState, updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
@@ -157,5 +157,17 @@ export class RemoteApi implements ApiInterface {
 
     async fetchConnectedDevices(): Promise<Device[]> {
         return await this.fetchOrDefault("/box/connectedDevices", []);
+    }
+
+    async fetchUser(user_keycloak_id: string): Promise<User> {
+        return await this.fetchOrDefault("/users/" + user_keycloak_id, null, true);
+    }
+
+    async fetchONT(user_keycloak_id: string): Promise<ONT> {
+        return await this.fetchOrDefault("/users/" + user_keycloak_id + "/ont", null, true);
+    }
+
+    async fetchSubscription(user_keycloak_id: string): Promise<Subscription> {
+        return await this.fetchOrDefault("/users/" + user_keycloak_id + "/subscription", null, true);
     }
 }
