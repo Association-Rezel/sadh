@@ -23,6 +23,7 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
     objects_to_add = set(objects_to_sync.keys()) - objects_present
     for obj in objects_to_add:
         try:
+            print(f"Adding {obj} to {api_group}/{api_resource}")
             _api.create(slug=obj, **objects_to_sync[obj])
         except Exception as e:
             print(f"Erreur: {e}")
@@ -76,7 +77,7 @@ def assert_ips(api: Api) -> None:
 
 
 def assert_device_role(api: Api) -> None:
-    """Assert all public ips exists."""
+    """Assert all device roles exist."""
     _sync_nb_objects(
         {role.name.lower(): {"name": role.name.lower()} for role in DeviceRoles},
         "dcim",

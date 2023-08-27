@@ -61,7 +61,7 @@ export interface Box {
 }
 
 export interface ONT {
-    serial: string;
+    serial_number: string;
     position_PM: string;
 }
 
