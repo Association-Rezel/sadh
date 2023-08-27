@@ -11,9 +11,11 @@ from back.database.users import User as DBUser
 from back.email import send_admin_message
 from back.env import ENV
 from back.interfaces import User
-from back.interfaces.box import Chambre, Status
+from back.interfaces.auth import KeycloakId
+from back.interfaces.box import ONT, Chambre, Status
 from back.interfaces.subscriptions import Subscription
 from back.middlewares import db, must_be_admin, user
+from back.netbox_client import NETBOX
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("users")
@@ -151,5 +153,8 @@ async def _get_ont(
     keycloak_id: str,
     _db: Session = db,
     _: None = must_be_admin,
-) -> None:
-    raise HTTPException(status_code=501, detail="Not implemented")
+) -> ONT:
+    ont = NETBOX.get_ont_from_user(KeycloakId(keycloak_id))
+    if not ont:
+        raise HTTPException(status_code=404, detail="No ONT found for this user")
+    return ont

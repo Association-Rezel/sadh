@@ -28,5 +28,5 @@ def get_or_create_from_token(db: Session, token: Token) -> User:
         u = models.User(keycloak_id=token.keycloak_id, name=token.name, email=token.email)
         db.add(u)
         db.commit()
-        NETBOX.create_user_tag(token.keycloak_id)
+        NETBOX.create_user_tag(u)
     return User.from_orm(u)

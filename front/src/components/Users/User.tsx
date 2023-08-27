@@ -7,7 +7,7 @@ import { Typography } from "@mui/material";
 function User() {
     let { keycloak_id } = useParams();
 
-    const [user, setUser] = useState<UserType>({ name: "", email: "", keycloak_id: "", is_admin: false });
+    const [user, setUser] = useState<UserType>();
     const [ont, setONT] = useState<ONT>();
     const [subscription, setSubscription] = useState<Subscription>();
 
@@ -70,9 +70,12 @@ function ONTSection({ ont }: { ont: ONT }) {
 
     return (
         <>
-            <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 10 }}>
-                <strong>Numéro de série</strong> : {Status[ont.serial]}<br />
-                <strong>Position au PM</strong> : {Status[ont.position_PM]}<br />
+            <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
+                ONT
+            </Typography>
+            <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
+                <strong>Numéro de série</strong> : {ont.serial_number}<br />
+                <strong>Position au PM</strong> : {ont.position_PM}<br />
             </Typography>
         </>
     )

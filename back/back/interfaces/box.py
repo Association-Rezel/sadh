@@ -20,6 +20,7 @@ class DeviceRoles(Enum):
     """Roles des devices."""
 
     BOX = auto()
+    ONT = auto()
 
 
 class PublicSubnets(Enum):
@@ -66,7 +67,7 @@ class Residence(Enum):
 class Chambre(BaseModel):
     """Chambre.
 
-    Une chambre d'adhérent est représentée par une [location](https://docs.netbox.dev/en/stable/models/dcim/location/)
+    Une chambre d'adhérent est représentée par un [rack](https://docs.netbox.dev/en/stable/models/dcim/rack/)
     sur netbox.
     """
 
@@ -232,3 +233,8 @@ class DHCPLease(BaseModel):
     ip: IP
     mac: str
     hostname: str | None
+
+
+class ONT(BaseModel):
+    serial_number: str
+    position_PM: str
