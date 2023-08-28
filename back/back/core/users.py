@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from back.database import models
 from back.interfaces import Token, User
+from back.interfaces.subscriptions import Subscription
 from back.netbox_client import NETBOX
 
 __logger = logging.getLogger(__name__)
@@ -16,6 +17,15 @@ def get_users(db: Session) -> list[User]:
         map(
             User.from_orm,
             db.query(models.User).all(),
+        ),
+    )
+
+def get_subscriptions(db: Session) -> list[Subscription]:
+    """Get all subscriptions."""
+    return list(
+        map(
+            Subscription.from_orm,
+            db.query(models.DBSubscription).all(),
         ),
     )
 

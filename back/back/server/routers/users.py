@@ -4,7 +4,7 @@
 from fastapi import HTTPException
 from fastapi.responses import Response
 
-from back.core.users import get_users
+from back.core.users import get_subscriptions, get_users
 from back.database import Session
 from back.database.subscriptions import DBSubscription
 from back.database.users import User as DBUser
@@ -30,7 +30,7 @@ async def _me(
 
 
 @router.get("/me/subscription")
-async def _get_user_subscriptions(
+async def _get_me_subscription(
     response: Response,
     _user: User = user,
     _db: Session = db,
@@ -44,7 +44,7 @@ async def _get_user_subscriptions(
 
 
 @router.post("/me/subscription", status_code=201)
-async def _subscribe(
+async def _me_subscribe(
     response: Response,
     chambre: Chambre,
     _user: User = user,
@@ -70,7 +70,7 @@ async def _subscribe(
 
 
 @router.put("/me/subscription", status_code=200)
-async def _update_subscription(
+async def _me_update_subscription(
     response: Response,
     chambre: Chambre,
     _user: User = user,
@@ -90,7 +90,7 @@ async def _update_subscription(
 
 
 @router.delete("/me/subscription", status_code=200)
-async def _unsubscribe(
+async def _me_unsubscribe(
     response: Response,
     unsubscribe_reason: str,
     _user: User = user,
@@ -119,25 +119,45 @@ async def _unsubscribe(
 
 
 @router.get("/")
-def _(_db: Session = db, _: None = must_be_admin) -> list[User]:
-    """This is some docs."""
+def _get_users(_db: Session = db, _: None = must_be_admin) -> list[User]:
+    """Get all users."""
     return get_users(_db)
 
+@router.get("/subscriptions")
+def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subscription]:
+    """Get all subscriptions."""
+    return get_subscriptions(_db)
 
 @router.get("/{keycloak_id}")
-async def _get(
+async def _user_get(
     keycloak_id: str,
     _db: Session = db,
     _: None = must_be_admin,
 ) -> User:
-    user = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
-    if not user:
+    u = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
+    if not u:
         raise HTTPException(status_code=404, detail="User not found")
-    return User.from_orm(user)
+    return User.from_orm(u)
+
+
+@router.put("/{keycloak_id}")
+async def _user_update(
+    u: User,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> User:
+    db_user = _db.query(DBUser).filter_by(keycloak_id=u.keycloak_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_user.name = u.name
+    db_user.email = u.email
+    db_user.is_admin = u.is_admin
+    _db.commit()
+    return User.from_orm(db_user)
 
 
 @router.get("/{keycloak_id}/subscription")
-async def _get_subscription(
+async def _user_get_subscription(
     keycloak_id: str,
     _db: Session = db,
     _: None = must_be_admin,
@@ -147,9 +167,23 @@ async def _get_subscription(
         raise HTTPException(status_code=404, detail="User has no subscription")
     return Subscription.from_orm(sub)
 
+@router.put("/{keycloak_id}/subscription")
+async def _user_update_subscription(
+    subscription: Subscription,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> Subscription:
+    sub = _db.query(DBSubscription).filter_by(user_id=subscription.user_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="User has no subscription")
+    sub.chambre = subscription.chambre
+    sub.status = subscription.status
+    sub.unsubscribe_reason = subscription.unsubscribe_reason
+    _db.commit()
+    return Subscription.from_orm(sub)
 
 @router.get("/{keycloak_id}/ont")
-async def _get_ont(
+async def _user_get_ont(
     keycloak_id: str,
     _db: Session = db,
     _: None = must_be_admin,

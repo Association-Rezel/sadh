@@ -1,13 +1,12 @@
 """NetBoxClient class definition."""
 import logging
-from turtle import pos
 
 from pynetbox import RequestError
 from pynetbox.core.api import Api
-from sqlalchemy import desc
+from pynetbox.core.query import RequestError
 
 from back.env import ENV
-from back.errors import NetBoxConnectionError, UnexpectedNetboxSchemaError
+from back.errors import NetBoxConnectionError
 from back.interfaces.auth import KeycloakId
 from back.interfaces.box import ONT, Box, BoxModel, DeviceRoles
 from back.interfaces.users import User
@@ -34,7 +33,7 @@ class NetBoxClient:
 
     def create_user_tag(self, user: User) -> None:
         """Create a tag for a user."""
-        self.api.extras.tags.create(slug=user.keycloak_id, name=user.keycloak_id, description=user.name)
+        self.api.extras.tags.create(slug=str(user.keycloak_id), name=str(user.keycloak_id), description=user.name)
 
     def get_box_from_user(self, _id: KeycloakId) -> Box | None:
         """Try to find the box of the user."""
@@ -52,7 +51,11 @@ class NetBoxClient:
 
     def get_ont_from_user(self, _id: KeycloakId) -> ONT | None:
         """Try to find the ont of the user."""
-        res = list(self.api.dcim.devices.filter(tag=_id, device_roles=DeviceRoles.ONT, limit=1))
+        try:
+            res = list(self.api.dcim.devices.filter(tag=str(_id), device_roles=DeviceRoles.ONT, limit=1))
+        except RequestError as ex:
+            logger.exception(f"Error while getting ONT from user {_id}")
+            return None
         if not res:
             return None
         nb_ont = res[0]
