@@ -23,11 +23,3 @@ class PortOutOfRangeError(ValueError):
     def __init__(self, value: int) -> None:
         """Raised port not in [1 - 65535]."""
         super().__init__(f"Port must be in in [1 - 65535] : Got {value}.")
-
-
-class UnexpectedNetboxSchemaError(ValueError):
-    """Raised when the NetBox schema is not consistent with what we expect."""
-
-    def __init__(self, description: str) -> None:
-        """Raised when the NetBox schema is not consistent with what we expect."""
-        super().__init__(f"Unexpected netbox schema : {description}")
