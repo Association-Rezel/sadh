@@ -80,31 +80,44 @@ class Chambre(BaseModel):
     __slug = validator("name", allow_reuse=True)(slug)
 
 
-class BoxModel(BaseModel):
-    """A box model must define Name and Manufacturer."""
+class DeviceModel(BaseModel):
+    """A device model must define Name and Manufacturer."""
 
     name: str = Field(
         None,
-        description="Nom du modele de la box.",
+        description="Nom du modele du device.",
     )
     manufacturer: str = Field(
         None,
-        description="Nom du constructeur de la box.",
+        description="Nom du constructeur du device.",
     )
 
     __slug = validator("name", "manufacturer", allow_reuse=True)(slug)
 
 
-class Models(Enum):
-    """Box model.
+class BoxModel(DeviceModel):
+    """A box model is a device model."""
 
-    Un type de box est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/devicetype/) sur netbox.
+    pass
+
+
+class ONTModel(DeviceModel):
+    """An ONT model is a device model."""
+
+    pass
+
+
+class Models(Enum):
+    """Box & ONT models.
+
+    Un type de box / ONT est représentée par un [Site](https://docs.netbox.dev/en/stable/models/dcim/devicetype/) sur netbox.
 
     La valeur de l'enum en lowercase donne le nom du device type et son slug.
     """
 
     XIAOMI_AC2350 = BoxModel(manufacturer="XIAOMI", name="AC2350")
     TP_LINK_ARCHER_C6V3 = BoxModel(manufacturer="TP_LINK", name="C6V3")
+    NOKIA_G_010G_Q = ONTModel(manufacturer="NOKIA", name="G-010G-Q")
 
 
 class Box(BaseModel):
@@ -137,7 +150,7 @@ class Box(BaseModel):
     def model_must_be_in_enum(value: Any) -> BoxModel:
         """Model must be in enum."""
         for _model in Models:
-            if _model.value == value:
+            if type(_model) == BoxModel and _model.value == value:
                 return value
         raise ValueError(f"Model {value} is not in Models enum")  # noqa: EM102
 
@@ -238,3 +251,4 @@ class DHCPLease(BaseModel):
 class ONT(BaseModel):
     serial_number: str
     position_PM: str
+    netbox_id: int

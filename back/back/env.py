@@ -58,6 +58,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
     kc_client_id: str
     kc_client_secret: str
 
+    charon_url: str
+    charon_token: str
+
     def __init__(self) -> None:
         """Load all variables."""
         load_dotenv()
@@ -89,6 +92,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.matrix_user = get_or_raise("MATRIX_USER")
         self.matrix_password = get_or_raise("MATRIX_PASSWORD")
+
+        self.charon_url = get_or_raise("CHARON_URL")
+        self.charon_token = get_or_raise("CHARON_TOKEN")
 
 
 ENV = Env()

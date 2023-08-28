@@ -63,6 +63,7 @@ export interface Box {
 export interface ONT {
     serial_number: string;
     position_PM: string;
+    netbox_id: string;
 }
 
 export interface PortRule {
@@ -102,6 +103,7 @@ export interface ApiInterface {
     fetchUser(user_keycloak_id: string): Promise<User>;
     fetchSubscription(user_keycloak_id: string): Promise<Subscription>;
     fetchONT(user_keycloak_id: string): Promise<ONT>;
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
 }
 
 

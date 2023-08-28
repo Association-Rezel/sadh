@@ -2,6 +2,9 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscripti
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
+        throw new Error("Method not implemented.");
+    }
     fetchUser(user_keycloak_id: string): Promise<User> {
         throw new Error("Method not implemented.");
     }

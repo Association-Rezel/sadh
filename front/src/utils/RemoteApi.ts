@@ -20,22 +20,22 @@ export class RemoteApi implements ApiInterface {
         return await this.fetchOrDefault("/box/openPorts", []);
     }
     async setOpenPort(port: PortRule): Promise<void> {
-        return await this.fetchOrDefault("/box/setOpenPort/"+port, null);
+        return await this.fetchOrDefault("/box/setOpenPort/" + port, null);
     }
     async deleteOpenPort(id: number): Promise<void> {
-        return await this.fetchOrDefault("/box/deleteOpenPort/"+id, null);
+        return await this.fetchOrDefault("/box/deleteOpenPort/" + id, null);
     }
     async fetchDHCPLeases(): Promise<DHCPLease[]> {
         return await this.fetchOrDefault("/box/dhcpLeases", []);
     }
     async fetchDHCPLease(id: number): Promise<DHCPLease> {
-        return await this.fetchOrDefault("/box/dhcpLease/"+id, null);
+        return await this.fetchOrDefault("/box/dhcpLease/" + id, null);
     }
     async addDHCPLease(device: DHCPLease): Promise<void> {
-        return await this.fetchOrDefault("/box/addDhcpLease/"+device, null);
+        return await this.fetchOrDefault("/box/addDhcpLease/" + device, null);
     }
     async deleteDHCPLease(id: number): Promise<void> {
-        return await this.fetchOrDefault("/box/deleteDhcpLease/"+id, null);
+        return await this.fetchOrDefault("/box/deleteDhcpLease/" + id, null);
     }
     token: string;
 
@@ -43,7 +43,7 @@ export class RemoteApi implements ApiInterface {
         updateAppState({ logged: false, user: null, token: "" });
     }
 
-    async loginRedirect(redirectUri:string): Promise<void> {
+    async loginRedirect(redirectUri: string): Promise<void> {
         keycloak.login({ redirectUri: redirectUri });
     }
 
@@ -74,11 +74,11 @@ export class RemoteApi implements ApiInterface {
         return await response.json();
     }
 
-    async myAuthenticatedRequest(url: string, body: any, method: string = "POST") {        
+    async myAuthenticatedRequest(url: string, body: any, method: string = "POST") {
         if (!this.token)
             throw new Error("Tried to make an authenticated request without being logged in");
 
-        let config : RequestInit = {
+        let config: RequestInit = {
             method: method,
             credentials: 'include',
             headers: {
@@ -110,11 +110,11 @@ export class RemoteApi implements ApiInterface {
         const user = await this.fetchMe();
         console.log("user", user);
         if (user?.keycloak_id) {
-            updateAppState({user: user});
+            updateAppState({ user: user });
             this.fetchMySubscription().then((subscription) => {
-                updateAppState({subscription: subscription})
+                updateAppState({ subscription: subscription })
             });
-        } else{
+        } else {
             updateAppState({ logged: false, user: null, token: "" });
         }
     }
@@ -169,5 +169,9 @@ export class RemoteApi implements ApiInterface {
 
     async fetchSubscription(user_keycloak_id: string): Promise<Subscription> {
         return await this.fetchOrDefault("/users/" + user_keycloak_id + "/subscription", null, true);
+    }
+
+    async registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
+        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version, null, "POST");
     }
 }
