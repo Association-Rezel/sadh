@@ -22,8 +22,16 @@ function User() {
 
     const onSubmit: SubmitHandler<SubscriptionFlow> = (data) => {
         Api.modifySubscriptionFlow(data.subscription_id, data)
-            .then((updated) => { setCurrentSubFlow(updated) })
-            .finally(() => { reset(data) });
+            .then((updated) => {
+                if (updated === null) {
+                    alert("Erreur lors de la modification. Veuillez essayer de recharger la page.");
+                    return;
+                }
+                setCurrentSubFlow(updated);
+                reset(data);
+            }).catch((error) => {
+                alert("Erreur lors de la modification. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
+            });
     }
 
     useEffect(() => {
