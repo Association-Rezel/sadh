@@ -1,7 +1,13 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
+        throw new Error("Method not implemented.");
+    }
+    fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
+        throw new Error("Method not implemented.");
+    }
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
         throw new Error("Method not implemented.");
     }

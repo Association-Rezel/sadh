@@ -3,7 +3,6 @@ import {AppStateContext} from "../../utils/AppState";
 
 export function PageAdmin() {
     const appState = useContext(AppStateContext);
-
     return (
         <div>
             <h1>Admin</h1>

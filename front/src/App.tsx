@@ -16,7 +16,7 @@ import Users from "./components/Users/Users";
 import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
-import User from "./components/Users/User";
+import User from "./components/AdminDashboard/User/User";
 
 function AppRouter() {
     const appState = useContext(AppStateContext);
