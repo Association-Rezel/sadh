@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow } from "./types";
 import { Config } from "./Config";
 import { getAppState, updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
@@ -173,5 +173,13 @@ export class RemoteApi implements ApiInterface {
 
     async registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
         return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version, null, "POST");
+    }
+
+    async fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
+        return await this.fetchOrDefault("/subscriptions/" + subscription_id + "/subscription_flow", null, true);
+    }
+
+    async modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
+        return await this.myAuthenticatedRequest("/subscriptions/" + subscription_id + "/subscription_flow", subscriptionFlow, "PUT");
     }
 }

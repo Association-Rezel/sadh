@@ -27,6 +27,22 @@ export interface Subscription {
     unsubscribe_reason: string;
 }
 
+export interface SubscriptionFlow {
+    subscription_id: string;
+    erdv_id: string;
+    erdv_information: string;
+    present_for_appointment: string;
+    ref_commande: string;
+    ref_prestation: string;
+    ont_lent: boolean;
+    box_lent: boolean;
+    box_information: string;
+    dolibarr_information: string;
+    cmd_acces_sent: boolean;
+    cr_mes_sent: boolean;
+    comment: string;
+}
+
 export interface Order {
     id: number;
     date: string;
@@ -104,6 +120,8 @@ export interface ApiInterface {
     fetchSubscription(user_keycloak_id: string): Promise<Subscription>;
     fetchONT(user_keycloak_id: string): Promise<ONT>;
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
+    fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
+    modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
 }
 
 
