@@ -34,6 +34,8 @@ services:
     image: jboss/keycloak:latest
     depends_on:
       - keycloak-postgres
+    volumes:
+      - keycloak:/opt/jboss/keycloak/
     environment:
       DB_VENDOR: postgres
       DB_ADDR: keycloak-postgres
@@ -70,6 +72,7 @@ services:
       - "127.0.0.1:8003:8080"
 
 volumes:
+  keycloak:
   keycloak-postgres:
   postgres:
 
