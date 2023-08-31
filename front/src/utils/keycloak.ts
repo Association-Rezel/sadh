@@ -16,7 +16,7 @@ if (Config.API_DUMMY==false)
 keycloak.init({
     scope: 'openid phone',
     //token: localStorage.getItem("keycloak-token"),
-    onLoad: 'login-required'
+    //onLoad: 'login-required'
 }).then(function (authenticated) {
     if (authenticated) {
         // On arrive ici si on vient de se connecter
