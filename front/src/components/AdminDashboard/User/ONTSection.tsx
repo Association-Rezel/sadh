@@ -30,8 +30,8 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
 
 
     return (
-        <div>
-            <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
+        <div className="mt-10">
+            <Typography variant="h5" align="left" color="text.primary" component="div">
                 ONT
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
