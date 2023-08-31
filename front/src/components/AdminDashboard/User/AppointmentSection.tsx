@@ -1,5 +1,6 @@
 import { SubscriptionFlow } from "../../../utils/types";
-import { TextField, TextareaAutosize, Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
+import { Textarea } from "@mui/joy";
 
 export default function AppointmentSection({ currentSubFlow, registerToSubFlowForm }: { currentSubFlow: SubscriptionFlow, registerToSubFlowForm: any }) {
     return (
@@ -12,12 +13,14 @@ export default function AppointmentSection({ currentSubFlow, registerToSubFlowFo
                 {currentSubFlow !== null && (
                     <>
                         <strong>Informations</strong>
-                        <TextareaAutosize className="block mb-5" minRows={3} {...registerToSubFlowForm("erdv_information")} />
-                        <div>
-                            <strong>ID E-RDV</strong> : <input type="text" {...registerToSubFlowForm("erdv_id")} />
+                        <Textarea minRows={3} {...registerToSubFlowForm("erdv_information")} />
+                        <div className="mt-5">
+                            <strong>ID E-RDV</strong>
+                            <TextField size="small" fullWidth {...registerToSubFlowForm("erdv_id")} />
                         </div>
-                        <div>
-                            <strong>Personne présente au rdv</strong> : <input type="text" {...registerToSubFlowForm("present_for_appointment")} />
+                        <div className="mt-5">
+                            <strong>Personne présente au rdv</strong>
+                            <TextField size="small" fullWidth {...registerToSubFlowForm("present_for_appointment")} />
                         </div>
                     </>
                 )}

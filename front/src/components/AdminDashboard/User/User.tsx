@@ -9,7 +9,7 @@ import { Subscription, SubscriptionFlow } from "../../../utils/types";
 import { SubmitHandler, set, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
-import { Button } from "@mui/material";
+import { Button, Divider, Stack } from "@mui/material";
 
 
 function User() {
@@ -53,11 +53,11 @@ function User() {
     return (
         <div>
             <UserSection keycloak_id={keycloak_id} />
-            <div className="flex justify-between flex-wrap gap-x-20">
+            <Stack direction={"row"} spacing={4} alignItems={"center"} justifyContent={"space-between"} flexWrap="wrap" divider={<Divider orientation="vertical" flexItem />}>
                 <SubscriptionSection subscription={subscription} registerToSubFlowForm={register} />
                 <ONTSection keycloak_id={keycloak_id} registerToSubFlowForm={register} />
                 <BoxSection currentSubFlow={currentSubFlow} registerToSubFlowForm={register} />
-            </div>
+            </Stack>
             <div className="flex justify-between flex-wrap gap-x-20">
                 <AppointmentSection currentSubFlow={currentSubFlow} registerToSubFlowForm={register} />
                 <InteropSection currentSubFlow={currentSubFlow} registerToSubFlowForm={register} />

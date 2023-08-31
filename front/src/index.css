@@ -55,7 +55,7 @@ button:focus-visible {
 }
 
 
-form {
+form.subform {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -65,8 +65,8 @@ form {
   padding: 0 16px;
 }
 
-form > div input:not([type="submit"]),
-form > div select {
+form.subform > div input:not([type="submit"]),
+form.subform > div select {
   font-size: 16px;
   line-height: 28px;
   padding: 8px 16px;
@@ -86,7 +86,7 @@ form > div select {
   margin: 1em;
 }
 
-input[type="submit"] {
+.subform > input[type="submit"] {
   background-color: rgb(84, 105, 212);
   box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
               rgba(0, 0, 0, 0) 0px 0px 0px 0px, 
@@ -101,7 +101,7 @@ input[type="submit"] {
   padding: 8px 16px;
   border-radius: 1em;
   cursor: pointer;
-} 
+}
 
 button:disabled > a {
   color: #666 !important;
