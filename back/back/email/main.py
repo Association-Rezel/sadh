@@ -20,7 +20,7 @@ def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None,
     """Send email."""
     try:
         message = MIMEMultipart("mixed")
-        message["From"] = "Pôle FAI Rezel <faipp@rezel.net>"
+        message["From"] = "FAI Rezel <faipp@rezel.net>"
         message["To"] = to
         if bcc:
             message["Bcc"] = bcc
