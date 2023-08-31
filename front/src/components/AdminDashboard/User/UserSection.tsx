@@ -20,7 +20,7 @@ export default function UserSection({ keycloak_id }: { keycloak_id: string }) {
                 Adhérent : {user.name}
             </Typography>
             <Typography variant="body1" align="center" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                <strong>{user.email}</strong>
+                <strong>{user.email} - {user.phone}</strong>
             </Typography>
         </div>
     )

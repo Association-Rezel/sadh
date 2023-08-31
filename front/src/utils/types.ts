@@ -3,6 +3,7 @@ export interface User {
     is_admin: boolean;
     email: string;
     name: string;
+    phone: string;
 }
 
 export enum Status {
