@@ -16,7 +16,7 @@ if (Config.API_DUMMY==false)
 keycloak.init({
     scope: 'openid phone',
     //token: localStorage.getItem("keycloak-token"),
-    //onLoad: 'login-required'
+    onLoad: 'login-required'
 }).then(function (authenticated) {
     if (authenticated) {
         // On arrive ici si on vient de se connecter
@@ -24,7 +24,7 @@ keycloak.init({
         //localStorage.setItem("keycloak-token",keycloak.token);
         Api.token = keycloak.token;
     }
-
+    console.log("Keycloak authenticated", authenticated);
 
     // On peut arriver ici si on est connecté mais qu'on ne vient pas de le faire.
     // Dans ce cas, une requête supplémentaire pour check :
@@ -32,8 +32,27 @@ keycloak.init({
 
 }).catch(function () {
     // TODO : erreur de connexion
+    console.log("Erreur de connexion");
     updateAppState({logged: false, token: ""})
 });
+
+// Toutes les 4 minutes, on rafraichit le token si il expire dans les 5 minutes
+// TODO : Les best practice seraient de rafraichir le token avant chaque requête, et d'avoir
+// la requête dans le callback de updateToken
+setInterval(() => {
+    keycloak.updateToken(5 * 60).then((refreshed) => {
+        if (refreshed) {
+            console.log('Token refreshed');
+            updateAppState({logged: true, token: keycloak.token})
+            Api.token = keycloak.token;
+        } else {
+            console.log('Token not refreshed, valid for '
+                + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');
+        }
+    }).catch(() => {
+        console.log('Failed to refresh token');
+    });
+}, 4 * 60 * 1000)
 
 // TODO : (debug) enlever
 //@ts-ignore
