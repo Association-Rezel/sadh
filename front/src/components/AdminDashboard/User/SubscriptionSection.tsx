@@ -1,6 +1,5 @@
 import { Status, Subscription } from "../../../utils/types";
-import { Typography } from "@mui/material";
-import { Textarea } from "@mui/joy";
+import { TextField, Typography } from "@mui/material";
 
 
 export default function SubscriptionSection({ subscription, registerToSubFlowForm }: { subscription: Subscription, registerToSubFlowForm: any }) {
@@ -15,7 +14,9 @@ export default function SubscriptionSection({ subscription, registerToSubFlowFor
                 <strong>Statut</strong> : {Status[subscription.status]}<br />
                 <strong>Chambre</strong> : {subscription.chambre.name} - {subscription.chambre.residence}<br />
                 <strong>Dolibarr</strong>
-                <Textarea className="w-80" minRows={3} {...registerToSubFlowForm("dolibarr_information")} variant="outlined" placeholder="Lien Dolibarr"/>
+                <div className="my-3">
+                    <TextField multiline variant="outlined" className="bg-white w-80" minRows={3} {...registerToSubFlowForm("dolibarr_information")} placeholder="Lien Dolibarr"/>
+                </div>
             </Typography>
         </div>
     )

@@ -1,6 +1,5 @@
-import { Textarea } from "@mui/joy";
 import { SubscriptionFlow } from "../../../utils/types";
-import { Typography } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 
 export default function BoxSection({ currentSubFlow, registerToSubFlowForm }: { currentSubFlow: SubscriptionFlow, registerToSubFlowForm: any }) {
     return (
@@ -13,7 +12,9 @@ export default function BoxSection({ currentSubFlow, registerToSubFlowForm }: { 
                 {currentSubFlow !== null && (
                     <>
                         <strong>Informations</strong>
-                        <Textarea minRows={3} className="w-80" {...registerToSubFlowForm("box_information")} />
+                        <div className="my-3">
+                            <TextField multiline variant="outlined" className="bg-white w-80" minRows={3} {...registerToSubFlowForm("box_information")} />
+                        </div>
                         <div className="flex items-center">
                             <input type="checkbox" {...registerToSubFlowForm("box_lent")} />
                             <strong className="pl-2">Box confiée à l'adhérent</strong>
