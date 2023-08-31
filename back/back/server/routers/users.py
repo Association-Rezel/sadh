@@ -8,7 +8,7 @@ from back.core.users import get_subscriptions, get_users
 from back.database import Session
 from back.database.subscriptions import DBSubscription
 from back.database.users import User as DBUser
-from back.email import send_admin_message
+from back.email import send_admin_message, send_email_contract
 from back.env import ENV
 from back.interfaces import User
 from back.interfaces.auth import KeycloakId
@@ -64,8 +64,9 @@ async def _me_subscribe(
 
     send_admin_message(
         "Demande d'abonnement",
-        f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/",
+        f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/ \n\nUn email avec les détails lui a été envoyé.",
     )
+    send_email_contract(_user.email)
     return Subscription.from_orm(subscription)
 
 
