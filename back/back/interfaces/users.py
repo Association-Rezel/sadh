@@ -13,6 +13,7 @@ class User(BaseModel):
     is_admin: bool
     name: str
     email: str
+    phone: str
 
     @classmethod
     def from_orm(cls, obj: DBUser) -> "User":
@@ -22,4 +23,5 @@ class User(BaseModel):
             is_admin=obj.is_admin,
             name=obj.name,
             email=obj.email,
+            phone=obj.phone,
         )

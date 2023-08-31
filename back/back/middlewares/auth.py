@@ -22,4 +22,5 @@ def token(raw_token: dict = decode) -> Token:
         keycloak_id=KeycloakId(raw_token["sub"]),
         name=raw_token["name"],
         email=raw_token["email"],
+        phone=raw_token["phone"] if "phone" in raw_token else "",
     )

@@ -14,6 +14,7 @@ export const keycloak = new Keycloak({
 if (Config.API_DUMMY==false)
 // TODO : que faire quand le token expire ?
 keycloak.init({
+    scope: 'openid phone',
     //token: localStorage.getItem("keycloak-token"),
     //onLoad: 'login-required'
 }).then(function (authenticated) {

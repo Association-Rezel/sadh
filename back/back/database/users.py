@@ -15,6 +15,7 @@ class User(Base):
 
     name: str = Column(String)  # type: ignore[assignment]
     email: str = Column(String)  # type: ignore[assignment]
+    phone: str = Column(String)  # type: ignore[assignment]
 
     is_active: bool = Column(Boolean, default=True)  # type: ignore[assignment]
     is_admin: bool = Column(Boolean, default=False)  # type: ignore[assignment]

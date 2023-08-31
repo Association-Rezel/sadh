@@ -82,7 +82,7 @@ class NetBoxClient:
         if len(empty_mec_ports) < 1:
             logger.error("No empty MEC port found")
             send_admin_message(
-                ":x: Erreur :x:", "Impossible de trouver un port MEC libre lors de l'enregistrement d'un ONT"
+                ":x: Erreur :x:", "Impossible de trouver un port MEC libre lors de l'enregistrement d'un ONT",
             )
             raise Exception("No empty MEC port found")
         port_in_PM = empty_mec_ports.__next__()
@@ -164,7 +164,8 @@ class NetBoxClient:
 
         if len(nb_ont_interfaces_pon) != 1:
             logger.error(f"Invalid number of PON interfaces for ONT {ont_id}")
-            raise Exception(f"Invalid number of PON interfaces for ONT {ont_id}")
+            msg = f"Invalid number of PON interfaces for ONT {ont_id}"
+            raise Exception(msg)
 
         return nb_ont_interfaces_pon[0]
 
