@@ -41,11 +41,13 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
                     <Stack direction={"column"}
                         spacing={2}>
                         <TextField name="serial_number"
+                            className="bg-white"
                             required
                             label="Numéro de série"
                             onChange={(e) => setSerial(e.target.value)}
                         />
                         <TextField name="software_version"
+                            className="bg-white"
                             required
                             label="Software version"
                             defaultValue={softwareVersion}

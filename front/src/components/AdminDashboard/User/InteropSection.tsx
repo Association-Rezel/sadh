@@ -13,11 +13,11 @@ export default function InteropSection({ currentSubFlow, registerToSubFlowForm }
                     <div>
                         <div className="mt-5">
                             <strong>Ref interne commande Rezel</strong>
-                            <TextField size="small"fullWidth {...registerToSubFlowForm("ref_commande")} />
+                            <TextField className="bg-white" size="small" fullWidth {...registerToSubFlowForm("ref_commande")} />
                         </div>
                         <div className="mt-5">
                             <strong>Ref prestation Orange</strong>
-                            <TextField size="small" fullWidth {...registerToSubFlowForm("ref_prestation")} />
+                            <TextField className="bg-white" size="small" fullWidth {...registerToSubFlowForm("ref_prestation")} />
                         </div>
                         <div className="flex items-center mt-5">
                             <input type="checkbox" {...registerToSubFlowForm("cmd_acces_sent")} />

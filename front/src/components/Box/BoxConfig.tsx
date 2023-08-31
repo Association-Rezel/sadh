@@ -115,10 +115,7 @@ function BoxInfos({ box }) {
                 <br />
                 <b>Nombre d'appareils connectés : </b> {box.ConnectedDevices}
                 <br />
-                <Button variant="outlined"
-                    onClick={handleCopyPassword}
-                >{stateIcon}{stateCopy}</Button>
-
+                <Button variant="outlined" onClick={handleCopyPassword}>{stateIcon}{stateCopy}</Button>
             </div>
         </div>
     )
