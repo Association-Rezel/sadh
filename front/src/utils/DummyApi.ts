@@ -2,6 +2,9 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscripti
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
+        throw new Error("Method not implemented.");
+    }
     modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
         throw new Error("Method not implemented.");
     }
@@ -94,6 +97,7 @@ export class DummyApi implements ApiInterface {
         is_admin: false,
         name: "Denis Fouchard",
         email: "denis@exaple.com",
+        phone: "00 00 00 00 00"
     };
     
     box : Box = 
@@ -151,18 +155,21 @@ export class DummyApi implements ApiInterface {
                 is_admin: false,
                 name: "toto",
                 email: "toto@example.com",
+                phone: "00 00 00 00 00"
             },
             {
                 keycloak_id: "2",
                 is_admin: false,
                 name: "tata",
                 email: "tata@example.com",
+                phone: "00 00 00 00 00"
             },
             {
                 keycloak_id: "3",
                 is_admin: false,
                 name: "tutu",
                 email: "tutu@example.com",
+                phone: "00 00 00 00 00"
             },
         ];
     }
@@ -172,6 +179,7 @@ export class DummyApi implements ApiInterface {
             is_admin: true,
             name: "itsme",
             email: "itsme@example.com",
+            phone: "00 00 00 00 00"
         };
     }
 
