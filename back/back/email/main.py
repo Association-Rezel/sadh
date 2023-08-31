@@ -16,7 +16,7 @@ def send_admin_message(subject:str, body:str) -> None:
     """Send admin message."""
     threading.Thread(target=send_matrix, args=(subject, body)).start()
 
-def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None, bcc:str="faipp@rezel.net") -> None:
+def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None, bcc:str="faipp@rezel.net", plain:bool=True) -> None:
     """Send email."""
     try:
         message = MIMEMultipart("mixed")
@@ -25,7 +25,7 @@ def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None,
         if bcc:
             message["Bcc"] = bcc
         message["Subject"] = subject
-        message.attach(MIMEText(body, "plain"))
+        message.attach(MIMEText(body, "plain" if plain else "html"))
         if attachments:
             for attachment in attachments:
                 with open(attachment, "rb") as file:
@@ -60,24 +60,57 @@ def send_email_contract(to:str) -> None:
     """Send email contract."""
     send_email(
         "Rezel - Votre adhésion FAI",
-        """Bonjour,
-
-Vous avez effectué une demande d'adhésion FAI à Rezel via le site fai.rezel.net.
-
-Afin de compléter le processus d'adhésion, il ne vous reste plus qu'à :
-•	nous retourner le contrat de fourniture de service complété (pages 2 et 7) et signé,
-•	vous acquitter du premier mois de cotisation (20€),
-•	nous indiquer si vous êtes disponible le samedi 9 ou 16 septembre de 15h à 18h pour l'installation de votre ligne, et
-•	nous indiquer votre numéro de téléphone
-Votre numéro de téléphone est indispensable pour que le technicien Orange qui installera votre ligne puisse vous contacter. Le rendez-vous devrait durer environ 30min dans le créneau 15h-18h. Un membre de Rezel sera présent afin de s'assurer du bon déroulement de l'installation.
-
-Comme mentionné dans le contrat, Rezel peut être facturé de 50€ par Orange pour le déplacement du technicien Orange lors de l'installation de la ligne (même si la fibre existe déjà). Dans ce cas, Rezel vous facturera ces 50€ que nous aurons dû avancer.
-
-Le paiement de la cotisation peut se faire au choix :
-•	En liquide aux locaux de l'association (Salle 0A316, Télécom Paris au 19 Place Marguerite Perey). Pour s'assurer de la présence d'un membre au local, merci de nous informer de la date et l'heure de votre passage.
-•	Par virement bancaire au RIB que vous trouverez ci-joint. ATTENTION : Vous devez impérativement mentionner votre nom et prénom dans le libellé du virement.
-
-A bientôt,
-Le pôle FAI de Rezel
+        """<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p>Bonjour,<br>
+      <br>
+      Vous avez effectué une demande d'adhésion FAI à Rezel via le site
+      <a href="https://fai.rezel.net">fai.rezel.net</a>.<br>
+      <br>
+      Afin de compléter le processus d'adhésion, il ne vous reste plus
+      qu'à :<br>
+    </p>
+    <ul>
+      <li>nous retourner le <b>contrat de fourniture de service</b>
+        complété (pages 2 et 7) et signé,</li>
+      <li>vous acquitter du <b>premier mois de cotisation (20€)</b>,</li>
+      <li>nous indiquer si vous êtes disponible le <b>samedi 9 ou 16
+          septembre de 15h à 18h</b> pour l'installation de votre ligne,
+        et</li>
+      <li>nous indiquer votre <b>numéro de téléphone</b></li>
+    </ul>
+    <p>Votre numéro de téléphone est indispensable pour que le
+      technicien Orange qui installera votre ligne puisse vous
+      contacter. Le rendez-vous devrait durer environ <b>30min dans le
+        créneau 15h-18h</b>. Un membre de Rezel sera présent afin de
+      s'assurer du bon déroulement de l'installation.<br>
+      <br>
+      Comme mentionné dans le contrat, Rezel peut être facturé de 50€
+      par Orange pour le déplacement du technicien Orange lors de
+      l'installation de la ligne (même si la fibre existe déjà). Dans ce
+      cas, <b>Rezel vous facturera ces 50€</b> que nous aurons dû
+      avancer.<br>
+      <br>
+      Le <b>paiement de la cotisation</b> peut se faire au choix :<br>
+    </p>
+    <ul>
+      <li>En liquide aux locaux de l'association (Salle 0A316 à Télécom
+        Paris au 19 Place Marguerite Perey). Pour s'assurer de la
+        présence d'un membre au local, merci de nous informer de la date
+        et l'heure de votre passage.</li>
+      <li>Par virement bancaire au RIB que vous trouverez ci-joint.
+        ATTENTION : Vous devez impérativement mentionner votre nom et
+        prénom dans le libellé du virement.</li>
+    </ul>
+    <p>A bientôt,<br>
+      Le pôle FAI de Rezel<br>
+    </p>
+  </body>
+</html>
 """,
-        to, attachments=[os.path.join("back/email/files/subscription", file) for file in os.listdir("back/email/files/subscription")])
+        to, attachments=[os.path.join("back/email/files/subscription", file) for file in os.listdir("back/email/files/subscription")],
+        plain=False)
