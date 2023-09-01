@@ -13,7 +13,7 @@ export default function AppointmentSection({ currentSubFlow, registerToSubFlowFo
                     <>
                         <strong>Informations</strong>
                         <div>
-                            <TextField multiline variant="outlined" className="bg-white" minRows={3} {...registerToSubFlowForm("erdv_information")} />
+                            <TextField multiline fullWidth variant="outlined" className="bg-white" minRows={3} {...registerToSubFlowForm("erdv_information")} />
                         </div>
                         <div className="mt-5">
                             <strong>ID E-RDV</strong>
