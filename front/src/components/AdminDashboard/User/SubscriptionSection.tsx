@@ -1,9 +1,30 @@
 import { Status, Subscription } from "../../../utils/types";
-import { TextField, Typography } from "@mui/material";
+import { TextField, Button, IconButton, MenuItem, Select, Typography } from "@mui/material";
+import { useState } from "react";
+import { Api } from "../../../utils/Api";
 
 
-export default function SubscriptionSection({ subscription, registerToSubFlowForm }: { subscription: Subscription, registerToSubFlowForm: any }) {
+export default function SubscriptionSection({ subscription, setSubscription, registerToSubFlowForm }: { subscription: Subscription, setSubscription: any, registerToSubFlowForm: any }) {
     if (!subscription) return (<>Chargement...</>);
+    const [status, setStatus] = useState<Status>(subscription.status);
+
+    const onStatusChange = (event) => {
+        setStatus(event.target.value);
+    };
+
+    const sendStatusChange = () => {
+        Api.modifySubscription(subscription.subscription_id, {...subscription, status: status })
+            .then((updated) => {
+                if (updated === null) {
+                    alert("Erreur lors de la modification. Veuillez essayer de recharger la page.");
+                    return;
+                }
+                setSubscription(updated);
+                setStatus(updated.status);
+            }).catch((error) => {
+                alert("Erreur lors de la modification. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
+            });
+    }
 
     return (
         <div className="mt-10">
@@ -11,7 +32,20 @@ export default function SubscriptionSection({ subscription, registerToSubFlowFor
                 Adhésion <Typography fontSize={10}>{subscription.subscription_id}</Typography>
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                <strong>Statut</strong> : {Status[subscription.status]}<br />
+                <strong>Statut</strong>
+                <div className="mb-3">
+                    <Select fullWidth size="small" value={status} onChange={onStatusChange}>
+                        {Object.values(Status).filter(item => !isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{Status[key]}</MenuItem>)}
+                    </Select>
+                </div>
+                <div className="mb-3">
+                    {status !== subscription.status && (
+                        <Button fullWidth color="error" variant="contained" onClick={sendStatusChange}>
+                            Valider
+                        </Button>
+                    )}
+
+                </div>
                 <strong>Chambre</strong> : {subscription.chambre.name} - {subscription.chambre.residence}<br />
                 <strong>Dolibarr</strong>
                 <div className="my-3">

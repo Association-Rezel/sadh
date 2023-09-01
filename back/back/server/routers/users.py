@@ -129,12 +129,6 @@ def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subsc
     """Get all subscriptions."""
     return get_subscriptions(_db)
 
-@router.get("/subscriptions")
-def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subscription]:
-    """Get all subscriptions."""
-    return get_subscriptions(_db)
-
-
 @router.get("/{keycloak_id}")
 async def _user_get(
     keycloak_id: str,
@@ -188,22 +182,6 @@ async def _user_update_subscription(
     sub.unsubscribe_reason = subscription.unsubscribe_reason
     _db.commit()
     return Subscription.from_orm(sub)
-
-@router.put("/{keycloak_id}/subscription")
-async def _user_update_subscription(
-    subscription: Subscription,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> Subscription:
-    sub = _db.query(DBSubscription).filter_by(user_id=subscription.user_id).first()
-    if not sub:
-        raise HTTPException(status_code=404, detail="User has no subscription")
-    sub.chambre = subscription.chambre
-    sub.status = subscription.status
-    sub.unsubscribe_reason = subscription.unsubscribe_reason
-    _db.commit()
-    return Subscription.from_orm(sub)
-
 
 @router.get("/{keycloak_id}/ont")
 async def _user_get_ont(

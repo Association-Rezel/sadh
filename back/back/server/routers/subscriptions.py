@@ -3,13 +3,38 @@
 from fastapi import HTTPException
 
 from back.core.subscriptions import create_subscription_flow, get_or_create_subscription_flow
+from back.core.users import get_subscriptions
 from back.database import Session
 from back.database.subscription_flows import DBSubscriptionFlow
-from back.interfaces.subscriptions import SubscriptionFlow
+from back.database.subscriptions import DBSubscription
+from back.interfaces.subscriptions import Subscription, SubscriptionFlow
 from back.middlewares import db, must_be_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("subscriptions")
+
+
+@router.get("/")
+def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subscription]:
+    """Get all subscriptions."""
+    return get_subscriptions(_db)
+
+
+@router.put("/{subscription_id}")
+async def _user_update_subscription(
+    subscription_id: str,
+    subscription: Subscription,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> Subscription:
+    sub = _db.query(DBSubscription).filter_by(subscription_id=subscription_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    sub.chambre = subscription.chambre
+    sub.status = subscription.status
+    sub.unsubscribe_reason = subscription.unsubscribe_reason
+    _db.commit()
+    return Subscription.from_orm(sub)
 
 
 @router.get("/{sub_id}/subscription_flow")

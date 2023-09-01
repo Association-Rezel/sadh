@@ -54,7 +54,7 @@ function User() {
         <div>
             <UserSection keycloak_id={keycloak_id} />
             <Stack direction={"row"} spacing={4} alignItems={"center"} justifyContent={"space-between"} flexWrap="wrap" divider={<Divider orientation="vertical" flexItem />}>
-                <SubscriptionSection subscription={subscription} registerToSubFlowForm={register} />
+                <SubscriptionSection subscription={subscription} setSubscription={setSubscription} registerToSubFlowForm={register} />
                 <ONTSection keycloak_id={keycloak_id} registerToSubFlowForm={register} />
                 <BoxSection currentSubFlow={currentSubFlow} registerToSubFlowForm={register} />
             </Stack>

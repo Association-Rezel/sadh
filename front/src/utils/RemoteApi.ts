@@ -182,4 +182,8 @@ export class RemoteApi implements ApiInterface {
     async modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
         return await this.myAuthenticatedRequest("/subscriptions/" + subscription_id + "/subscription_flow", subscriptionFlow, "PUT");
     }
+
+    async modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
+        return await this.myAuthenticatedRequest("/subscriptions/" + subscription_id, subscription, "PUT");
+    }
 }
