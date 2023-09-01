@@ -8,11 +8,11 @@ export interface User {
 
 export enum Status {
     PENDING_VALIDATION = 1,
-    VALIDATED,
-    REJECTED,
-    ACTIVE,
-    PENDING_UNSUBSCRIPTION,
-    UNSUBSCRIBED
+    VALIDATED = 2,
+    REJECTED = 3,
+    ACTIVE = 4,
+    PENDING_UNSUBSCRIPTION = 5,
+    UNSUBSCRIBED = 0,
 }
 
 export interface Chambre {
@@ -123,6 +123,7 @@ export interface ApiInterface {
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
     modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
+    modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription>;
 }
 
 
