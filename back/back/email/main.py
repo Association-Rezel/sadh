@@ -1,5 +1,6 @@
 """Email module."""
 
+import datetime
 import os
 import smtplib
 import threading
@@ -12,11 +13,19 @@ from matrix_client.client import MatrixClient
 from back.env import ENV
 
 
-def send_admin_message(subject:str, body:str) -> None:
+def send_admin_message(subject: str, body: str) -> None:
     """Send admin message."""
     threading.Thread(target=send_matrix, args=(subject, body)).start()
 
-def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None, bcc:str="faipp@rezel.net", plain:bool=True) -> None:
+
+def send_email(
+    subject: str,
+    body: str,
+    to: str,
+    attachments: list[str] | None = None,
+    bcc: str = "faipp@rezel.net",
+    plain: bool = True,
+) -> None:
     """Send email."""
     try:
         message = MIMEMultipart("mixed")
@@ -38,13 +47,15 @@ def send_email(subject:str, body:str, to:str, attachments:list[str] | None=None,
         print(f"Error while sending email {e}")
         # TODO: "Implement backup email sending"
 
-def send_matrix(subject:str, body:str) -> None:
+
+def send_matrix(subject: str, body: str) -> None:
     """Send matrix message."""
     try:
         print("Sending Matrix message")
         matrix_client = MatrixClient("https://matrix.rezel.net")
-        token = matrix_client.login(username=ENV.matrix_user,
-                                    password=ENV.matrix_password,
+        token = matrix_client.login(
+            username=ENV.matrix_user,
+            password=ENV.matrix_password,
         )
         room = matrix_client.join_room("!jrAyfdcVwGsyJMXYny:matrix.rezel.net")
         room.send_text(
@@ -56,11 +67,13 @@ def send_matrix(subject:str, body:str) -> None:
         print(f"Error while sending Matrix message {e}")
         send_email(subject, body, "faipp@rezel.net")
 
-def send_email_contract(to:str) -> None:
+
+def send_email_contract(to: str) -> None:
     """Send email contract."""
+    date_j_plus_8 = (datetime.date.today() + datetime.timedelta(days=8)).strftime("%m/%d/%Y")
     send_email(
         "Rezel - Votre adhésion FAI",
-        """<!DOCTYPE html>
+        f"""<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -78,16 +91,21 @@ def send_email_contract(to:str) -> None:
       <li>nous retourner le <b>contrat de fourniture de service</b>
         complété (pages 2 et 7) et signé,</li>
       <li>vous acquitter du <b>premier mois de cotisation (20€)</b>,</li>
-      <li>nous indiquer si vous êtes disponible le <b>samedi 9 ou 16
-          septembre de 15h à 18h</b> pour l'installation de votre ligne,
+      <li>nous indiquer <b>3 créneaux</b> sur lesquels vous êtes disponibles pour l'installation de votre ligne à compter du {date_j_plus_8},
         et</li>
       <li>nous indiquer votre <b>numéro de téléphone</b></li>
     </ul>
+    <p>Les horaires des créneaux d'installation possibles, du lundi au samedi, sont :</p>
+    <ul>
+      <li>de 8h à 10h</li>
+      <li>de 10h à 12h</li>
+      <li>de 13h à 15h</li>
+      <li>de 15h à 17h</li>
+    </ul>
     <p>Votre numéro de téléphone est indispensable pour que le
       technicien Orange qui installera votre ligne puisse vous
-      contacter. Le rendez-vous devrait durer environ <b>30min dans le
-        créneau 15h-18h</b>. Un membre de Rezel sera présent afin de
-      s'assurer du bon déroulement de l'installation.<br>
+      contacter. Le rendez-vous devrait durer environ <b>30 minutes</b> dans le créneau.
+      Un membre de Rezel sera présent afin de s'assurer du bon déroulement de l'installation.<br>
       <br>
       Comme mentionné dans le contrat, Rezel peut être facturé de 50€
       par Orange pour le déplacement du technicien Orange lors de
@@ -112,5 +130,9 @@ def send_email_contract(to:str) -> None:
   </body>
 </html>
 """,
-        to, attachments=[os.path.join("back/email/files/subscription", file) for file in os.listdir("back/email/files/subscription")],
-        plain=False)
+        to,
+        attachments=[
+            os.path.join("back/email/files/subscription", file) for file in os.listdir("back/email/files/subscription")
+        ],
+        plain=False,
+    )
