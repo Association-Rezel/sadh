@@ -8,9 +8,12 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from fillpdf import fillpdfs
 from matrix_client.client import MatrixClient
 
 from back.env import ENV
+
+pdf_lock = threading.Lock()
 
 
 def send_admin_message(subject: str, body: str) -> None:
@@ -68,9 +71,27 @@ def send_matrix(subject: str, body: str) -> None:
         send_email(subject, body, "faipp@rezel.net")
 
 
-def send_email_contract(to: str) -> None:
+def send_email_contract(to: str, client_name: str) -> None:
     """Send email contract."""
     date_j_plus_8 = (datetime.date.today() + datetime.timedelta(days=8)).strftime("%m/%d/%Y")
+    pdf_lock.acquire()
+    try:
+        data_dict={}
+        for k in fillpdfs.get_form_fields("back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf", sort=False, page_number=None):
+            fieldName = str(k.encode("utf-8")[4:]).replace("\\x00","")[2:-1]
+            if (fieldName == "dateRezel"):
+                data_dict[k] = datetime.date.today().strftime("%d/%m/%Y")
+            elif (fieldName == "placeRezel"):
+                data_dict[k] = "Palaiseau"
+            elif (fieldName == "nameRezel"):
+                data_dict[k] = "Thomas PUJOL"
+            elif (fieldName == "fonctionRezel"):
+                data_dict[k] = "Président"
+            elif (fieldName == "name"):
+                data_dict[k] = client_name
+        r = fillpdfs.write_fillable_pdf("back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf", "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf", data_dict, flatten=False)
+    except Exception as e:
+        send_admin_message("Erreur lors de la génération du contrat", f"Erreur lors de la génération du contrat pour {client_name}: {e}")
     send_email(
         "Rezel - Votre adhésion FAI",
         f"""<!DOCTYPE html>
@@ -136,3 +157,4 @@ def send_email_contract(to: str) -> None:
         ],
         plain=False,
     )
+    pdf_lock.release()

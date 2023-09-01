@@ -66,7 +66,7 @@ async def _me_subscribe(
         "Demande d'abonnement",
         f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/ \n\nUn email avec les détails lui a été envoyé.",
     )
-    send_email_contract(_user.email)
+    send_email_contract(_user.email, _user.name)
     return Subscription.from_orm(subscription)
 
 

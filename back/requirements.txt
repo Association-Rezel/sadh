@@ -8,3 +8,4 @@ pydantic==1.10.7
 pynetbox==7.0.1
 matrix-client==0.4.0
 requests==2.31.0
+fillpdf==0.7.2
