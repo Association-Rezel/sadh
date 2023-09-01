@@ -91,7 +91,7 @@ def send_email_contract(to: str) -> None:
       <li>nous retourner le <b>contrat de fourniture de service</b>
         complété (pages 2 et 7) et signé,</li>
       <li>vous acquitter du <b>premier mois de cotisation (20€)</b>,</li>
-      <li>nous indiquer <b>3 créneaux</b> sur lesquels vous êtes disponibles pour l'installation de votre ligne à compter du {date_j_plus_8},
+      <li>nous indiquer <b>3 créneaux</b> sur lesquels vous êtes disponible pour l'installation de votre ligne à compter du {date_j_plus_8},
         et</li>
       <li>nous indiquer votre <b>numéro de téléphone</b></li>
     </ul>
