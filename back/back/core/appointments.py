@@ -37,7 +37,7 @@ def get_week_appointment_slots(db: Session, date: datetime, weekOffset: int) -> 
     startOfWeek = date - timedelta(days=date.weekday())
     startOfWeek = startOfWeek.replace(hour=0, minute=0, second=0, microsecond=0)
 
-    hourSlots = [(8, 17), (10, 12), (13, 15), (15, 17)]
+    hourSlots = [(8, 10), (10, 12), (13, 15), (15, 17)]
 
     startOfWeek = date - timedelta(days=date.weekday())
     startOfWeek = startOfWeek.replace(hour=0, minute=0, second=0, microsecond=0)
