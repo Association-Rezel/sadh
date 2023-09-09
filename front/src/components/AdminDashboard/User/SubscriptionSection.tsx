@@ -13,7 +13,7 @@ export default function SubscriptionSection({ subscription, setSubscription, reg
     };
 
     const sendStatusChange = () => {
-        Api.modifySubscription(subscription.subscription_id, {...subscription, status: status })
+        Api.modifySubscription(subscription.subscription_id, { ...subscription, status: status })
             .then((updated) => {
                 if (updated === null) {
                     alert("Erreur lors de la modification. Veuillez essayer de recharger la page.");
@@ -47,9 +47,21 @@ export default function SubscriptionSection({ subscription, setSubscription, reg
 
                 </div>
                 <strong>Chambre</strong> : {subscription.chambre.name} - {subscription.chambre.residence}<br />
-                <strong>Dolibarr</strong>
+                <strong>Informations de paiement</strong>
                 <div className="my-3">
-                    <TextField multiline variant="outlined" className="bg-white w-80" minRows={3} {...registerToSubFlowForm("dolibarr_information")} placeholder="Lien Dolibarr"/>
+                    <TextField multiline variant="outlined" className="bg-white w-80" minRows={3} {...registerToSubFlowForm("dolibarr_information")} placeholder="Lien Dolibarr" />
+                </div>
+                <div className="flex items-center">
+                    <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToSubFlowForm("paid_caution")} />
+                    <strong className="pl-2">Caution payée</strong>
+                </div>
+                <div className="flex items-center">
+                    <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToSubFlowForm("paid_first_month")} />
+                    <strong className="pl-2">Premier mois payé</strong>
+                </div>
+                <div className="flex items-center">
+                    <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToSubFlowForm("contract_signed")} />
+                    <strong className="pl-2">Contrat signé</strong>
                 </div>
             </Typography>
         </div>

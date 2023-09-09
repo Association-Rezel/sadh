@@ -27,3 +27,6 @@ class DBSubscriptionFlow(Base):
     cmd_acces_sent: bool = Column(Boolean, default=False)  # type: ignore[assignment]
     cr_mes_sent: bool = Column(Boolean, default=False)  # type: ignore[assignment]
     comment: str = Column(String, default="")  # type: ignore[assignment]
+    paid_caution: bool = Column(Boolean, default="")  # type: ignore[assignment]
+    paid_first_month: bool = Column(Boolean, default="")  # type: ignore[assignment]
+    contract_signed: bool = Column(Boolean, default="")  # type: ignore[assignment]

@@ -27,6 +27,9 @@ def create_subscription_flow(db: Session, subscription_id: str, data: Subscripti
         cmd_acces_sent=data.cmd_acces_sent,
         cr_mes_sent=data.cr_mes_sent,
         comment=data.comment,
+        paid_caution=data.paid_caution,
+        paid_first_month=data.paid_first_month,
+        contract_signed=data.contract_signed,
     )
     db.add(flow)
     db.commit()

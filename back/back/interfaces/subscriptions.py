@@ -49,6 +49,9 @@ class SubscriptionFlow(BaseModel):
     cmd_acces_sent: bool
     cr_mes_sent: bool
     comment: str
+    paid_caution: bool
+    paid_first_month: bool
+    contract_signed: bool
 
     @classmethod
     def from_orm(cls, obj: DBSubscriptionFlow) -> "SubscriptionFlow":
@@ -67,6 +70,9 @@ class SubscriptionFlow(BaseModel):
             cmd_acces_sent=obj.cmd_acces_sent,
             cr_mes_sent=obj.cr_mes_sent,
             comment=obj.comment,
+            paid_caution=obj.paid_caution,
+            paid_first_month=obj.paid_first_month,
+            contract_signed=obj.contract_signed,
         )
 
     class Config:
