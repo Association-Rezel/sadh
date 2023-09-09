@@ -84,6 +84,9 @@ async def _update_subscription_flow(
     flow.cmd_acces_sent = data.cmd_acces_sent
     flow.cr_mes_sent = data.cr_mes_sent
     flow.comment = data.comment
+    flow.paid_caution = data.paid_caution
+    flow.paid_first_month = data.paid_first_month
+    flow.contract_signed = data.contract_signed
     _db.commit()
     return SubscriptionFlow.from_orm(flow)
 
