@@ -1,7 +1,25 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]> {
+        throw new Error("Method not implemented.");
+    }
+    modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment> {
+        throw new Error("Method not implemented.");
+    }
+    deleteAppointment(appointment_id: string): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    fetchMyAppointments(): Promise<Appointment[]> {
+        throw new Error("Method not implemented.");
+    }
+    submitMyAppointmentSlots(slots: AppointmentSlot[]): Promise<Appointment[]> {
+        throw new Error("Method not implemented.");
+    }
+    fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]> {
+        throw new Error("Method not implemented.");
+    }
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
         throw new Error("Method not implemented.");
     }

@@ -1,12 +1,16 @@
 """Manage subscriptions."""
 
+from uuid import UUID
+
 from fastapi import HTTPException
 
+from back.core.appointments import get_subscription_appointments
 from back.core.subscriptions import create_subscription_flow, get_or_create_subscription_flow
 from back.core.users import get_subscriptions
 from back.database import Session
 from back.database.subscription_flows import DBSubscriptionFlow
 from back.database.subscriptions import DBSubscription
+from back.interfaces.appointments import Appointment
 from back.interfaces.subscriptions import Subscription, SubscriptionFlow
 from back.middlewares import db, must_be_admin
 from back.utils.router_manager import ROUTEURS
@@ -82,3 +86,13 @@ async def _update_subscription_flow(
     flow.comment = data.comment
     _db.commit()
     return SubscriptionFlow.from_orm(flow)
+
+
+@router.get("/{sub_id}/appointments")
+async def _get_appointments(
+    sub_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> list[Appointment]:
+    """Get all appointments for the given subscription."""
+    return get_subscription_appointments(_db, UUID(sub_id))

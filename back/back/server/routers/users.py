@@ -1,16 +1,21 @@
 """Get or edit users."""
 
 
+from turtle import st
+
 from fastapi import HTTPException
 from fastapi.responses import Response
 
+from back.core.appointments import get_subscription_appointments
 from back.core.users import get_subscriptions, get_users
 from back.database import Session
+from back.database.appointments import DBAppointment
 from back.database.subscriptions import DBSubscription
 from back.database.users import User as DBUser
 from back.email import send_admin_message, send_email_contract
 from back.env import ENV
 from back.interfaces import User
+from back.interfaces.appointments import Appointment, AppointmentSlot
 from back.interfaces.auth import KeycloakId
 from back.interfaces.box import ONT, Chambre, Status
 from back.interfaces.subscriptions import Subscription
@@ -116,6 +121,50 @@ async def _me_unsubscribe(
     return Subscription.from_orm(subscription)
 
 
+@router.get("/me/appointments")
+async def _me_get_appointments(
+    _db: Session = db,
+    _user: User = user,
+) -> list[Appointment]:
+    """Get all appointments of the current user."""
+    sub = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
+    if not sub:
+        raise HTTPException(status_code=400, detail="User has no subscription")
+
+    return get_subscription_appointments(_db, sub.subscription_id)
+
+
+@router.post("/me/appointments")
+async def _me_post_appointment_slots(
+    slots: list[AppointmentSlot],
+    _db: Session = db,
+    _user: User = user,
+) -> list[Appointment]:
+    """Submit appointment slots."""
+    sub = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
+    if not sub:
+        raise HTTPException(status_code=400, detail="User has no subscription")
+
+    user_appointments = get_subscription_appointments(_db, sub.subscription_id)
+    if len(user_appointments) > 0:
+        raise HTTPException(status_code=400, detail="User already has appointments")
+
+    added_appointments = []
+
+    for slot in slots:
+        db_app = DBAppointment(
+            subscription_id=sub.subscription_id,
+            slot_start=slot.start,
+            slot_end=slot.end,
+            status=Status.PENDING_VALIDATION,
+        )
+        added_appointments.append(db_app)
+        _db.add(db_app)
+    _db.commit()
+
+    return list(map(Appointment.from_orm, added_appointments))
+
+
 ### ADMIN
 
 
@@ -124,10 +173,12 @@ def _get_users(_db: Session = db, _: None = must_be_admin) -> list[User]:
     """Get all users."""
     return get_users(_db)
 
+
 @router.get("/subscriptions")
 def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subscription]:
     """Get all subscriptions."""
     return get_subscriptions(_db)
+
 
 @router.get("/{keycloak_id}")
 async def _user_get(
@@ -168,6 +219,7 @@ async def _user_get_subscription(
         raise HTTPException(status_code=404, detail="User has no subscription")
     return Subscription.from_orm(sub)
 
+
 @router.put("/{keycloak_id}/subscription")
 async def _user_update_subscription(
     subscription: Subscription,
@@ -182,6 +234,7 @@ async def _user_update_subscription(
     sub.unsubscribe_reason = subscription.unsubscribe_reason
     _db.commit()
     return Subscription.from_orm(sub)
+
 
 @router.get("/{keycloak_id}/ont")
 async def _user_get_ont(
