@@ -47,7 +47,7 @@ function AppRouter() {
                     <Route path="users/:keycloak_id" Component={User} />
                 </Route>
             )}
-            {appState.logged && appState.subscription?.status === Status.ACTIVE && (
+            {appState.logged && appState.subscription?.status === Status.VALIDATED && (
                 <Route path="appointment" Component={PageAppointment} />
             )}
             <Route path="*" Component={Page404} />
