@@ -1,6 +1,6 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus } from "./types";
 import { Config } from "./Config";
-import { getAppState, updateAppState } from "./AppState";
+import { updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
 
 
@@ -185,5 +185,50 @@ export class RemoteApi implements ApiInterface {
 
     async modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
         return await this.myAuthenticatedRequest("/subscriptions/" + subscription_id, subscription, "PUT");
+    }
+
+    parseAppointmentSlot(data: any): AppointmentSlot {
+        if (data !== null) {
+            data.start = new Date(Date.parse(data.start));
+            data.end = new Date(Date.parse(data.end));
+        }
+
+        return data;
+    }
+
+    parseAppointment(data: any): Appointment {
+        if (data !== null)
+            data.slot = this.parseAppointmentSlot(data.slot);
+
+        return data;
+    }
+
+    async fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]> {
+        const data = await this.myFetcher("/appointments/weekSlots?weekOffset=" + weekOffset, true);
+        return data.map((week: any) => week.map((slot: any) => this.parseAppointmentSlot(slot)));
+    }
+
+    async submitMyAppointmentSlots(slots: AppointmentSlot[]): Promise<Appointment[]> {
+        const data = await this.myAuthenticatedRequest("/users/me/appointments", slots);
+        return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
+
+    async fetchMyAppointments(): Promise<Appointment[]> {
+        const data = await this.fetchOrDefault("/users/me/appointments", null, true);
+        return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
+
+    async fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]> {
+        const data = await this.fetchOrDefault("/subscriptions/" + subscription_id + "/appointments", null, true);
+        return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
+
+    async modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment> {
+        const data = await this.myAuthenticatedRequest("/appointments/" + appointment_id, appointment, "PUT");
+        return this.parseAppointment(data);
+    }
+
+    async deleteAppointment(appointment_id: string): Promise<void> {
+        this.myAuthenticatedRequest("/appointments/" + appointment_id, null, "DELETE");
     }
 }

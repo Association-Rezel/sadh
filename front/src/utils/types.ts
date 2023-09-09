@@ -92,6 +92,32 @@ export interface PortRule {
     isActive: boolean;
 }
 
+export interface AppointmentSlot {
+    start: Date,
+    end: Date,
+}
+
+export function isSameSlot(slot1: AppointmentSlot, slot2: AppointmentSlot) {
+    return slot1.start.getTime() == slot2.start.getTime() && slot1.end.getTime() == slot2.end.getTime();
+}
+
+export enum AppointmentStatus {
+    PENDING_VALIDATION = 1,
+    VALIDATED = 2
+}
+
+export enum AppointmentType {
+    RACCORDEMENT = 1,
+}
+
+export interface Appointment {
+    appointment_id: string;
+    subscription_id: string;
+    slot: AppointmentSlot;
+    status: AppointmentStatus;
+    type: AppointmentType;
+}
+
 
 export interface ApiInterface {
     [x: string]: any;
@@ -124,6 +150,12 @@ export interface ApiInterface {
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
     modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription>;
+    fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]>;
+    submitMyAppointmentSlots(slots: AppointmentSlot[]): Promise<Appointment[]>;
+    fetchMyAppointments(): Promise<Appointment[]>;
+    fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]>;
+    modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment>;
+    deleteAppointment(appointment_id: string): Promise<void>;
 }
 
 

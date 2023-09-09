@@ -30,9 +30,10 @@ keycloak.init({
     // Dans ce cas, une requête supplémentaire pour check :
     Api.refreshState();
 
-}).catch(function () {
+}).catch((e: any) => {
     // TODO : erreur de connexion
     console.log("Erreur de connexion");
+    console.log(e);
     updateAppState({logged: false, token: ""})
 });
 

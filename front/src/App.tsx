@@ -17,6 +17,8 @@ import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
 import User from "./components/AdminDashboard/User/User";
+import { Status } from "./utils/types";
+import PageAppointment from "./pages/appointment/PageAppointment";
 
 function AppRouter() {
     const appState = useContext(AppStateContext);
@@ -44,6 +46,9 @@ function AppRouter() {
                     <Route path="users" Component={Users} />
                     <Route path="users/:keycloak_id" Component={User} />
                 </Route>
+            )}
+            {appState.logged && appState.subscription?.status === Status.ACTIVE && (
+                <Route path="appointment" Component={PageAppointment} />
             )}
             <Route path="*" Component={Page404} />
         </Route>
