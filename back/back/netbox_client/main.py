@@ -37,11 +37,12 @@ class NetBoxClient:
 
     def create_user_tag(self, user: User) -> None:
         """Create a tag for a user."""
-        self.api.extras.tags.create(slug=str(user.keycloak_id), name=str(user.keycloak_id), description=user.name)
+        tag = "user-" + str(user.keycloak_id)
+        self.api.extras.tags.create(slug=tag, name=tag, description=user.name)
 
     def get_box_from_user(self, _id: KeycloakId) -> Box | None:
         """Try to find the box of the user."""
-        res = list(self.api.dcim.devices.filter(tag=_id, limit=1))
+        res = list(self.api.dcim.devices.filter(tag="user-" + _id, limit=1))
         if not res:
             return None
         nb_box = res[0]
@@ -56,7 +57,7 @@ class NetBoxClient:
     def get_ont_from_user(self, _id: KeycloakId) -> ONT | None:
         """Try to find the ont of the user."""
         try:
-            res = self.api.dcim.devices.filter(tag=str(_id), device_roles=DeviceRoles.ONT, limit=1)
+            res = self.api.dcim.devices.filter(tag="user-" + str(_id), device_roles=DeviceRoles.ONT, limit=1)
         except RequestError as ex:
             logger.exception(f"Error while getting ONT from user {_id}")
             return None
@@ -82,7 +83,8 @@ class NetBoxClient:
         if len(empty_mec_ports) < 1:
             logger.error("No empty MEC port found")
             send_admin_message(
-                ":x: Erreur :x:", "Impossible de trouver un port MEC libre lors de l'enregistrement d'un ONT",
+                ":x: Erreur :x:",
+                "Impossible de trouver un port MEC libre lors de l'enregistrement d'un ONT",
             )
             raise Exception("No empty MEC port found")
         port_in_PM = empty_mec_ports.__next__()
@@ -111,7 +113,7 @@ class NetBoxClient:
             site=nb_site_residence.id,  # type: ignore
             rack=chambre_rack.id,  # type: ignore
             status="active",
-            tags=[self.api.extras.tags.get(slug=str(sub.user_id)).id],  # type: ignore
+            tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
             custom_fields={"position_in_pon": position_in_pon, "ont_sftw_ver": software_version},
         )
 
