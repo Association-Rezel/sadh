@@ -1,5 +1,6 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { useState } from "react";
+import { Residence } from "../../utils/types";
 
 interface FilterProps {
     changeResidence: (residence: string) => void;
@@ -22,10 +23,8 @@ export function Filter({ changeResidence }: FilterProps) {
                         changeResidence(e.target.value);
                     }}
                 >
-                    <MenuItem value={""}>Déselection</MenuItem>
-                    <MenuItem value={"ALJT"}>ALJT</MenuItem>
-                    <MenuItem value={"Kley"}>Kley</MenuItem>
-                    <MenuItem value={"Twenty Campus"}>Twenty Campus</MenuItem>
+                    <MenuItem value={""}>Désélection</MenuItem>
+                    {Object.values(Residence).filter(item => !isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{Residence[key]}</MenuItem>)}
                 </Select>
             </FormControl>
         </div>

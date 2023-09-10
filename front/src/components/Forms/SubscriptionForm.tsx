@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material"
-import { Status } from "../../utils/types"
+import { Status, Residence } from "../../utils/types"
 import { Api } from "../../utils/Api";
 import { AppStateContext } from "../../utils/AppState";
 import { useContext } from "react";
@@ -66,10 +66,7 @@ function SubscriptionForm() {
                 <div>
                     <label>Nom de la résidence :</label>
                     <select name="residence" id="residence" {...register("residence")} defaultValue={appState.subscription?.chambre.residence}>
-                        <option value="ALJT">ALJT</option>
-                        <option value="TWENTY_CAMPUS">TWENTY CAMPUS</option>
-                        <option value="HACKER_HOUSE">HACKER HOUSE</option>
-                        <option value="KLEY">KLEY</option>
+                        {Object.values(Residence).map((key) => <option value={key} key={key}>{Residence[key]}</option>)}
                     </select>
                 </div>
                 <div>

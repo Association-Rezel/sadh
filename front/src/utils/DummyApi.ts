@@ -1,9 +1,9 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, Residence } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
     fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve([]);
     }
     modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment> {
         throw new Error("Method not implemented.");
@@ -27,25 +27,61 @@ export class DummyApi implements ApiInterface {
         throw new Error("Method not implemented.");
     }
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({
+            subscription_id:"01ee49c6-9952-46e9-bea5-ce267c191a41",
+            erdv_information:"RDV2-KLEY-550-20230830-1\n\nLigne FI-4697-6424",
+            erdv_id:"F10-DGO-48796025-0000017086267-ERDV",
+            present_for_appointment:"Séverin",
+            ref_commande:"KLEY-550-20230830-2",
+            ref_prestation:"VIA01000000205475045",
+            ont_lent:true,
+            box_lent:true,
+            box_information:"MAC : ??",
+            dolibarr_information:"",
+            cmd_acces_sent:true,
+            cr_mes_sent:false,
+            comment:"",
+            paid_caution:false,
+            paid_first_month:true,
+            contract_signed:true
+        });
     }
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
         throw new Error("Method not implemented.");
     }
     fetchUser(user_keycloak_id: string): Promise<User> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({
+            keycloak_id: "7897",
+            is_admin: true,
+            name: "itsme",
+            email: "me@example.com",
+            phone: "00 00 00 00 00"
+        });
     }
     fetchSubscription(user_keycloak_id: string): Promise<Subscription> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({
+            subscription_id:"azertyuiop",
+            user_id:"azertyuiop",
+            chambre:{
+                residence:Residence.ALJT,
+                name:"123"
+            },
+            status:1,
+            unsubscribe_reason:""
+        });
     }
     fetchONT(user_keycloak_id: string): Promise<ONT> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({
+            serial_number: "ALCL:F887917B",
+            position_PM: "A3",
+            netbox_id: "20"
+        });
     }
     loginRedirect(redirectUri: string): void {
         throw new Error("Method not implemented.");
     }
     fetchMySubscription(): Promise<Subscription> {
-        throw new Error("Method not implemented.");
+        return this.fetchSubscription("getAppState().user.keycloak_id");
     }
     addMySubscription(subscription: any): Promise<void> {
         throw new Error("Method not implemented.");

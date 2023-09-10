@@ -15,6 +15,13 @@ export enum Status {
     UNSUBSCRIBED = 0,
 }
 
+export enum Residence {
+    ALJT = "ALJT",
+    TWENTY_CAMPUS = "TWENTY_CAMPUS",
+    HACKER_HOUSE = "HACKER_HOUSE",
+    KLEY = "KLEY"
+}
+
 export interface Chambre {
     residence: string;
     name: string;
