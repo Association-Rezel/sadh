@@ -50,9 +50,7 @@ function Users() {
                 user_expanded[ukey].subscription = user_subscription[0];
             }
         }
-        console.log(residenceSelected)
         if (residenceSelected) {
-            console.log("La rédidence est set")
             user_expanded = user_expanded.filter((user) => "subscription" in user ? (user.subscription.chambre.residence == residenceSelected) : false);
         }
         if (statusSelected) {

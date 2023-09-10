@@ -1,9 +1,23 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, Residence } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, AppointmentType, Residence } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
     fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]> {
         return Promise.resolve([]);
+    }
+    fetchAppointments(): Promise<Appointment[]> {
+        return Promise.resolve([
+            {
+                appointment_id: "string",
+                subscription_id: "string",
+                slot: {
+                    start: new Date("2023-09-09T10:00:00"),
+                    end: new Date("2023-09-09T11:00:00")
+                },
+                type: AppointmentType.RACCORDEMENT,
+                status: AppointmentStatus.VALIDATED,
+            }
+        ]);
     }
     modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment> {
         throw new Error("Method not implemented.");

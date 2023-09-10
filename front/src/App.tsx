@@ -13,6 +13,7 @@ import Page404 from "./components/Page404";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import AccountDashboard from "./components/AccountDashboard/AccountDashboard";
 import Users from "./components/Users/Users";
+import CalendarComponent from "./components/Calendar/Calendar";
 import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
@@ -43,6 +44,7 @@ function AppRouter() {
             {appState.logged && appState.user?.is_admin && (
                 <Route path="admin" element={<AdminDashboard />}>
                     <Route index Component={PageAdmin} />
+                    <Route path="calendar" Component={CalendarComponent} />
                     <Route path="users" Component={Users} />
                     <Route path="users/:keycloak_id" Component={User} />
                 </Route>

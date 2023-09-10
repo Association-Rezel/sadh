@@ -9,14 +9,17 @@ from back.interfaces.appointments import Appointment, AppointmentSlot
 
 
 def get_appointments(
-    db: Session, start: datetime, end: datetime, status: AppointmentStatus | None = None
+    db: Session, start: datetime | None = None, end: datetime | None = None, status: AppointmentStatus | None = None
 ) -> list[Appointment]:
     """Get all appointments in the given time range."""
 
-    statement = select(DBAppointment).where(
-        DBAppointment.start >= start,
-        DBAppointment.end <= end,
-    )
+    statement = select(DBAppointment)
+
+    if start:
+        statement = statement.where(DBAppointment.slot_start >= start)
+
+    if end:
+        statement = statement.where(DBAppointment.slot_end <= end)
 
     if status:
         statement = statement.where(DBAppointment.status == status)

@@ -235,4 +235,9 @@ export class RemoteApi implements ApiInterface {
     async deleteAppointment(appointment_id: string): Promise<void> {
         this.myAuthenticatedRequest("/appointments/" + appointment_id, null, "DELETE");
     }
+
+    async fetchAppointments(): Promise<Appointment[]> {
+        const data = await this.myAuthenticatedRequest("/appointments", null, "GET");
+        return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
 }
