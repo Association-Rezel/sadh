@@ -77,7 +77,6 @@ export class RemoteApi implements ApiInterface {
     async myAuthenticatedRequest(url: string, body: any, method: string = "POST") {
         if (!this.token)
             throw new Error("Tried to make an authenticated request without being logged in");
-
         let config: RequestInit = {
             method: method,
             credentials: 'include',
@@ -85,8 +84,18 @@ export class RemoteApi implements ApiInterface {
                 'Authorization': 'Bearer ' + this.token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body),
         };
+        if (method != "GET"){
+            config = {
+                method: method,
+                credentials: 'include',
+                headers: {
+                    'Authorization': 'Bearer ' + this.token,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            };
+        }
 
         const response = await fetch(Config.API_URL + url, config);
         if (!response.ok) {
