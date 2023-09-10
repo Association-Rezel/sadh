@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from requests import get
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -124,7 +123,7 @@ def update_appointment(db: Session, appointment_id: str, appointment: Appointmen
         return None
     db_appointment.status = appointment.status
     db_appointment.type = appointment.type
-    db_appointment.slot_start = appointment.slot.start
-    db_appointment.slot_end = appointment.slot.end
+    db_appointment.slot_start = appointment.slot.start.isoformat()
+    db_appointment.slot_end = appointment.slot.end.isoformat()
     db.commit()
     return Appointment.from_orm(db_appointment)

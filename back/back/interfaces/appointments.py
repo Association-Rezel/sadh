@@ -39,7 +39,9 @@ class Appointment(BaseModel):
         return cls(
             appointment_id=obj.appointment_id,
             subscription_id=obj.subscription_id,
-            slot=AppointmentSlot(start=obj.slot_start, end=obj.slot_end),
+            slot=AppointmentSlot(
+                start=datetime.fromisoformat(obj.slot_start), end=datetime.fromisoformat(obj.slot_end)
+            ),
             status=obj.status,
             type=obj.type,
         )
