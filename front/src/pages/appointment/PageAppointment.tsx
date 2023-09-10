@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AppointmentSelection from "../../components/Appointment/AppointmentSelection";
 import LoggedMenu from "../../components/Menus/LoggedMenu";
 import { Api } from "../../utils/Api";
-import { Appointment } from "../../utils/types";
+import { Appointment, AppointmentSlot } from "../../utils/types";
 import AppointmentsList from "../../components/Appointment/AppointmentsList";
 
 export default function PageAppointment() {
@@ -16,7 +16,7 @@ export default function PageAppointment() {
         });
     }, []);
 
-    const onSubmitSelection = (selectedSlots) => {
+    const onSubmitSelection = (selectedSlots: AppointmentSlot[]) => {
         Api.submitMyAppointmentSlots(selectedSlots).then((data) => {
             setAppointments(data);
         }).catch((error) => {
