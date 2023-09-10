@@ -16,6 +16,11 @@ function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [usersFiltered, setUsersFiltered] = useState<User[]>([]);
+    useEffect(() => {
+        Api.fetchSubscriptions().then((subscriptions) => {
+            setSubscriptions(subscriptions);
+        });
+    });
 
     const changeStatus = (status: string) => {
         statusSelected = status;
