@@ -42,6 +42,9 @@ export interface SubscriptionFlow {
     cmd_acces_sent: boolean;
     cr_mes_sent: boolean;
     comment: string;
+    paid_caution: boolean;
+    paid_first_month: boolean;
+    signed_contract: boolean;
 }
 
 export interface Order {
