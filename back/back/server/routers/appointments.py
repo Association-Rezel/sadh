@@ -17,8 +17,8 @@ router = ROUTEURS.new("appointments")
 
 @router.get("/")
 async def _get_appointments(
-    start: datetime,
-    end: datetime,
+    start: datetime | None = None,
+    end: datetime | None = None,
     _db: Session = db,
     _: None = must_be_admin,
 ) -> list[Appointment]:

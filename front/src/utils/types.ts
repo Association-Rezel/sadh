@@ -165,6 +165,7 @@ export interface ApiInterface {
     submitMyAppointmentSlots(slots: AppointmentSlot[]): Promise<Appointment[]>;
     fetchMyAppointments(): Promise<Appointment[]>;
     fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]>;
+    fetchAppointments(): Promise<Appointment[]>;
     modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment>;
     deleteAppointment(appointment_id: string): Promise<void>;
 }

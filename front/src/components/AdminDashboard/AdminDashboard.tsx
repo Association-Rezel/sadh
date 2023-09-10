@@ -15,6 +15,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
+import CalendarIcon from "@mui/icons-material/CalendarToday";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import { secondaryListItems } from "../../pages/account/listItems";
@@ -66,6 +67,15 @@ function AdminDashboard() {
                                 <PeopleIcon />
                             </ListItemIcon>
                             <ListItemText primary="Adhérents" />
+                        </ListItemButton>
+                    </Link>
+
+                    <Link to={"calendar"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <CalendarIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Calendrier" />
                         </ListItemButton>
                     </Link>
                 </List>
