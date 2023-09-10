@@ -237,7 +237,7 @@ export class RemoteApi implements ApiInterface {
     }
 
     async fetchAppointments(): Promise<Appointment[]> {
-        const data = await this.myAuthenticatedRequest("/appointments", null, "GET");
+        const data = await this.getOrDefault("/appointments", null, true);
         return data.map((appointment: any) => this.parseAppointment(appointment));
     }
 }
