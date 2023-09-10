@@ -154,8 +154,8 @@ async def _me_post_appointment_slots(
     for slot in slots:
         db_app = DBAppointment(
             subscription_id=sub.subscription_id,
-            slot_start=slot.start,
-            slot_end=slot.end,
+            slot_start=slot.start.isoformat(),
+            slot_end=slot.end.isoformat(),
             status=Status.PENDING_VALIDATION,
         )
         added_appointments.append(db_app)
