@@ -137,6 +137,7 @@ export interface ApiInterface {
     refreshState(): unknown;
     token: string;
     fetchUsers(): Promise<User[]>;
+    fetchSubscriptions(): Promise<Subscription[]>;
     fetchBoxes(): Promise<Box[]>;
     fetchMyBox(id: number): Promise<Box>;
     updateMyBox(box: Box): Promise<void>;

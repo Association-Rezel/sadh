@@ -58,6 +58,9 @@ export class DummyApi implements ApiInterface {
             phone: "00 00 00 00 00"
         });
     }
+    fetchSubscriptions(): Promise<Subscription[]> {
+        return Promise.resolve([]);
+    }
     fetchSubscription(user_keycloak_id: string): Promise<Subscription> {
         return Promise.resolve({
             subscription_id:"azertyuiop",
