@@ -6,9 +6,10 @@ import { Filter } from "./Filter";
 interface SearchBarProps {
     onSearch: (search: string) => void;
     changeResidence: (residence: string) => void;
+    placeholder?: string;
 }
 
-export function SearchBar({ onSearch, changeResidence }: SearchBarProps) {
+export function SearchBar({ onSearch, changeResidence, placeholder }: SearchBarProps) {
     const [search, setSearch] = useState<string>("");
     const [filterShown, setFilterShown] = useState<boolean>(false);
 
@@ -17,7 +18,7 @@ export function SearchBar({ onSearch, changeResidence }: SearchBarProps) {
             <div className="searchbar-div">
                 <TextField
                     className="searchbar-user"
-                    placeholder="Search..."
+                    placeholder={placeholder ?? "Search..."}
                     value={search}
                     onChange={(e) => {
                         setSearch(e.target.value);
