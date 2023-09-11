@@ -15,7 +15,6 @@ export class DummyApi implements ApiInterface {
         return Promise.resolve([
             {
                 appointment_id: "string",
-                subscription_id: "string",
                 slot: {
                     start: new Date("2023-09-09T10:00:00"),
                     end: new Date("2023-09-09T11:00:00")
