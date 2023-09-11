@@ -62,14 +62,14 @@ async def _create_subscription_flow(
     return create_subscription_flow(_db, sub_id, data)
 
 
-@router.put("/{sub_id}/subscription_flow")
+@router.put("/subscription_flow/{flow_id}")
 async def _update_subscription_flow(
-    sub_id: str,
+    flow_id: str,
     data: SubscriptionFlow,
     _db: Session = db,
     _: None = must_be_admin,
 ) -> SubscriptionFlow:
-    flow = _db.query(DBSubscriptionFlow).filter_by(subscription_id=sub_id).first()
+    flow = _db.query(DBSubscriptionFlow).filter_by(flow_id=flow_id).first()
     if not flow:
         raise HTTPException(status_code=404, detail="Flow does not exist for this subscription")
     flow.erdv_information = data.erdv_information

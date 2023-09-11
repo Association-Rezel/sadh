@@ -1,25 +1,14 @@
-import { useEffect, useState } from "react";
-import { Appointment, AppointmentStatus, SubscriptionFlow } from "../../../utils/types";
+import { Appointment, AppointmentStatus, UserDataBundle } from "../../../utils/types";
 import { IconButton, TextField, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
 import { Check, Delete } from "@mui/icons-material";
 
-export default function AppointmentSection({ currentSubFlow, registerToSubFlowForm }: { currentSubFlow: SubscriptionFlow, registerToSubFlowForm: any }) {
-    const [appointments, setAppointments] = useState<Appointment[]>(null);
-
-    useEffect(() => {
-        if (currentSubFlow === null) return;
-
-        Api.fetchSubscriptionAppointments(currentSubFlow.subscription_id).then((data: Appointment[]) => {
-            setAppointments(data);
-        }).catch((error) => {
-            alert("Erreur lors de la récupération des rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
-        });
-    }, [currentSubFlow]);
+export default function AppointmentSection({ userBundle, setUserBundle, registerToSubFlowForm }: { userBundle: UserDataBundle, setUserBundle: any, registerToSubFlowForm: any }) {
 
     const onDeleteAppointment = (appointment: Appointment) => {
         Api.deleteAppointment(appointment.appointment_id).then(() => {
-            setAppointments(appointments.filter((a) => a.appointment_id !== appointment.appointment_id));
+            const newAppointments = userBundle?.appointments.filter((a) => a.appointment_id !== appointment.appointment_id);
+            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: newAppointments } });
         }).catch((error) => {
             alert("Erreur lors de la suppression du rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
@@ -29,11 +18,14 @@ export default function AppointmentSection({ currentSubFlow, registerToSubFlowFo
         appointment.status = AppointmentStatus.VALIDATED;
         Api.modifyAppointmentStatus(appointment.appointment_id, appointment).then((modified: Appointment) => {
             appointment.status = modified.status;
-            setAppointments([...appointments]);
+            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: userBundle?.appointments } });
         }).catch((error) => {
             alert("Erreur lors de la validation du rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
     }
+
+    const appointments = userBundle?.appointments;
+    const currentSubFlow = userBundle?.flow;
 
     return (
         <div>

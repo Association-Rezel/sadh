@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, UserDataBundle } from "./types";
 import { Config } from "./Config";
 import { updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
@@ -183,8 +183,8 @@ export class RemoteApi implements ApiInterface {
         return await this.fetchOrDefault("/subscriptions/" + subscription_id + "/subscription_flow", null, true);
     }
 
-    async modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
-        return await this.myAuthenticatedRequest("/subscriptions/" + subscription_id + "/subscription_flow", subscriptionFlow, "PUT");
+    async modifySubscriptionFlow(flow_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
+        return await this.myAuthenticatedRequest("/subscriptions/subscription_flow/" + flow_id, subscriptionFlow, "PUT");
     }
 
     async modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
@@ -239,5 +239,13 @@ export class RemoteApi implements ApiInterface {
     async fetchAppointments(): Promise<Appointment[]> {
         const data = await this.fetchOrDefault("/appointments", null, true);
         return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
+    
+    async fetchUserDataBundles(): Promise<UserDataBundle[]> {
+        return await this.fetchOrDefault("/users/dataBundles", null, true);
+    }
+
+    async fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle> {
+        return await this.fetchOrDefault("/users/" + user_keycloak_id + "/dataBundle", null, true);
     }
 }

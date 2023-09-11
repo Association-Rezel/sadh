@@ -1,21 +1,25 @@
 """User model."""
 from uuid import UUID
 
-from sqlalchemy import Boolean, Column, String, Uuid
+from sqlalchemy import Boolean, String, Uuid
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from back.database.main import Base
+from back.database.typing import MappedOptionalSub
 
 
-class User(Base):
+class DBUser(Base):
     """User model."""
 
     __tablename__ = "users"
 
-    keycloak_id: UUID = Column(Uuid, primary_key=True, index=True)  # type: ignore[assignment]
+    keycloak_id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, index=True)  # type: ignore[assignment]
 
-    name: str = Column(String)  # type: ignore[assignment]
-    email: str = Column(String)  # type: ignore[assignment]
-    phone: str = Column(String)  # type: ignore[assignment]
+    name: Mapped[str] = mapped_column(String)  # type: ignore[assignment]
+    email: Mapped[str] = mapped_column(String)  # type: ignore[assignment]
+    phone: Mapped[str] = mapped_column(String)  # type: ignore[assignment]
 
-    is_active: bool = Column(Boolean, default=True)  # type: ignore[assignment]
-    is_admin: bool = Column(Boolean, default=False)  # type: ignore[assignment]
+    is_active: Mapped[str] = mapped_column(Boolean, default=True)  # type: ignore[assignment]
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
+
+    subscription: MappedOptionalSub = relationship("DBSubscription", back_populates="user")

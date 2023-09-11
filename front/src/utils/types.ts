@@ -6,7 +6,7 @@ export interface User {
     phone: string;
 }
 
-export enum Status {
+export enum SubscriptionStatus {
     PENDING_VALIDATION = 1,
     VALIDATED = 2,
     REJECTED = 3,
@@ -29,14 +29,13 @@ export interface Chambre {
 
 export interface Subscription {    
     subscription_id: string;
-    user_id: string;
     chambre: Chambre;
-    status: Status;
+    status: SubscriptionStatus;
     unsubscribe_reason: string;
 }
 
 export interface SubscriptionFlow {
-    subscription_id: string;
+    flow_id: string;
     erdv_id: string;
     erdv_information: string;
     present_for_appointment: string;
@@ -122,12 +121,18 @@ export enum AppointmentType {
 
 export interface Appointment {
     appointment_id: string;
-    subscription_id: string;
+    subscription: Subscription;
     slot: AppointmentSlot;
     status: AppointmentStatus;
     type: AppointmentType;
 }
 
+export interface UserDataBundle {
+    user: User;
+    subscription: Subscription;
+    flow: SubscriptionFlow;
+    appointments: Appointment[];
+}
 
 export interface ApiInterface {
     [x: string]: any;
@@ -159,7 +164,7 @@ export interface ApiInterface {
     fetchONT(user_keycloak_id: string): Promise<ONT>;
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
-    modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
+    modifySubscriptionFlow(flow_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription>;
     fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]>;
     submitMyAppointmentSlots(slots: AppointmentSlot[]): Promise<Appointment[]>;
@@ -168,6 +173,8 @@ export interface ApiInterface {
     fetchAppointments(): Promise<Appointment[]>;
     modifyAppointmentStatus(appointment_id: string, appointment: Appointment): Promise<Appointment>;
     deleteAppointment(appointment_id: string): Promise<void>;
+    fetchUserDataBundles(): Promise<UserDataBundle[]>;
+    fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle>;
 }
 
 

@@ -18,7 +18,7 @@ import ConnectedDevices from "./components/ConnectedDevices/ConnectedDevices";
 import {AppStateContext, AppStateWrapper} from "./utils/AppState";
 import {useContext} from "react";
 import User from "./components/AdminDashboard/User/User";
-import { Status } from "./utils/types";
+import { SubscriptionStatus } from "./utils/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
 
 function AppRouter() {
@@ -49,7 +49,7 @@ function AppRouter() {
                     <Route path="users/:keycloak_id" Component={User} />
                 </Route>
             )}
-            {appState.logged && appState.subscription?.status === Status.VALIDATED && (
+            {appState.logged && appState.subscription?.status === SubscriptionStatus.VALIDATED && (
                 <Route path="appointment" Component={PageAppointment} />
             )}
             <Route path="*" Component={Page404} />

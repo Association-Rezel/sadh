@@ -2,8 +2,10 @@
 
 from pydantic import BaseModel
 
-from back.database.users import User as DBUser
+from back.database.users import DBUser
+from back.interfaces.appointments import Appointment
 from back.interfaces.auth import KeycloakId
+from back.interfaces.subscriptions import Subscription, SubscriptionFlow
 
 
 class User(BaseModel):
@@ -25,3 +27,12 @@ class User(BaseModel):
             email=obj.email,
             phone=obj.phone,
         )
+
+
+class UserDataBundle(BaseModel):
+    """A user model."""
+
+    user: User
+    appointments: list[Appointment] = []
+    subscription: Subscription | None = None
+    flow: SubscriptionFlow | None = None

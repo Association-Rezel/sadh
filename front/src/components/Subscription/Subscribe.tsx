@@ -3,7 +3,7 @@ import { CssBaseline, GlobalStyles, Typography} from "@mui/material";
 import { useContext } from "react";
 import React from "react";
 
-import { Status } from "../../utils/types";
+import { SubscriptionStatus } from "../../utils/types";
 import LoggedMenu from "../Menus/LoggedMenu";
 import {AppStateContext} from "../../utils/AppState";
 import { SubscriptionForm, SubscriptionFormEdit } from "../Forms/SubscriptionForm";
@@ -18,7 +18,7 @@ function Subscribe() : JSX.Element {
             text: "Retrouvez toutes les informations sur votre abonnement dans votre espace client en cliquant sur \"Mon Compte\"."
         }
 
-        if (appState.subscription.status == Status.PENDING_VALIDATION) {
+        if (appState.subscription.status == SubscriptionStatus.PENDING_VALIDATION) {
             content = {
                 title: "Votre demande d'adhésion est en cours de validation",
                 text: "Vous recevrez prochainement un mail d'information."
@@ -35,7 +35,7 @@ function Subscribe() : JSX.Element {
                         <Typography variant="h5" align="center" color="text.secondary" component="p">
                             {content.text}
                         </Typography>
-                        { appState.subscription.status == Status.PENDING_VALIDATION ? SubscriptionFormEdit() : null}
+                        { appState.subscription.status == SubscriptionStatus.PENDING_VALIDATION ? SubscriptionFormEdit() : null}
                     </Container>
                 </React.Fragment>
             </>        

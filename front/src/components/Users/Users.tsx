@@ -1,79 +1,41 @@
 import { useState, useEffect } from "react";
-import { User, Status, Residence, Subscription } from "../../utils/types";
+import { SubscriptionStatus, Residence, UserDataBundle } from "../../utils/types";
 import { TableUsers } from "./TableUsers";
 import { Api } from "../../utils/Api";
-import { SearchBar } from "./SearchBar";
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormGroup from '@mui/material/FormGroup';
-
-let residenceSelected = "";
-let statusSelected = "";
+import { ResidencesFilter, StatusFilter, UserFilter, filterUsers } from "../../filters/UserFilters";
 
 function Users() {
-    const [users, setUsers] = useState<User[]>([]);
-    const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-    const [usersFiltered, setUsersFiltered] = useState<User[]>([]);
-    useEffect(() => {
-        Api.fetchSubscriptions().then((subscriptions) => {
-            setSubscriptions(subscriptions);
-        });
-    });
-
-    const changeStatus = (status: string) => {
-        statusSelected = status;
-        updateFilter();
-    };
-
-    const changeResidence = (residence: string) => {
-        residenceSelected = residence;
-        updateFilter();
-    };
-
-    const handleResidenceChange = (e) => {
-        let residence = e.target.value;
-        changeResidence(residence);
-    };
-
-    const handleStatusChange = (e) => {
-        let status = e.target.value;
-        changeStatus(status);
-    };
-
-    const updateFilter = () => {        
-        let user_expanded: any[] = users;
-        for (let ukey in user_expanded) {
-            let user_subscription = subscriptions.filter((subscription) => subscription.user_id === users[ukey].keycloak_id);
-            if (user_subscription.length > 0) {
-                user_expanded[ukey].subscription = user_subscription[0];
-            }
-        }
-        if (residenceSelected) {
-            user_expanded = user_expanded.filter((user) => "subscription" in user ? (user.subscription.chambre.residence == residenceSelected) : false);
-        }
-        if (statusSelected) {
-            user_expanded = user_expanded.filter((user) => "subscription" in user ? user.subscription.status == statusSelected : false);
-        }
-
-        let user_filtered: User[] = [];
-        for (let ukey in user_expanded) {
-            let u = user_expanded[ukey];
-            delete u.subscription;
-            user_filtered[ukey] = user_expanded[ukey];
-        }
-
-        setUsersFiltered(user_expanded);
-
-    };
+    const [users, setUsers] = useState<UserDataBundle[]>([]);
+    const [filters, setFilters] = useState<UserFilter[]>([]);
 
     useEffect(() => {
-        Api.fetchUsers().then((users) => {
+        Api.fetchUserDataBundles().then((users: UserDataBundle[]) => {
             setUsers(users);
-            setUsersFiltered(users);
         });
     }, []);
+
+    const handleResidenceChange = (residenceName: string) => {
+        let newFilters = filters.filter((filter) => !(filter instanceof ResidencesFilter));
+        let residence = Residence[residenceName];
+        if (residence !== undefined) {
+            newFilters.push(new ResidencesFilter(residence));
+        }
+        setFilters(newFilters);
+    };
+
+    const handleStatusChange = (statusName: string) => {
+        let newFilters = filters.filter((filter) => !(filter instanceof StatusFilter));
+        let status = SubscriptionStatus[statusName];
+        if (status !== undefined) {
+            newFilters.push(new StatusFilter(status));
+        }
+        setFilters(newFilters);
+    };
 
     return (
         <div className="card">
@@ -85,10 +47,11 @@ function Users() {
                         labelId="select-status-label"
                         id="select-status"
                         label="Statut"
-                        onChange={handleStatusChange}
+                        onChange={(e: any) => handleStatusChange(e.target.value)}
+                        defaultValue=""
                     >
                         <MenuItem value="">Désélectionner</MenuItem>
-                        {Object.values(Status).filter(item => !isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{Status[key]}</MenuItem>)}
+                        {Object.values(SubscriptionStatus).filter(item => !isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{SubscriptionStatus[key]}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <FormControl>
@@ -97,14 +60,15 @@ function Users() {
                         labelId="select-residence-label"
                         id="select-residence"
                         label="Résidence"
-                        onChange={handleResidenceChange}
+                        onChange={(e: any) => handleResidenceChange(e.target.value)}
+                        defaultValue=""
                     >
                         <MenuItem value="">Désélectionner</MenuItem>
                         {Object.values(Residence).map((key) => <MenuItem value={key} key={key}>{Residence[key]}</MenuItem>)}
                     </Select>
                 </FormControl>
             </FormGroup>
-            <TableUsers rows={usersFiltered} />
+            <TableUsers users={filterUsers(users, filters)} rowsPerPageDefault={100} />
         </div>
     );
 };

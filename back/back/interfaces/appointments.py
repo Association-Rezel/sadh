@@ -28,7 +28,6 @@ class AppointmentSlot(BaseModel):
 
 class Appointment(BaseModel):
     appointment_id: UUID
-    subscription_id: UUID
     slot: AppointmentSlot
     status: AppointmentStatus
     type: AppointmentType
@@ -38,7 +37,6 @@ class Appointment(BaseModel):
         """Create a Appointment json response from a Appointment DB schema."""
         return cls(
             appointment_id=obj.appointment_id,
-            subscription_id=obj.subscription_id,
             slot=AppointmentSlot(
                 start=datetime.fromisoformat(obj.slot_start), end=datetime.fromisoformat(obj.slot_end)
             ),

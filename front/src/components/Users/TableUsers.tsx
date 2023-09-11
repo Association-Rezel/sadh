@@ -14,7 +14,7 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import { User } from "../../utils/types";
+import { UserDataBundle } from "../../utils/types";
 import { Link } from "react-router-dom";
 
 interface TablePaginationActionsProps {
@@ -70,16 +70,18 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
     );
 }
 
-interface TableUsersProps {
-    rows: User[];
-}
-
-export function TableUsers({ rows }: TableUsersProps) {
+export function TableUsers({ users,
+    rowsPerPageOptions = [5, 10, 25, { label: "All", value: -1 }],
+    rowsPerPageDefault = 5 }: {
+        users: UserDataBundle[],
+        rowsPerPageOptions?: Array<number | { value: number; label: string }>,
+        rowsPerPageDefault?: number
+    }) {
     const [page, setPage] = React.useState(0);
-    const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const [rowsPerPage, setRowsPerPage] = React.useState(rowsPerPageDefault);
 
     // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
 
     const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPage(newPage);
@@ -96,17 +98,17 @@ export function TableUsers({ rows }: TableUsersProps) {
                 <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
                     <TableBody>
                         {(rowsPerPage > 0
-                            ? rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            : rows
-                        ).map((row) => (
-                            <TableRow key={row.name}>
+                            ? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            : users
+                        ).map((bundle: UserDataBundle) => (
+                            <TableRow key={bundle.user.keycloak_id}>
                                 <TableCell component="th" scope="row">
-                                    <Link to={"/admin/users/" + row.keycloak_id}>
-                                        {row.name}
+                                    <Link to={"/admin/users/" + bundle.user.keycloak_id}>
+                                        {bundle.user.name}
                                     </Link>
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {/*row.residence*/}
+                                    {bundle.subscription?.status}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -119,9 +121,9 @@ export function TableUsers({ rows }: TableUsersProps) {
                     <TableFooter>
                         <TableRow>
                             <TablePagination
-                                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                                rowsPerPageOptions={rowsPerPageOptions}
                                 colSpan={4}
-                                count={rows.length}
+                                count={users.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
                                 SelectProps={{
