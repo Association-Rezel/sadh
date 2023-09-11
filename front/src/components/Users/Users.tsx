@@ -68,7 +68,7 @@ function Users() {
                     </Select>
                 </FormControl>
             </FormGroup>
-            <TableUsers users={filterUsers(users, filters)} rowsPerPageDefault={100} />
+            <TableUsers users={filterUsers(users, filters)} rowsPerPageDefault={100} rowsPerPageOptions={[100, 500, 1000, { label: "All", value: -1 }]} />
         </div>
     );
 };
