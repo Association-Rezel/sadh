@@ -36,7 +36,7 @@ function User() {
     useEffect(() => {
         Api.fetchUserDataBundle(keycloak_id).then((bundle: UserDataBundle) => {
             setUserBundle(bundle);
-            reset(userBundle.flow);
+            reset(bundle.flow);
         });
     }, [keycloak_id]);
 
