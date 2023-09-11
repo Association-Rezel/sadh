@@ -7,7 +7,8 @@ from fastapi import Depends
 from back.core.users import get_or_create_from_token
 from back.database import Session, SessionLocal
 from back.http_errors import Unauthorized
-from back.interfaces import Token, User
+from back.interfaces.auth import Token
+from back.interfaces.users import User
 from back.middlewares.auth import token
 
 

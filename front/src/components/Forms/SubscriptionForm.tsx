@@ -1,5 +1,5 @@
 import { Typography } from "@mui/material"
-import { Status, Residence } from "../../utils/types"
+import { SubscriptionStatus, Residence } from "../../utils/types"
 import { Api } from "../../utils/Api";
 import { AppStateContext } from "../../utils/AppState";
 import { useContext } from "react";
@@ -62,7 +62,7 @@ function SubscriptionForm() {
     
     return (
         <Typography variant="h5" align="center" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-            <form className="subform" onSubmit={handleSubmit(appState.subscription?.status == Status.PENDING_VALIDATION ? onModifySubscription : onSubmitSubscription)}>
+            <form className="subform" onSubmit={handleSubmit(appState.subscription?.status == SubscriptionStatus.PENDING_VALIDATION ? onModifySubscription : onSubmitSubscription)}>
                 <div>
                     <label>Nom de la résidence :</label>
                     <select name="residence" id="residence" {...register("residence")} defaultValue={appState.subscription?.chambre.residence}>

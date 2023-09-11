@@ -6,8 +6,8 @@ import logging
 from fastapi import Depends
 
 from back.http_errors import NotFound
-from back.interfaces import User
 from back.interfaces.box import Box
+from back.interfaces.users import User
 from back.middlewares.db import user
 from back.netbox_client import NETBOX
 

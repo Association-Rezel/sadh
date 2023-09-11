@@ -1,7 +1,13 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, AppointmentType, Residence } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, AppointmentType, Residence, UserDataBundle } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle> {
+        throw new Error("Method not implemented.");
+    }
+    fetchUserDataBundles(): Promise<UserDataBundle[]> {
+        throw new Error("Method not implemented.");
+    }
     fetchSubscriptionAppointments(subscription_id: string): Promise<Appointment[]> {
         return Promise.resolve([]);
     }
@@ -37,11 +43,12 @@ export class DummyApi implements ApiInterface {
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription> {
         throw new Error("Method not implemented.");
     }
-    modifySubscriptionFlow(subscription_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
+    modifySubscriptionFlow(flow_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow> {
         throw new Error("Method not implemented.");
     }
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
         return Promise.resolve({
+            flow_id:"01ee49c6-9952-46e9-bea5-ce267c191a41",
             subscription_id:"01ee49c6-9952-46e9-bea5-ce267c191a41",
             erdv_information:"RDV2-KLEY-550-20230830-1\n\nLigne FI-4697-6424",
             erdv_id:"F10-DGO-48796025-0000017086267-ERDV",

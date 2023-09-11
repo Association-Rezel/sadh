@@ -1,24 +1,22 @@
 """Get or edit users."""
 
 
-from turtle import st
-
 from fastapi import HTTPException
 from fastapi.responses import Response
 
 from back.core.appointments import get_subscription_appointments
-from back.core.users import get_subscriptions, get_users
+from back.core.users import get_subscriptions, get_user_bundles, get_users
 from back.database import Session
 from back.database.appointments import DBAppointment
 from back.database.subscriptions import DBSubscription
-from back.database.users import User as DBUser
+from back.database.users import DBUser
 from back.email import send_admin_message, send_email_contract
 from back.env import ENV
-from back.interfaces import User
 from back.interfaces.appointments import Appointment, AppointmentSlot
 from back.interfaces.auth import KeycloakId
 from back.interfaces.box import ONT, Chambre, Status
 from back.interfaces.subscriptions import Subscription
+from back.interfaces.users import User, UserDataBundle
 from back.middlewares import db, must_be_admin, user
 from back.netbox_client import NETBOX
 from back.utils.router_manager import ROUTEURS
@@ -180,6 +178,15 @@ def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subsc
     return get_subscriptions(_db)
 
 
+@router.get("/dataBundles")
+def _get_data_bundles(
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> list[UserDataBundle]:
+    """Get all user data bundles."""
+    return get_user_bundles(_db)
+
+
 @router.get("/{keycloak_id}")
 async def _user_get(
     keycloak_id: str,
@@ -268,3 +275,16 @@ async def _user_register_ont(
         return HTTPException(status_code=500, detail="Error while registering ONT")
 
     return ont
+
+
+@router.get("/{keycloak_id}/dataBundle")
+async def _user_get_data_bundles(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> UserDataBundle:
+    """Get all user data bundles."""
+    bundleList = get_user_bundles(_db, KeycloakId(keycloak_id))
+    if not bundleList:
+        raise HTTPException(status_code=404, detail="User not found")
+    return bundleList[0]

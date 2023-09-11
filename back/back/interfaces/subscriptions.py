@@ -36,7 +36,7 @@ class Subscription(BaseModel):
 class SubscriptionFlow(BaseModel):
     """A subscription model."""
 
-    subscription_id: UUID
+    flow_id: UUID
     erdv_information: str
     erdv_id: str
     present_for_appointment: str
@@ -57,7 +57,7 @@ class SubscriptionFlow(BaseModel):
     def from_orm(cls, obj: DBSubscriptionFlow) -> "SubscriptionFlow":
         """Create a Subscription json response from a Subscription Flow DB schema."""
         return cls(
-            subscription_id=obj.subscription_id,
+            flow_id=obj.flow_id,
             erdv_information=obj.erdv_information,
             erdv_id=obj.erdv_id,
             present_for_appointment=obj.present_for_appointment,
