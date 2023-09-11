@@ -28,8 +28,8 @@ class DBSubscriptionFlow(Base):
     cmd_acces_sent: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
     cr_mes_sent: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
     comment: Mapped[str] = mapped_column(String, default="")  # type: ignore[assignment]
-    paid_caution: Mapped[bool] = mapped_column(Boolean, default="")  # type: ignore[assignment]
-    paid_first_month: Mapped[bool] = mapped_column(Boolean, default="")  # type: ignore[assignment]
-    contract_signed: Mapped[bool] = mapped_column(Boolean, default="")  # type: ignore[assignment]
+    paid_caution: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
+    paid_first_month: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
+    contract_signed: Mapped[bool] = mapped_column(Boolean, default=False)  # type: ignore[assignment]
 
     subscription: MappedSub = relationship("DBSubscription", back_populates="flow")
