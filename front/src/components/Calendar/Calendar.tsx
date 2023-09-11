@@ -23,7 +23,7 @@ function CalendarComponent() {
                 id: appointment.appointment_id,
                 start: new Date(appointment.slot.start),
                 end: new Date(appointment.slot.end),
-                title: "Subscription " + appointment.subscription_id
+                title: "ID " + appointment.appointment_id
             },);
         }
         console.log("events", events)

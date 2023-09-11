@@ -121,7 +121,6 @@ export enum AppointmentType {
 
 export interface Appointment {
     appointment_id: string;
-    subscription: Subscription;
     slot: AppointmentSlot;
     status: AppointmentStatus;
     type: AppointmentType;
