@@ -240,12 +240,22 @@ export class RemoteApi implements ApiInterface {
         const data = await this.fetchOrDefault("/appointments", null, true);
         return data.map((appointment: any) => this.parseAppointment(appointment));
     }
+
+    parseUserDataBundle(data: any): UserDataBundle {
+        if (data !== null) {
+            data.appointments = data.appointments.map((appointment: any) => this.parseAppointment(appointment));
+        }
+
+        return data;
+    }
     
     async fetchUserDataBundles(): Promise<UserDataBundle[]> {
-        return await this.fetchOrDefault("/users/dataBundles", null, true);
+        const data = await this.fetchOrDefault("/users/dataBundles", null, true);
+        return data.map((bundle: any) => this.parseUserDataBundle(bundle));
     }
 
     async fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle> {
-        return await this.fetchOrDefault("/users/" + user_keycloak_id + "/dataBundle", null, true);
+        const data = await this.fetchOrDefault("/users/" + user_keycloak_id + "/dataBundle", null, true);
+        return this.parseUserDataBundle(data);
     }
 }
