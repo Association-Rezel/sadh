@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from fastapi.responses import Response
 
 from back.core.appointments import get_subscription_appointments
+from back.core.subscriptions import create_empty_subscription_flow
 from back.core.users import get_subscriptions, get_user_bundles, get_users
 from back.database import Session
 from back.database.appointments import DBAppointment
@@ -64,6 +65,8 @@ async def _me_subscribe(
     )
     _db.add(subscription)
     _db.commit()
+
+    create_empty_subscription_flow(_db, str(subscription.subscription_id))
 
     send_admin_message(
         "Demande d'abonnement",

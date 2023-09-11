@@ -7,8 +7,12 @@ from back.interfaces.subscriptions import SubscriptionFlow
 def get_or_create_subscription_flow(db: Session, subscription_id: str) -> SubscriptionFlow:
     flow = db.query(DBSubscriptionFlow).filter_by(subscription_id=subscription_id).first()
     if not flow:
-        return create_subscription_flow(db, subscription_id, DBSubscriptionFlow())
+        return create_empty_subscription_flow(db, subscription_id)
     return SubscriptionFlow.from_orm(flow)
+
+
+def create_empty_subscription_flow(db: Session, subscription_id: str) -> SubscriptionFlow:
+    return create_subscription_flow(db, subscription_id, DBSubscriptionFlow())
 
 
 def create_subscription_flow(db: Session, subscription_id: str, data: SubscriptionFlow) -> SubscriptionFlow:
