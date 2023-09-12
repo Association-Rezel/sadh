@@ -37,14 +37,16 @@ export default function Dashboards() {
         }
     };
 
+    const cmdAccesToSendFilter: UserFilter = {
+        filter(user: UserDataBundle): boolean {
+            return user.appointments.some(
+                appointment => appointment.status === AppointmentStatus.VALIDATED)
+                && !user.flow.cmd_acces_sent;
+        }
+    };
+
     return (
         <div className="grid grid-cols-2 gap-4 mt-5 gap-y-10">
-            <div>
-                <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
-                    En attente de validation
-                </Typography>
-                <TableUsers users={filterUsers(users, [pendingSubscriptionsFilter])} />
-            </div>
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     Validés - Sans rendez-vous
@@ -59,9 +61,21 @@ export default function Dashboards() {
             </div>
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
+                    CMD_ACCES à envoyer
+                </Typography>
+                <TableUsers users={filterUsers(users, [cmdAccesToSendFilter])} />
+            </div>
+            <div>
+                <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     CR MES à envoyer
                 </Typography>
                 <TableUsers users={filterUsers(users, [pastAppointNoMesSentFilter])} />
+            </div>
+            <div>
+                <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
+                    A relancer
+                </Typography>
+                <TableUsers users={filterUsers(users, [pendingSubscriptionsFilter])} />
             </div>
         </div>
     );
