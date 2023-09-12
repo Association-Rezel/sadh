@@ -36,7 +36,7 @@ const tiers = [
         title: "Box",
         subheader: "",
         price: "20",
-        description: ["Votre propre box chez vous", "Configuration de vos ports"],
+        description: ["Votre propre box chez vous", "Jusqu' à 1Gb/s symétrique"],
         buttonText: "J'adhère",
         buttonRedirectPath: "/subscribe",
         buttonVariant: "contained",
@@ -73,15 +73,15 @@ function PricingContent() {
     return (
         <React.Fragment>
             {/* Hero unit */}
-            <Container disableGutters maxWidth="sm" component="main" sx={{ pt: 8, pb: 6 }}>
+            <Container disableGutters maxWidth="md" component="main" sx={{ pt: 8, pb: 6 }}>
                 <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                    FAIPP Rezel
+                    Rezel FAI
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
                     Vous souhaitez la fibre optique directement dans votre logement ?
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
-                    Rezel propose désormais une offre d'accès à internet à 20€/mois !
+                    Rezel propose un accès à internet pour 20€/mois !
                 </Typography>
             </Container>
             {/* End hero unit */}
