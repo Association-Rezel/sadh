@@ -40,6 +40,13 @@ function User() {
         });
     }, [keycloak_id]);
 
+    //Hotfix for users without subscrption flow, because fetching the subscription flow if it does not exist will create it
+    useEffect(() => {
+        if (userBundle?.subscription && !userBundle?.flow) {
+            Api.fetchSubscriptionFlow(userBundle.subscription.subscription_id)
+        }
+    }, [userBundle])
+
     return (
         <div>
             <UserSection keycloak_id={keycloak_id} />
