@@ -1,9 +1,10 @@
-import {useContext, useState} from "react";
-import {keycloak} from "../../utils/keycloak";
-import {AppStateContext, updateAppState} from "../../utils/AppState";
-import {Api} from "../../utils/Api";
-import {Link} from "react-router-dom";
-import {AppBar, Button, CssBaseline, GlobalStyles, Toolbar} from "@mui/material";
+import { useContext, useState } from "react";
+import { keycloak } from "../../utils/keycloak";
+import { AppStateContext, updateAppState } from "../../utils/AppState";
+import { Api } from "../../utils/Api";
+import { Link } from "react-router-dom";
+import { AppBar, Button, CssBaseline, GlobalStyles, IconButton, Toolbar } from "@mui/material";
+import logoRezel from "../../ressources/img/cotcot.svg"
 
 function LoggedMenu() {
     const appState = useContext(AppStateContext);
@@ -12,25 +13,27 @@ function LoggedMenu() {
         Api.logout();
         keycloak.logout();
     }
-    
+
     if (appState.logged) {
         return (
             <div>
-                <GlobalStyles styles={{ul: {margin: 0, padding: 0, listStyle: "none"}}}/>
-                <CssBaseline/>
+                <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: "none" } }} />
+                <CssBaseline />
                 <AppBar
                     position="static"
                     color="default"
                     elevation={0}
-                    sx={{borderBottom: (theme) => `1px solid ${theme.palette.divider}`}}
+                    sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
                 >
-                    <Toolbar sx={{flexWrap: "wrap"}} >
-                        <div style={{ position: 'absolute', left: 0}}>
-                            <Button>
-                                <Link to={"/"}>Accueil</Link>
-                            </Button>
+                    <Toolbar sx={{ flexWrap: "wrap" }} >
+                        <div style={{ position: 'absolute', left: 0 }}>
+                            <IconButton>
+                                <Link to={"/"}>
+                                    <img src={logoRezel} alt="logo" style={{ height: 50 }} />
+                                </Link>
+                            </IconButton>
                         </div>
-                        <div style={{ position: 'absolute', right: 0}}>
+                        <div style={{ position: 'absolute', right: 0 }}>
                             <Button disabled>
                                 <Link to={"/account"}>Mon compte</Link>
                             </Button>
@@ -40,7 +43,7 @@ function LoggedMenu() {
                                 </Button>
                             )}
                             <Button onClick={logout}>
-                                { /* TODO : déconnexion auprès du Keycloak également */ }
+                                { /* TODO : déconnexion auprès du Keycloak également */}
                                 Déconnexion
                             </Button>
                         </div>
@@ -51,21 +54,23 @@ function LoggedMenu() {
     }
     return (
         <div>
-            <GlobalStyles styles={{ul: {margin: 0, padding: 0, listStyle: "none"}}}/>
-            <CssBaseline/>
+            <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: "none" } }} />
+            <CssBaseline />
             <AppBar
                 position="static"
                 color="default"
                 elevation={0}
-                sx={{borderBottom: (theme) => `1px solid ${theme.palette.divider}`}}
+                sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
             >
-                <Toolbar sx={{flexWrap: "wrap"}} >
-                    <div style={{ position: 'absolute', left: 0}}>
-                        <Button>
-                            <Link to={"/"}>Accueil</Link>
-                        </Button>
+                <Toolbar sx={{ flexWrap: "wrap" }} >
+                    <div style={{ position: 'absolute', left: 0 }}>
+                        <IconButton>
+                            <Link to={"/"}>
+                                <img src={logoRezel} alt="logo" style={{ height: 50 }} />
+                            </Link>
+                        </IconButton>
                     </div>
-                    <div style={{ position: 'absolute', right: 0}}>
+                    <div style={{ position: 'absolute', right: 0 }}>
                         <Button onClick={() => Api.login()}>Connexion</Button>
                     </div>
                 </Toolbar>
