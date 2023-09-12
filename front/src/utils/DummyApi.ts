@@ -63,7 +63,7 @@ export class DummyApi implements ApiInterface {
             comment:"",
             paid_caution:false,
             paid_first_month:true,
-            signed_contract:true
+            contract_signed:true
         });
     }
     registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {

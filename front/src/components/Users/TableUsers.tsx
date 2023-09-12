@@ -117,7 +117,7 @@ export function TableUsers({ users,
                                     {bundle?.flow?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {bundle?.flow?.signed_contract ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
+                                    {bundle?.flow?.contract_signed ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
                                 </TableCell>
                             </TableRow>
                         ))}

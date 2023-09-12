@@ -50,7 +50,7 @@ export interface SubscriptionFlow {
     comment: string;
     paid_caution: boolean;
     paid_first_month: boolean;
-    signed_contract: boolean;
+    contract_signed: boolean;
 }
 
 export interface Order {
