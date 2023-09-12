@@ -14,8 +14,9 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import { UserDataBundle } from "../../utils/types";
+import { SubscriptionStatus, UserDataBundle } from "../../utils/types";
 import { Link } from "react-router-dom";
+import { Typography } from "@mui/material";
 
 interface TablePaginationActionsProps {
     count: number;
@@ -108,8 +109,17 @@ export function TableUsers({ users,
                                     </Link>
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {bundle.subscription?.status}
+                                    {SubscriptionStatus[bundle.subscription?.status]}
                                 </TableCell>
+                                <TableCell style={{ width: 160 }} align="right">
+                                    {bundle?.flow?.paid_caution ? <p className="text-green-700">Caution</p> : <p className="text-red-700">Caution</p>}
+                                </TableCell>
+                                <TableCell style={{ width: 160 }} align="right">
+                                    {bundle?.flow?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
+                                </TableCell>
+                                <TableCell style={{ width: 160 }} align="right">
+                                    {bundle?.flow?.signed_contract ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
+                                </TableCell>          
                             </TableRow>
                         ))}
                         {emptyRows > 0 && (

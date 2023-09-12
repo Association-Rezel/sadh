@@ -51,7 +51,7 @@ function Users() {
                         defaultValue=""
                     >
                         <MenuItem value="">Désélectionner</MenuItem>
-                        {Object.values(SubscriptionStatus).filter(item => !isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{SubscriptionStatus[key]}</MenuItem>)}
+                        {Object.values(SubscriptionStatus).filter(item => isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <FormControl>
