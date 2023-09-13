@@ -74,7 +74,7 @@ class NetBoxClient:
             netbox_id=nb_ont.id,
         )
 
-    def register_ont(self, serial_number: str, software_version: str, sub: Subscription) -> ONT:
+    def register_ont(self, serial_number: str, software_version: str, sub: Subscription, telecomian: bool) -> ONT:
         """Register an ONT in netbox and notify Charon for OLT configuration."""
         MEC128_ID = 3  # C'est comme ça et puis c'est tout
 
@@ -118,6 +118,10 @@ class NetBoxClient:
         )
 
         pon_interface = self._get_pon_interface(ont_device.id)  # type: ignore
+
+        # Add VLANs to ONT
+        vlans = [65, 101] if telecomian else [65, 102]
+        pon_interface.update({"tagged_vlans": vlans})
 
         # Add cable from pon to MEC port
         self.api.dcim.cables.create(

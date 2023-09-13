@@ -175,8 +175,8 @@ export class RemoteApi implements ApiInterface {
         return await this.myAuthenticatedRequest("/users/subscriptions", null, "GET");
     }
 
-    async registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
-        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version, null, "POST");
+    async registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT> {
+        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version + "&telecomian=" + telecomian, null, "POST");
     }
 
     async fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
