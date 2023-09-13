@@ -120,7 +120,7 @@ class NetBoxClient:
         pon_interface = self._get_pon_interface(ont_device.id)  # type: ignore
 
         # Add VLANs to ONT
-        vlans = [65, 101] if telecomian else [65, 102]
+        vlans = ["65", "101"] if telecomian else ["65", "102"]
         pon_interface.update({"tagged_vlans": vlans})
 
         # Add cable from pon to MEC port
