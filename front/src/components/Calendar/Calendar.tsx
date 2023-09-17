@@ -22,10 +22,12 @@ function CalendarComponent() {
             const calendarPropsNew = [];
             for (let userBundle of userBundles) {
                 for (let appointment of userBundle.appointments) {
-                    calendarPropsNew.push({
-                        appointment: appointment,
-                        user: userBundle.user
-                    })
+                    if (appointment.status === AppointmentStatus.VALIDATED) {
+                        calendarPropsNew.push({
+                            appointment: appointment,
+                            user: userBundle.user
+                        })
+                    }
                 }   
             }
             setCalendarProps(calendarPropsNew);
