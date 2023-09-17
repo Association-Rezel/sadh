@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { ONT } from "../../../utils/types";
 import { Api } from "../../../utils/Api";
-import { Button, Stack, TextField, Typography } from "@mui/material";
+import { Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from "@mui/material";
+import { Warning } from "@mui/icons-material";
 
 export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { keycloak_id: string, registerToSubFlowForm: any }) {
 
@@ -9,6 +10,7 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
     const [ontStillLoading, setONTStillLoading] = useState<boolean>(true);
     const [serial, setSerial] = useState<string>("");
     const [softwareVersion, setSoftwareVersion] = useState<string>("3FE45655AOCK88");
+    const [isTelecomian, setIsTelecomian] = useState<boolean>(false);
 
     const handleSubmit = () => {
         // serial is like ALCL:F887945B
@@ -16,7 +18,7 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
             alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
             return;
         }
-        Api.registerONT(keycloak_id, serial, softwareVersion).then(ont => {
+        Api.registerONT(keycloak_id, serial, softwareVersion, isTelecomian).then(ont => {
             setONT(ont);
         });
     }
@@ -40,6 +42,10 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
                 {!ontStillLoading && !ont && (
                     <Stack direction={"column"}
                         spacing={2}>
+                        <FormControlLabel control={<Checkbox checked={isTelecomian} />}
+                            label={<span>VLAN Télécomien <Warning /></span>}
+                            onChange={() => setIsTelecomian(!isTelecomian)}
+                        />
                         <TextField name="serial_number"
                             className="bg-white"
                             required

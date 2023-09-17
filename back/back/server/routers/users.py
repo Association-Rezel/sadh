@@ -262,6 +262,7 @@ async def _user_get_ont(
 async def _user_register_ont(
     keycloak_id: str,
     serial_number: str,
+    telecomian: bool,
     software_version: str,
     _db: Session = db,
     _: None = must_be_admin,
@@ -273,7 +274,7 @@ async def _user_register_ont(
     if not sub:
         raise HTTPException(status_code=404, detail="User has no subscription")
 
-    ont = NETBOX.register_ont(serial_number, software_version, sub)
+    ont = NETBOX.register_ont(serial_number, software_version, sub, telecomian)
     if not ont:
         return HTTPException(status_code=500, detail="Error while registering ONT")
 

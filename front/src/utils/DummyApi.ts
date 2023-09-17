@@ -66,7 +66,7 @@ export class DummyApi implements ApiInterface {
             contract_signed:true
         });
     }
-    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT> {
         throw new Error("Method not implemented.");
     }
     fetchUser(user_keycloak_id: string): Promise<User> {
