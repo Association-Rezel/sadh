@@ -4,6 +4,10 @@ WORKDIR /app
 
 COPY ./ /app/
 
+# Make Sure rezel root CA is installed
+COPY /usr/local/share/ca-certificates/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 CMD ["uvicorn", "--factory", "back:make_app", "--host", "0.0.0.0", "--port", "80"]
