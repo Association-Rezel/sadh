@@ -1,35 +1,56 @@
 import { useEffect, useState } from "react";
-import { Appointment, AppointmentStatus } from "../../utils/types";
+import { Appointment, AppointmentStatus, User } from "../../utils/types";
 import { Api } from "../../utils/Api";
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import moment from 'moment'
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useNavigate } from "react-router-dom";
 
 const localizer = momentLocalizer(moment)
 
+interface CalendarProp {
+    appointment: Appointment;
+    user: User;
+}
+
+
 function CalendarComponent() {
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
+    const [calendarProps, setCalendarProps] = useState<CalendarProp[]>([]);
 
     useEffect(() => {
-        Api.fetchAppointments().then((appointments) => {
-            setAppointments(appointments.filter((appointment) => appointment.status === AppointmentStatus.VALIDATED));
+        Api.fetchUserDataBundles().then((userBundles) => {
+            const calendarPropsNew = [];
+            for (let userBundle of userBundles) {
+                for (let appointment of userBundle.appointments) {
+                    calendarPropsNew.push({
+                        appointment: appointment,
+                        user: userBundle.user
+                    })
+                }   
+            }
+            setCalendarProps(calendarPropsNew);
         });
     }, []);
 
     const getEvents = () => {
         let events = [];
-        for (let appointment of appointments) {
+        for (let calendarProp of calendarProps) {
             events.push({
-                id: appointment.appointment_id,
-                start: new Date(appointment.slot.start),
-                end: new Date(appointment.slot.end),
-                title: "ID " + appointment.appointment_id
+                id: calendarProp.appointment.appointment_id,
+                start: new Date(calendarProp.appointment.slot.start),
+                end: new Date(calendarProp.appointment.slot.end),
+                title: calendarProp.user.name,
+                userid: calendarProp.user.keycloak_id,
             },);
         }
         console.log("events", events)
         return events;
     }
 
+    const navigate = useNavigate();
+    const handleSelectEvent = (event,target) => {
+        navigate(`/admin/users/${event.userid}`);
+    }
 
     return (
         <div className="mt-10">
@@ -39,6 +60,7 @@ function CalendarComponent() {
                 startAccessor="start"
                 endAccessor="end"
                 style={{ height: 500 }}
+                onSelectEvent={handleSelectEvent} 
             />
         </div>
     )

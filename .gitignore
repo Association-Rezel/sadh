@@ -286,3 +286,5 @@ dist-ssr
 front/.eslintrc.cjs
 .gitignore
 
+front/src/utils/Config.ts
+front/index.html
