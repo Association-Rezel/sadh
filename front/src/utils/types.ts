@@ -161,7 +161,7 @@ export interface ApiInterface {
     fetchUser(user_keycloak_id: string): Promise<User>;
     fetchSubscription(user_keycloak_id: string): Promise<Subscription>;
     fetchONT(user_keycloak_id: string): Promise<ONT>;
-    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT>;
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
     modifySubscriptionFlow(flow_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription>;

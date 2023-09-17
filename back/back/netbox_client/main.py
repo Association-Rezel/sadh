@@ -1,5 +1,7 @@
 """NetBoxClient class definition."""
 import logging
+from ast import List
+from os import name
 from typing import Any
 
 import requests
@@ -23,6 +25,9 @@ class NetBoxClient:
     """All netbox interactions pass by this class."""
 
     api: Api
+    vlan65_id: int
+    vlan101_id: int
+    vlan102_id: int
 
     def __init__(self) -> None:
         """Init the netbox client."""
@@ -33,7 +38,21 @@ class NetBoxClient:
         except RequestError as ex:
             raise NetBoxConnectionError from ex
         assert_requires(self.api)
+        self.init_vlan_ids()
         logger.info("Netbox service ready")
+
+    def init_vlan_ids(self) -> None:
+        """Init vlan ids."""
+        if (vlan65 := self.api.ipam.vlans.get(vid="65")) is None:
+            raise Exception("Vlan 65 not found in Netbox")
+        if (vlan101 := self.api.ipam.vlans.get(vid="101")) is None:
+            raise Exception("Vlan 101 not found in Netbox")
+        if (vlan102 := self.api.ipam.vlans.get(vid="102")) is None:
+            raise Exception("Vlan 102 not found in Netbox")
+
+        self.vlan65_id = vlan65.id
+        self.vlan101_id = vlan101.id
+        self.vlan102_id = vlan102.id
 
     def create_user_tag(self, user: User) -> None:
         """Create a tag for a user."""
@@ -74,7 +93,7 @@ class NetBoxClient:
             netbox_id=nb_ont.id,
         )
 
-    def register_ont(self, serial_number: str, software_version: str, sub: Subscription) -> ONT:
+    def register_ont(self, serial_number: str, software_version: str, sub: Subscription, telecomian: bool) -> ONT:
         """Register an ONT in netbox and notify Charon for OLT configuration."""
         MEC128_ID = 3  # C'est comme ça et puis c'est tout
 
@@ -96,26 +115,35 @@ class NetBoxClient:
         nb_site_residence = self.api.dcim.sites.get(slug=sub.chambre.residence.name.lower())
 
         # Get or create chambre rack
-        chambre_rack = self.api.dcim.racks.get(name=f"Chambre {sub.chambre.name}")
+        chambre_rack = self.api.dcim.racks.get(name=f"{sub.chambre.residence.name} {sub.chambre.name}")
         if chambre_rack is None:
             chambre_rack = self.api.dcim.racks.create(
-                name=f"Chambre {sub.chambre.name}",
+                name=f"{sub.chambre.residence.name} {sub.chambre.name}",
                 site=nb_site_residence.id,  # type: ignore
                 status="active",
             )
 
         # Create ONT in netbox
-        ont_device = self.api.dcim.devices.create(
-            device_role=self.api.dcim.device_roles.get(slug=DeviceRoles.ONT.name.lower()).id,  # type: ignore
-            device_type=self.api.dcim.device_types.get(slug=Models.NOKIA_G_010G_Q.value.name.lower()).id,  # type: ignore
-            name=f"ONT {sub.chambre.residence.name}-{sub.chambre.name}",
-            serial=serial_number,
-            site=nb_site_residence.id,  # type: ignore
-            rack=chambre_rack.id,  # type: ignore
-            status="active",
-            tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
-            custom_fields={"position_in_pon": position_in_pon, "ont_sftw_ver": software_version},
-        )
+        ont_device = self.api.dcim.devices.get(serial=serial_number)
+
+        if ont_device is None:
+            ont_device = self.api.dcim.devices.create(
+                device_role=self.api.dcim.device_roles.get(slug=DeviceRoles.ONT.name.lower()).id,  # type: ignore
+                device_type=self.api.dcim.device_types.get(slug=Models.NOKIA_G_010G_Q.value.name.lower()).id,  # type: ignore
+                name=f"ONT {sub.chambre.residence.name}-{sub.chambre.name}",
+                serial=serial_number,
+                site=nb_site_residence.id,  # type: ignore
+                rack=chambre_rack.id,  # type: ignore
+                status="active",
+                tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
+                custom_fields={"position_in_pon": position_in_pon, "ont_sftw_ver": software_version},
+            )
+
+        # Add VLANs to ONT
+        for interface in self.api.dcim.interfaces.filter(device_id=ont_device.id):  # type: ignore
+            interface.update(
+                {"mode": "tagged", "tagged_vlans": [self.vlan65_id, self.vlan101_id if telecomian else self.vlan102_id]}
+            )
 
         pon_interface = self._get_pon_interface(ont_device.id)  # type: ignore
 
