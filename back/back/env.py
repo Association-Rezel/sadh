@@ -85,6 +85,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
 
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
+        self.environment = get_or_none("ENV") or "prod"
 
         self.kc_url = get_or_raise("KC_URL")
         self.kc_client_id = get_or_raise("KC_CLIENT_ID")
