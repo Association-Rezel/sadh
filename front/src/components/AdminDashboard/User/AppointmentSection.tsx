@@ -1,7 +1,14 @@
-import { Appointment, AppointmentStatus, UserDataBundle } from "../../../utils/types";
-import { IconButton, TextField, Typography } from "@mui/material";
+import { Appointment, AppointmentSlot, AppointmentStatus, UserDataBundle } from "../../../utils/types";
+import { Button, IconButton, TextField, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
-import { Check, Delete } from "@mui/icons-material";
+import { Check, Delete, Margin } from "@mui/icons-material";
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { useState } from "react";
+import dayjs, { Dayjs } from 'dayjs';
+
 
 export default function AppointmentSection({ userBundle, setUserBundle, registerToSubFlowForm }: { userBundle: UserDataBundle, setUserBundle: any, registerToSubFlowForm: any }) {
 
@@ -24,8 +31,22 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
         });
     }
 
-    const appointments = userBundle?.appointments;
+    const [appointments, setAppointments] = useState<Appointment[]>(userBundle?.appointments);
     const currentSubFlow = userBundle?.flow;
+
+    const [startDate, setStartDate] = useState<Dayjs>(dayjs());
+
+    const addAppointment = () => {
+        const selectedSlots: AppointmentSlot[] = [];
+        selectedSlots.push({
+            start: startDate.toDate(),
+            end: startDate.add(2, "hour").toDate()
+        });
+        Api.submitAppointmentSlots(userBundle.user.keycloak_id, selectedSlots).then((data) => {
+            setAppointments(data);
+        }).catch((error) => {
+            alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
+        });    };
 
     return (
         <div>
@@ -47,6 +68,23 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
                                     onDelete={() => onDeleteAppointment(appointment)}
                                     onValidate={() => onValidateAppointment(appointment)}
                                 />)}
+                        </div>
+                        <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DemoContainer components={['DateTimePicker']}>
+                                    <DateTimePicker
+                                        label="Heure de début du créneau"
+                                        value={startDate}
+                                        onChange={(newValue) => setStartDate(newValue)}
+                                    />
+                                </DemoContainer>
+                            </LocalizationProvider>
+                            <Button 
+                                variant="contained" 
+                                color="primary" 
+                                onClick={addAppointment}>
+                                Ajouter le créneau
+                            </Button>
                         </div>
                         <strong>Informations</strong>
                         <div>

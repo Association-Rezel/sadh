@@ -174,6 +174,7 @@ export interface ApiInterface {
     deleteAppointment(appointment_id: string): Promise<void>;
     fetchUserDataBundles(): Promise<UserDataBundle[]>;
     fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle>;
+    submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]>;
 }
 
 
