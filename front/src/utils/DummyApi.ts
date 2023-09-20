@@ -2,6 +2,9 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscripti
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
+        return Promise.resolve([]);
+    }
     fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle> {
         throw new Error("Method not implemented.");
     }

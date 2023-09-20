@@ -258,4 +258,9 @@ export class RemoteApi implements ApiInterface {
         const data = await this.fetchOrDefault("/users/" + user_keycloak_id + "/dataBundle", null, true);
         return this.parseUserDataBundle(data);
     }
+
+    async submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
+        const data = await this.myAuthenticatedRequest("/users/" + keycloak_id + "/appointments", slots);
+        return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
 }
