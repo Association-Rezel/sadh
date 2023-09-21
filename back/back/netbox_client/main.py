@@ -30,6 +30,7 @@ class NetBoxClient:
     def __init__(self) -> None:
         """Init the netbox client."""
         self.api = Api(ENV.netbox_url, token=ENV.netbox_token)
+        self.api.http_session.verify = False
         logger.warning("Starting netbox requirements check.")
         try:
             self.api.status()
@@ -42,15 +43,15 @@ class NetBoxClient:
     def init_vlan_ids(self) -> None:
         """Init vlan ids."""
         if (vlan65 := self.api.ipam.vlans.get(vid="65")) is None:
-            if (ENV.environment == "prod"):
+            if ENV.environment == "prod":
                 raise Exception("Vlan 65 not found in Netbox")
             vlan65 = self.api.ipam.vlans.create(vid="65", name="VLAN 65", status="active")
         if (vlan101 := self.api.ipam.vlans.get(vid="101")) is None:
-            if (ENV.environment == "prod"):
+            if ENV.environment == "prod":
                 raise Exception("Vlan 101 not found in Netbox")
             vlan101 = self.api.ipam.vlans.create(vid="101", name="VLAN 101", status="active")
         if (vlan102 := self.api.ipam.vlans.get(vid="102")) is None:
-            if (ENV.environment == "prod"):
+            if ENV.environment == "prod":
                 raise Exception("Vlan 102 not found in Netbox")
             vlan102 = self.api.ipam.vlans.create(vid="102", name="VLAN 102", status="active")
 
@@ -146,7 +147,10 @@ class NetBoxClient:
         # Add VLANs to ONT
         for interface in self.api.dcim.interfaces.filter(device_id=ont_device.id):  # type: ignore
             interface.update(
-                {"mode": "tagged", "tagged_vlans": [self.vlan65_id, self.vlan101_id if telecomian else self.vlan102_id]},
+                {
+                    "mode": "tagged",
+                    "tagged_vlans": [self.vlan65_id, self.vlan101_id if telecomian else self.vlan102_id],
+                },
             )
 
         pon_interface = self._get_pon_interface(ont_device.id)  # type: ignore
