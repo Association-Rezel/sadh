@@ -35,6 +35,7 @@ class NetBoxClient:
         try:
             self.api.status()
         except RequestError as ex:
+            logger.critical(ex)
             raise NetBoxConnectionError from ex
         assert_requires(self.api)
         self.init_vlan_ids()
