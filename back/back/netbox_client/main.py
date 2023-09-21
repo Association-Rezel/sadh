@@ -1,5 +1,6 @@
 """NetBoxClient class definition."""
 import logging
+import os
 from typing import Any
 
 import requests
@@ -30,7 +31,6 @@ class NetBoxClient:
     def __init__(self) -> None:
         """Init the netbox client."""
         self.api = Api(ENV.netbox_url, token=ENV.netbox_token)
-        self.api.http_session.verify = False
         logger.warning("Starting netbox requirements check.")
         try:
             self.api.status()
