@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./ /app/
 
 # Make Sure rezel root CA is installed
-ADD https://ca.rezel.net/rezel_2015_ca.crt /usr/local/share/ca-certificates/rezel.crt
+ADD https://ca.rezel.net/rezel_2015_ca.crt /usr/share/ca-certificates/
 RUN update-ca-certificates
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
