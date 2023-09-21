@@ -8,6 +8,9 @@ COPY ./ /app/
 ADD https://ca.rezel.net/rezel_2015_ca.crt /usr/share/ca-certificates/
 RUN update-ca-certificates
 
+# Make sure requests will trust rezel root CA
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 CMD ["uvicorn", "--factory", "back:make_app", "--host", "0.0.0.0", "--port", "80"]
