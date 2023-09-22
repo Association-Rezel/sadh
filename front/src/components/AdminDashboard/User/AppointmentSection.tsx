@@ -8,6 +8,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { useState } from "react";
 import dayjs, { Dayjs } from 'dayjs';
+import { set } from "react-hook-form";
 
 
 export default function AppointmentSection({ userBundle, setUserBundle, registerToSubFlowForm }: { userBundle: UserDataBundle, setUserBundle: any, registerToSubFlowForm: any }) {
@@ -16,8 +17,8 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
 
     const onDeleteAppointment = (appointment: Appointment) => {
         Api.deleteAppointment(appointment.appointment_id).then(() => {
-            const newAppointments = userBundle?.appointments.filter((a) => a.appointment_id !== appointment.appointment_id);
-            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: newAppointments } });
+            userBundle.appointments = userBundle?.appointments.filter((a) => a.appointment_id !== appointment.appointment_id);
+            setUserBundle({ ...userBundle});
         }).catch((error) => {
             alert("Erreur lors de la suppression du rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
@@ -27,7 +28,7 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
         appointment.status = AppointmentStatus.VALIDATED;
         Api.modifyAppointmentStatus(appointment.appointment_id, appointment).then((modified: Appointment) => {
             appointment.status = modified.status;
-            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: userBundle?.appointments } });
+            setUserBundle(userBundle);
         }).catch((error) => {
             alert("Erreur lors de la validation du rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
@@ -40,8 +41,8 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
             end: startDate.add(2, "hour").toDate()
         });
         Api.submitAppointmentSlots(userBundle.user.keycloak_id, selectedSlots).then((data) => {
-            const newAppointments = userBundle?.appointments.concat(data);
-            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: newAppointments } });
+            userBundle.appointments = userBundle?.appointments.concat(data);
+            setUserBundle({ ...userBundle});
         }).catch((error) => {
             alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
