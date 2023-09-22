@@ -293,6 +293,7 @@ async def _user_get_data_bundles(
         raise HTTPException(status_code=404, detail="User not found")
     return bundleList[0]
 
+
 @router.post("/{keycloak_id}/appointments")
 async def _user_post_appointment_slots(
     keycloak_id: str,
@@ -304,10 +305,6 @@ async def _user_post_appointment_slots(
     sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
     if not sub:
         raise HTTPException(status_code=400, detail="User has no subscription")
-
-    user_appointments = get_subscription_appointments(_db, sub.subscription_id)
-    if len(user_appointments) > 0:
-        raise HTTPException(status_code=400, detail="User already has appointments")
 
     added_appointments = []
 

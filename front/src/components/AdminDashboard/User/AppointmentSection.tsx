@@ -11,6 +11,8 @@ import dayjs, { Dayjs } from 'dayjs';
 
 
 export default function AppointmentSection({ userBundle, setUserBundle, registerToSubFlowForm }: { userBundle: UserDataBundle, setUserBundle: any, registerToSubFlowForm: any }) {
+    const currentSubFlow = userBundle?.flow;
+    const [startDate, setStartDate] = useState<Dayjs>(dayjs());
 
     const onDeleteAppointment = (appointment: Appointment) => {
         Api.deleteAppointment(appointment.appointment_id).then(() => {
@@ -31,11 +33,6 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
         });
     }
 
-    const [appointments, setAppointments] = useState<Appointment[]>(userBundle?.appointments);
-    const currentSubFlow = userBundle?.flow;
-
-    const [startDate, setStartDate] = useState<Dayjs>(dayjs());
-
     const addAppointment = () => {
         const selectedSlots: AppointmentSlot[] = [];
         selectedSlots.push({
@@ -43,10 +40,14 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
             end: startDate.add(2, "hour").toDate()
         });
         Api.submitAppointmentSlots(userBundle.user.keycloak_id, selectedSlots).then((data) => {
-            setAppointments(data);
+            const newAppointments = userBundle?.appointments.concat(data);
+            setUserBundle({ ...userBundle, flow: { ...userBundle.flow, appointments: newAppointments } });
         }).catch((error) => {
             alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
-        });    };
+        });
+    };
+
+    const appointments = userBundle?.appointments;
 
     return (
         <div>
@@ -79,9 +80,9 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
                                     />
                                 </DemoContainer>
                             </LocalizationProvider>
-                            <Button 
-                                variant="contained" 
-                                color="primary" 
+                            <Button
+                                variant="contained"
+                                color="primary"
                                 onClick={addAppointment}>
                                 Ajouter le créneau
                             </Button>
