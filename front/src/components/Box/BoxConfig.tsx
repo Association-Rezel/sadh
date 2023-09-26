@@ -11,25 +11,16 @@ import DoneIcon from '@mui/icons-material/Done';
 
 import ImgUrl from "/src/ressources/img/router.png"
 
-// TODO : enlever nullBox et mettre un élément de chargement tant que nullBox est undefined
-
-const nullBox: Box = {
-    id: 0,
-    ip: "",
-    owner: null,
-    SSID: "",
-    passwordHash: "",
-    connectedDevices: 0,
-    openPorts: [],
-};
 
 export default function BoxConfigurationPage() {
-    const [myBox, setMyBox] = React.useState<Box>(nullBox);
+    const [myBox, setMyBox] = React.useState<Box>(null);
     const [refreshKey, setRefreshKey] = React.useState<number>(0);
     React.useEffect(() => {
         // l'id donné est bidon, jusqu'a modif des types...
         Api.fetchMyBox(1).then((myBox) => setMyBox(myBox));
     }, [refreshKey]);
+
+    if (myBox === null) return <div>Chargement...</div>;
 
     return (
         <Stack
