@@ -2,6 +2,12 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscripti
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    fetchUserBox(user_keycloak_id: string): Promise<Box> {
+        throw new Error("Method not implemented.");
+    }
+    registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box> {
+        throw new Error("Method not implemented.");
+    }
     submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
         return Promise.resolve([]);
     }
@@ -69,7 +75,7 @@ export class DummyApi implements ApiInterface {
             contract_signed:true
         });
     }
-    registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT> {
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
         throw new Error("Method not implemented.");
     }
     fetchUser(user_keycloak_id: string): Promise<User> {
@@ -180,15 +186,8 @@ export class DummyApi implements ApiInterface {
         phone: "00 00 00 00 00"
     };
     
-    box : Box = 
-        {id: 1,
-        owner: this.user1,
-        ip: "187.98.13.29",
-        SSID: "Box de Denis",
-        passwordHash: "123456789",
-        connectedDevices: this.deviceList.length,
-        openPorts: this.openPortsList
-    };
+    box : Box = null;
+        
 
 
     async addDHCPLease(dhcp: DHCPLease): Promise<void> {

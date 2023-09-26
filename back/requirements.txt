@@ -9,3 +9,5 @@ pynetbox==7.0.1
 matrix-client==0.4.0
 requests==2.31.0
 fillpdf==0.7.2
+netaddr==0.8.0
+xkcdpass==1.19.4

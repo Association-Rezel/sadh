@@ -15,7 +15,7 @@ from back.email import send_admin_message, send_email_contract
 from back.env import ENV
 from back.interfaces.appointments import Appointment, AppointmentSlot
 from back.interfaces.auth import KeycloakId
-from back.interfaces.box import ONT, Chambre, Status
+from back.interfaces.box import ONT, Box, Chambre, Status
 from back.interfaces.subscriptions import Subscription
 from back.interfaces.users import User, UserDataBundle
 from back.middlewares import db, must_be_admin, user
@@ -262,23 +262,70 @@ async def _user_get_ont(
 async def _user_register_ont(
     keycloak_id: str,
     serial_number: str,
-    telecomian: bool,
     software_version: str,
     _db: Session = db,
     _: None = must_be_admin,
-):
+) -> ONT:
     if NETBOX.get_ont_from_user(KeycloakId(keycloak_id)):
-        return HTTPException(status_code=400, detail="User already has an ONT")
+        raise HTTPException(status_code=400, detail="User already has an ONT")
 
     sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
     if not sub:
         raise HTTPException(status_code=404, detail="User has no subscription")
 
-    ont = NETBOX.register_ont(serial_number, software_version, sub, telecomian)
+    ont = NETBOX.register_ont(serial_number, software_version, sub)
     if not ont:
-        return HTTPException(status_code=500, detail="Error while registering ONT")
+        raise HTTPException(status_code=500, detail="Error while registering ONT")
 
     return ont
+
+
+@router.get("/{keycloak_id}/box")
+async def _user_get_box(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> Box:
+    box: Box | None
+    try:
+        box = NETBOX.get_box_from_user(KeycloakId(keycloak_id))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+    return box
+
+
+@router.post("/{keycloak_id}/box")
+async def _user_register_box(
+    keycloak_id: str,
+    telecomian: bool,
+    serial_number: str,
+    mac_address: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> Box:
+    #  Verifiy Non-existing box
+    try:
+        box = NETBOX.get_box_from_user(KeycloakId(keycloak_id))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
+
+    if box:
+        raise HTTPException(status_code=400, detail="User already has a box")
+
+    # Verify existing subscription
+    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="User has no subscription")
+
+    # Register box
+    try:
+        box = NETBOX.register_box(serial_number, mac_address, sub, telecomian)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
+
+    return box
 
 
 @router.get("/{keycloak_id}/dataBundle")

@@ -120,6 +120,21 @@ class Models(Enum):
     NOKIA_G_010G_Q = ONTModel(manufacturer="NOKIA", name="G-010G-Q")
 
 
+class BoxInterface(BaseModel):
+    """Wan Interface."""
+
+    mac_address: str
+    ipv4s: list[IPv4Interface]
+    ipv6s: list[IPv6Interface]
+
+
+class WifiConfig(BaseModel):
+    """Wifi Interface."""
+
+    ssid: str
+    password: str
+
+
 class Box(BaseModel):
     """Box.
 
@@ -145,14 +160,18 @@ class Box(BaseModel):
 
     model: BoxModel
     serial_number: str
+    if_adh: BoxInterface
+    if_adh_exte: BoxInterface
+    if_mgmt: BoxInterface
+    ssid: str
 
-    @validator("model")
-    def model_must_be_in_enum(value: Any) -> BoxModel:
-        """Model must be in enum."""
-        for _model in Models:
-            if type(_model) == BoxModel and _model.value == value:
-                return value
-        raise ValueError(f"Model {value} is not in Models enum")  # noqa: EM102
+    # @validator("model")
+    # def model_must_be_in_enum(value: Any) -> BoxModel:
+    #     """Model must be in enum."""
+    #     for _model in Models:
+    #         if type(_model) == BoxModel and _model.value == value:
+    #             return value
+    #     raise ValueError(f"Model {value} is not in Models enum")  # noqa: EM102
 
 
 class IPv4(IPv4Interface):

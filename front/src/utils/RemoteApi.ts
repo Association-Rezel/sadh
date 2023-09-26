@@ -175,8 +175,8 @@ export class RemoteApi implements ApiInterface {
         return await this.myAuthenticatedRequest("/users/subscriptions", null, "GET");
     }
 
-    async registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT> {
-        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version + "&telecomian=" + telecomian, null, "POST");
+    async registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT> {
+        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/ont?serial_number=" + serial_number + "&software_version=" + software_version, null, "POST");
     }
 
     async fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow> {
@@ -257,6 +257,14 @@ export class RemoteApi implements ApiInterface {
     async fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle> {
         const data = await this.fetchOrDefault("/users/" + user_keycloak_id + "/dataBundle", null, true);
         return this.parseUserDataBundle(data);
+    }
+
+    async fetchUserBox(user_keycloak_id: string): Promise<Box> {
+        return await this.fetchOrDefault("/users/" + user_keycloak_id + "/box", null, true);
+    }
+
+    async registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box> {
+        return await this.myAuthenticatedRequest("/users/" + user_keycloak_id + "/box?serial_number=" + serial_number + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null, "POST");
     }
 
     async submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
