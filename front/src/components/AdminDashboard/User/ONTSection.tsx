@@ -10,7 +10,6 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
     const [ontStillLoading, setONTStillLoading] = useState<boolean>(true);
     const [serial, setSerial] = useState<string>("");
     const [softwareVersion, setSoftwareVersion] = useState<string>("3FE45655AOCK88");
-    const [isTelecomian, setIsTelecomian] = useState<boolean>(false);
 
     const handleSubmit = () => {
         // serial is like ALCL:F887945B
@@ -18,8 +17,10 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
             alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
             return;
         }
-        Api.registerONT(keycloak_id, serial, softwareVersion, isTelecomian).then(ont => {
+        setONTStillLoading(true);
+        Api.registerONT(keycloak_id, serial, softwareVersion).then(ont => {
             setONT(ont);
+            setONTStillLoading(false);
         });
     }
 
@@ -42,10 +43,6 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
                 {!ontStillLoading && !ont && (
                     <Stack direction={"column"}
                         spacing={2}>
-                        <FormControlLabel control={<Checkbox checked={isTelecomian} />}
-                            label={<span>VLAN Télécomien <Warning /></span>}
-                            onChange={() => setIsTelecomian(!isTelecomian)}
-                        />
                         <TextField name="serial_number"
                             className="bg-white"
                             required

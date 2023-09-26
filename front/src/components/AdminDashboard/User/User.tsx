@@ -57,7 +57,7 @@ function User() {
                     <Stack direction={"row"} spacing={4} alignItems={"center"} justifyContent={"space-between"} flexWrap="wrap" divider={<Divider orientation="vertical" flexItem />}>
                         <SubscriptionSection userBundle={userBundle} setUserBundle={setUserBundle} registerToSubFlowForm={register} />
                         <ONTSection keycloak_id={keycloak_id} registerToSubFlowForm={register} />
-                        <BoxSection currentSubFlow={userBundle?.flow} registerToSubFlowForm={register} />
+                        <BoxSection keycloak_id={keycloak_id} currentSubFlow={userBundle?.flow} registerToSubFlowForm={register} />
                     </Stack>
                     <div className="flex justify-between flex-wrap gap-x-20">
                         <AppointmentSection userBundle={userBundle} setUserBundle={setUserBundle} registerToSubFlowForm={register} />

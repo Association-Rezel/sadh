@@ -76,15 +76,15 @@ export interface DHCPLease {
     mac: string;
 }
 
-export interface Box {
-    id: number;
-    ip: string;
-    owner: User;
-    SSID: string;
-    passwordHash: string;
-    connectedDevices: number;
-    openPorts: PortRule[];
-}
+// export interface Box {
+//     id: number;
+//     ip: string;
+//     owner: User;
+//     SSID: string;
+//     passwordHash: string;
+//     connectedDevices: number;
+//     openPorts: PortRule[];
+// }
 
 export interface ONT {
     serial_number: string;
@@ -133,6 +133,21 @@ export interface UserDataBundle {
     appointments: Appointment[];
 }
 
+
+export interface BoxInterface {
+    mac_address: string;
+    ipv4s: string[];
+    ipv6s: string[];
+}
+
+export interface Box {
+    serial_number: string;
+    if_adh: BoxInterface;
+    if_adh_exte: BoxInterface;
+    if_mgmt: BoxInterface;
+    ssid: string;
+}
+
 export interface ApiInterface {
     [x: string]: any;
     logout(): void;
@@ -161,7 +176,7 @@ export interface ApiInterface {
     fetchUser(user_keycloak_id: string): Promise<User>;
     fetchSubscription(user_keycloak_id: string): Promise<Subscription>;
     fetchONT(user_keycloak_id: string): Promise<ONT>;
-    registerONT(user_keycloak_id: string, serial_number: string, software_version: string, telecomian: boolean): Promise<ONT>;
+    registerONT(user_keycloak_id: string, serial_number: string, software_version: string): Promise<ONT>;
     fetchSubscriptionFlow(subscription_id: string): Promise<SubscriptionFlow>;
     modifySubscriptionFlow(flow_id: string, subscriptionFlow: SubscriptionFlow): Promise<SubscriptionFlow>;
     modifySubscription(subscription_id: string, subscription: Subscription): Promise<Subscription>;
@@ -174,6 +189,8 @@ export interface ApiInterface {
     deleteAppointment(appointment_id: string): Promise<void>;
     fetchUserDataBundles(): Promise<UserDataBundle[]>;
     fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle>;
+    fetchUserBox(user_keycloak_id: string): Promise<Box>;
+    registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box>;
     submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]>;
 }
 
