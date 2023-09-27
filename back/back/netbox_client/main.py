@@ -287,19 +287,16 @@ class NetBoxClient:
             )
 
         # Create Box in netbox
-        device_box = self.api.dcim.devices.get(serial=serial_number)
-
-        if device_box is None:
-            device_box = self.api.dcim.devices.create(
-                device_role=self.BOX_ROLE_ID,  # type: ignore
-                device_type=self.api.dcim.device_types.get(slug=Models.XIAOMI_AC2350.value.name.lower()).id,  # type: ignore
-                name=f"BOX {sub.chambre.residence.name}-{sub.chambre.name}",
-                serial=serial_number,
-                site=nb_site_residence.id,  # type: ignore
-                rack=chambre_rack.id,  # type: ignore
-                status="active",
-                tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
-            )
+        device_box = self.api.dcim.devices.create(
+            device_role=self.BOX_ROLE_ID,  # type: ignore
+            device_type=self.api.dcim.device_types.get(slug=Models.XIAOMI_AC2350.value.name.lower()).id,  # type: ignore
+            name=f"BOX {sub.chambre.residence.name}-{sub.chambre.name}",
+            serial=serial_number,
+            site=nb_site_residence.id,  # type: ignore
+            rack=chambre_rack.id,  # type: ignore
+            status="planned",
+            tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
+        )
 
         # Wireless LAN
         wifi_config = WifiConfig(
