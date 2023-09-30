@@ -2,6 +2,12 @@ import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscripti
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
+    uploadFile(url: string, data: FormData): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    fetchFile(url: string): Promise<Blob> {
+        throw new Error("Method not implemented.");
+    }
     fetchUserBox(user_keycloak_id: string): Promise<Box> {
         throw new Error("Method not implemented.");
     }

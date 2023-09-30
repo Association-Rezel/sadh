@@ -10,6 +10,7 @@ import { SubmitHandler, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
 import { Button, Divider, Stack, Typography } from "@mui/material";
+import ContractUpload from "./ContractUpload";
 
 
 function User() {
@@ -62,6 +63,7 @@ function User() {
                     <div className="flex justify-between flex-wrap gap-x-20">
                         <AppointmentSection userBundle={userBundle} setUserBundle={setUserBundle} registerToSubFlowForm={register} />
                         <InteropSection currentSubFlow={userBundle?.flow} registerToSubFlowForm={register} />
+                        <ContractUpload keycloak_id={keycloak_id} />
                     </div>
                     <div className="mt-10">
                         <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

@@ -107,3 +107,13 @@ Il est possible d'initialiser rapidement le projet après un `git clone` frais :
 ```bash
 make install
 ```
+
+## Modification de la base de données
+Pour donner les droits d'admin à un utilisateur, il faut se connecter à la base de données postgresql : 
+```bash
+docker exec -it infra-postgres-1 psql -U admin -d database
+```
+Une fois dans la base de données :
+```sql
+update users set is_admin='t' where email='email@example.com';
+```

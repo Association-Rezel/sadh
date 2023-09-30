@@ -95,6 +95,44 @@ export class RemoteApi implements ApiInterface {
         return await response.json();
     }
 
+    async uploadFile(url: string, data: FormData) {
+        if (!this.token)
+            throw new Error("Tried to make an authenticated request without being logged in");
+        let config: RequestInit = {
+            method: "POST",
+            credentials: 'include',
+            headers: {
+                'Authorization': 'Bearer ' + this.token,
+            },
+            body: data,
+        };
+
+        const response = await fetch(Config.API_URL + url, config);
+        if (!response.ok) {
+            throw new Error("Error while fetching " + url + " : " + response.statusText);
+        }
+        return await response.json();
+    }
+
+    async fetchFile(url: string): Promise<Blob> {
+        if (!this.token)
+            throw new Error("Tried to make an authenticated request without being logged in");
+        const config: RequestInit = {
+            method: "GET",
+            credentials: 'include',
+            headers: {
+                'Authorization': 'Bearer ' + this.token,
+                'Content-Type': 'application/json'
+            },
+        };
+
+        const response = await fetch(Config.API_URL + url, config);
+        if (!response.ok) {
+            throw new Error("Error while fetching " + url + " : " + response.statusText);
+        }
+        return await response.blob();
+    }
+
     async fetchOrDefault<T>(url: string, defaultValue: T, auth: boolean = false): Promise<T> {
         /*
         En cas d'erreur, la valeur par défaut est renvoyée.

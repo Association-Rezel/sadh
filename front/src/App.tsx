@@ -1,6 +1,7 @@
 import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
 import {PageAdmin} from "./pages/admin/PageAdmin";
 import {PageAccueil} from "./pages/account/PageAccueil";
+import {PageContract} from "./pages/contract/PageContract";
 import DHCP from "./components/DHCP/DHCP";
 import BoxConfig from "./components/Box/BoxConfig";
 import Orders from "./components/Orders/Orders";
@@ -51,6 +52,9 @@ function AppRouter() {
             )}
             {appState.logged && appState.subscription?.status === SubscriptionStatus.VALIDATED && (
                 <Route path="appointment" Component={PageAppointment} />
+            )}
+            {appState.logged && appState.subscription?.status != SubscriptionStatus.PENDING_VALIDATION && appState.subscription?.status != SubscriptionStatus.REJECTED && (
+                <Route path="contract" Component={PageContract} />
             )}
             <Route path="*" Component={Page404} />
         </Route>

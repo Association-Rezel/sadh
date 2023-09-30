@@ -1,7 +1,12 @@
 """Get or edit users."""
 
 
-from fastapi import HTTPException
+import os
+import tempfile
+
+import nextcloud_client.nextcloud_client
+from fastapi import HTTPException, UploadFile
+from fastapi import Response as FastAPIResponse
 from fastapi.responses import Response
 
 from back.core.appointments import get_subscription_appointments
@@ -11,7 +16,7 @@ from back.database import Session
 from back.database.appointments import DBAppointment
 from back.database.subscriptions import DBSubscription
 from back.database.users import DBUser
-from back.email import send_admin_message, send_email_contract
+from back.email import send_admin_message, send_email_contract, send_email_signed_contract
 from back.env import ENV
 from back.interfaces.appointments import Appointment, AppointmentSlot
 from back.interfaces.auth import KeycloakId
@@ -20,6 +25,7 @@ from back.interfaces.subscriptions import Subscription
 from back.interfaces.users import User, UserDataBundle
 from back.middlewares import db, must_be_admin, user
 from back.netbox_client import NETBOX
+from back.nextcloud import NEXTCLOUD
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("users")
@@ -165,6 +171,18 @@ async def _me_post_appointment_slots(
 
     return list(map(Appointment.from_orm, added_appointments))
 
+@router.get("/me/contract")
+async def _me_get_contract(
+    _user: User = user,
+) -> FastAPIResponse:
+    try:
+        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{_user.keycloak_id}.pdf")
+    except nextcloud_client.nextcloud_client.HTTPResponseError:
+        raise HTTPException(status_code=404, detail="User not found")
+    with open(tmp_filename, "rb") as f:
+        contract = f.read()
+    tmp_dir.cleanup()
+    return FastAPIResponse(content=contract, media_type="application/pdf")
 
 ### ADMIN
 
@@ -217,6 +235,38 @@ async def _user_update(
     _db.commit()
     return User.from_orm(db_user)
 
+@router.get("/{keycloak_id}/contract")
+async def _user_get_contract(
+    keycloak_id: str,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> FastAPIResponse:
+    try:
+        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{keycloak_id}.pdf")
+    except nextcloud_client.nextcloud_client.HTTPResponseError:
+        raise HTTPException(status_code=404, detail="User not found")
+    with open(tmp_filename, "rb") as f:
+        contract = f.read()
+    tmp_dir.cleanup()
+    return FastAPIResponse(content=contract, media_type="application/pdf")
+
+@router.post("/{keycloak_id}/contract")
+async def _user_upload_contract(
+    keycloak_id: str,
+    file: UploadFile,
+    _db: Session = db,
+    _: None = must_be_admin,
+) -> None:
+    db_user = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    temp_dir = tempfile.TemporaryDirectory()
+    tmp_filename = os.path.join(temp_dir.name, f"{keycloak_id}.pdf")
+    with open(tmp_filename, "wb") as f:
+        f.write(file.file.read())
+    NEXTCLOUD.put_file(tmp_filename)
+    send_email_signed_contract(db_user.email, tmp_filename)
+    temp_dir.cleanup()
 
 @router.get("/{keycloak_id}/subscription")
 async def _user_get_subscription(

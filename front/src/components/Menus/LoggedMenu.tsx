@@ -5,6 +5,7 @@ import { Api } from "../../utils/Api";
 import { Link } from "react-router-dom";
 import { AppBar, Button, CssBaseline, GlobalStyles, IconButton, Toolbar } from "@mui/material";
 import logoRezel from "../../ressources/img/cotcot.svg"
+import { SubscriptionStatus } from "../../utils/types";
 
 function LoggedMenu() {
     const appState = useContext(AppStateContext);
@@ -37,6 +38,11 @@ function LoggedMenu() {
                             <Button disabled>
                                 <Link to={"/account"}>Mon compte</Link>
                             </Button>
+                            {(appState.subscription && appState.subscription?.status != SubscriptionStatus.PENDING_VALIDATION && appState.subscription?.status != SubscriptionStatus.REJECTED) && (
+                                <Button>
+                                    <Link to={"/contract"}>Contrat</Link>
+                                </Button>
+                            )}
                             {appState.user?.is_admin && (
                                 <Button>
                                     <Link to={"/admin"}>Interface admin</Link>

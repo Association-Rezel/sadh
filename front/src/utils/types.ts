@@ -189,6 +189,8 @@ export interface ApiInterface {
     deleteAppointment(appointment_id: string): Promise<void>;
     fetchUserDataBundles(): Promise<UserDataBundle[]>;
     fetchUserDataBundle(user_keycloak_id: string): Promise<UserDataBundle>;
+    uploadFile(url: string, data: FormData): Promise<void>;
+    fetchFile(url: string): Promise<Blob>;
     fetchUserBox(user_keycloak_id: string): Promise<Box>;
     registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box>;
     submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]>;
