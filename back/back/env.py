@@ -97,5 +97,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.charon_url = get_or_raise("CHARON_URL")
         self.charon_token = get_or_raise("CHARON_TOKEN")
 
+        self.nextcloud_share_url = get_or_raise("NEXTCLOUD_SHARE_URL")
+        self.nextcloud_share_password = get_or_raise("NEXTCLOUD_SHARE_PASSWORD")
+
 
 ENV = Env()

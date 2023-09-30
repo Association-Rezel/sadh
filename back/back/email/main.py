@@ -104,8 +104,8 @@ def send_email_contract(to: str, client_name: str) -> None:
             f"Erreur lors de la génération du contrat pour {client_name}: {e}",
         )
     send_email(
-        "Rezel - Votre adhésion FAI",
-        f"""<!DOCTYPE html>
+        "Rezel - Ton adhésion FAI",
+        """<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -155,3 +155,22 @@ def send_email_contract(to: str, client_name: str) -> None:
         plain=False,
     )
     pdf_lock.release()
+
+def send_email_signed_contract(to: str, attachment_path: str) -> None:
+    """Send email signed contract."""
+    send_email(
+        "Rezel - Ton adhésion FAI - contrat",
+        """<!DOCTYPE html>
+<html>
+    <body>
+        <p>Bonjour,<br>
+        <br>
+        Tu as récemment adhéré à Rezel via <a href="https://fai.rezel.net">https://fai.rezel.net</a>.<br>
+        <br>
+        Tu trouveras ci-joint le contrat signé. Tu peux également le retrouver à tout moment sur <a href="https://fai.rezel.net/contract">https://fai.rezel.net/contract</a>.<br>
+        <br>
+        A bientôt,<br>
+        Le pôle FAI de Rezel<br>
+    </body>
+</html>
+""", to, attachments=[attachment_path], plain=False)
