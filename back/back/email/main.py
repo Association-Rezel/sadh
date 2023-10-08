@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import re
 import smtplib
 import threading
 from email.mime.application import MIMEApplication
@@ -81,7 +82,7 @@ def send_email_contract(to: str, client_name: str) -> None:
             sort=False,
             page_number=None,
         ):
-            fieldName = str(k.encode("utf-8")[4:]).replace("\\x00", "")[2:-1]
+            fieldName = re.sub(r"\\[0-9]{3}", "", k)
             if fieldName == "dateRezel":
                 data_dict[k] = datetime.date.today().strftime("%d/%m/%Y")
             elif fieldName == "placeRezel":
