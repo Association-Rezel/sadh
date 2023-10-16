@@ -22,6 +22,7 @@ export class RemoteApi implements ApiInterface {
         }
         return box;
     }
+    //TODO
     updateMyBox(box: Box): Promise<void> {
         throw new Error("Method not implemented.");
     }
