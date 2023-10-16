@@ -22,10 +22,10 @@ import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import RouterIcon from "@mui/icons-material/Router";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useLocation } from "react-router-dom";
 import PushPinIcon from '@mui/icons-material/PushPin';
 import DevicesIcon from '@mui/icons-material/Devices';
-import CableIcon from '@mui/icons-material/Cable';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 function AccountDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -33,10 +33,21 @@ function AccountDashboard() {
         setOpen(!open);
     };
 
+    const path = useLocation().pathname;
+    let dashboardContent = <Outlet />;
+  	if (path === "/account") {
+        dashboardContent = (
+            <Typography>
+                Bienvenue sur votre compte !<br />
+            </Typography>
+        );
+    }
+    
+
     return (
         <Box sx={{ display: "flex" }}>
             <CssBaseline />
-            <HeaderDashboard open={open} toggleDrawer={toggleDrawer} title="Account Dashboard" />
+            <HeaderDashboard open={open} toggleDrawer={toggleDrawer} title="Mon compte" />
             <Drawer variant="permanent" open={open}>
                 <Toolbar
                     sx={{
@@ -53,17 +64,15 @@ function AccountDashboard() {
                 <Divider />
                 <List component="nav">
 
-                    <Link to={""}>
+                    <Link to={"appointment"}>
                         <ListItemButton>
                             <ListItemIcon>
-                                <Dashboard />
+                                <CalendarMonthIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Dashboard" />
+                            <ListItemText primary="Rendez-vous" />
                         </ListItemButton>
                     </Link>
-
-                    <Divider sx={{ my: 1 }} />
-                    
+                    {/*
                     <Link to={"orders"}>
                         <ListItemButton>
                             <ListItemIcon>
@@ -88,14 +97,7 @@ function AccountDashboard() {
                             <ListItemText primary="DHCP" />
                         </ListItemButton>
                     </Link>
-                    <RouterLink to={"box"}>
-                        <ListItemButton>
-                            <ListItemIcon>
-                                <RouterIcon />
-                            </ListItemIcon>
-                            <ListItemText primary="Box" />
-                        </ListItemButton>
-                    </RouterLink>
+
                     <RouterLink to={"ports"}>
                         <ListItemButton>
                             <ListItemIcon>
@@ -104,6 +106,7 @@ function AccountDashboard() {
                             <ListItemText primary="Ports" />
                         </ListItemButton>
                     </RouterLink>
+                */}
 
                 </List>
             </Drawer>
@@ -119,8 +122,8 @@ function AccountDashboard() {
             >
                 <Toolbar />
 
-                <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                    <Outlet />
+                <Container sx={{ mt: 4, mb: 4 }} maxWidth={false} disableGutters>
+                   {dashboardContent}              
                 </Container>
             </Box>
         </Box>
