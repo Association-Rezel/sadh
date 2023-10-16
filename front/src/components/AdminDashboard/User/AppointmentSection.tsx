@@ -18,7 +18,7 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
     const onDeleteAppointment = (appointment: Appointment) => {
         Api.deleteAppointment(appointment.appointment_id).then(() => {
             userBundle.appointments = userBundle?.appointments.filter((a) => a.appointment_id !== appointment.appointment_id);
-            setUserBundle({ ...userBundle});
+            setUserBundle({ ...userBundle });
         }).catch((error) => {
             alert("Erreur lors de la suppression du rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
@@ -42,7 +42,7 @@ export default function AppointmentSection({ userBundle, setUserBundle, register
         });
         Api.submitAppointmentSlots(userBundle.user.keycloak_id, selectedSlots).then((data) => {
             userBundle.appointments = userBundle?.appointments.concat(data);
-            setUserBundle({ ...userBundle});
+            setUserBundle({ ...userBundle });
         }).catch((error) => {
             alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
@@ -124,15 +124,13 @@ function AppointmentComponent({ appointment, onlyOption, onDelete, onValidate }:
                     VALIDÉ
                 </Typography>}
             {appointment.status === AppointmentStatus.PENDING_VALIDATION && (
-                <>
-                    <IconButton color="success" disabled={!onlyOption} onClick={onValidate}>
-                        <Check />
-                    </IconButton>
-                    <IconButton color="error" disabled={onlyOption} onClick={onDelete}>
-                        <Delete />
-                    </IconButton>
-                </>
+                <IconButton color="success" disabled={!onlyOption} onClick={onValidate}>
+                    <Check />
+                </IconButton>
             )}
+            <IconButton color="error" onClick={onDelete}>
+                <Delete />
+            </IconButton>
         </div>
     )
 }
