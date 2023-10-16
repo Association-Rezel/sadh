@@ -32,7 +32,7 @@ export default function AppointmentSelection({ onSubmitSelection }: { onSubmitSe
 
     return (
         <div className="mt-10 flex flex-col items-center">
-            <Typography variant="h2">Prise de rendez-vous</Typography>
+            <Typography variant="h2" marginBottom="20px">Prise de rendez-vous</Typography>
             <div className="flex lg:flex-row flex-col gap-8 justify-center">
                 <div className="mx-10 self-center">
                     <IconButton color="primary" onClick={() => setWeekOffset(weekOffset - 1)} disabled={weekOffset <= 1}>
