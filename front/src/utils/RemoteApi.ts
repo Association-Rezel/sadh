@@ -2,7 +2,6 @@ import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscripti
 import { Config } from "./Config";
 import { updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
-import { Box } from "@mui/material";
 
 
 export class RemoteApi implements ApiInterface {
@@ -11,21 +10,9 @@ export class RemoteApi implements ApiInterface {
     fetchBoxes(): Promise<Box[]> {
         throw new Error("Method not implemented.");
     }
-    //TODO
-    async fetchMyBox(id: number): Promise<Box> {
-        //return await this.fetchOrDefault('/box/fetch/'+id, null);
-        let box: Box = {
-            id: 0,
-            ip: "1.1.1.1",
-            owner: null,
-            SSID: "Rezel Test",
-            passwordHash: "blablabla",
-            connectedDevices: 0,
-            openPorts: [],
-        }
-        return box;
+    fetchMyBox(id: number): Promise<Box> {
+        throw new Error("Method not implemented.");
     }
-    //TODO
     updateMyBox(box: Box): Promise<void> {
         throw new Error("Method not implemented.");
     }
