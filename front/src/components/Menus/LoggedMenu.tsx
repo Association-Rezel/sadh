@@ -34,9 +34,9 @@ function LoggedMenu() {
                                 </Link>
                             </IconButton>
                         </div>
-                        <div style={{ position: 'absolute', right: 0}}>
-                            <Button >
-                                <Link to={"/account/appointment"}>Mon compte</Link>
+                        <div style={{ position: 'absolute', right: 0 }}>
+                            <Button disabled>
+                                <Link to={"/account"}>Mon compte</Link>
                             </Button>
                             {(appState.subscription && appState.subscription?.status != SubscriptionStatus.PENDING_VALIDATION && appState.subscription?.status != SubscriptionStatus.REJECTED) && (
                                 <Button>

@@ -35,33 +35,19 @@ export default function BoxConfigurationPage() {
                 alignItems="center"
                 justifyContent="center"
             >
-
-                <Stack
-                    direction={"column"}
-                    spacing={{ xs: 1, sm: 2, md: 2 }}
-                    alignItems="center"
-                    justifyContent="center"
-                    width="100%"
-                >
-                <h3>Modifier le SSID de la Box <SSIDHelper /></h3>
+                <div style={{ width: "100%" }}>
+                    <h3>Modifier le SSID de la Box <SSIDHelper /></h3>
+                </div>
 
                 <SsidResetForm
                     box={myBox}
                     setBox={setMyBox}
                     setRefreshKey={setRefreshKey} />
-                </Stack>
-                <Stack
-                    direction={"column"}
-                    spacing={{ xs: 1, sm: 2, md: 2 }}
-                    alignItems="center"
-                    justifyContent="center"
-                    width="100%"
-                >
-                    <h3>Changer le mot de passe du WiFi</h3>
-                    <PasswordResetForm />
-                </Stack>
+
+                <h3>Changer le mot de passe du WiFi</h3>
+                <PasswordResetForm />
             </Stack>
-        </Stack >
+        </Stack>
     );
 }
 

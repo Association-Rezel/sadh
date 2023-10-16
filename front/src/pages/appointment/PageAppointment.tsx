@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import AppointmentSelection from "../../components/Appointment/AppointmentSelection";
+import LoggedMenu from "../../components/Menus/LoggedMenu";
 import { Api } from "../../utils/Api";
 import { Appointment, AppointmentSlot } from "../../utils/types";
 import AppointmentsList from "../../components/Appointment/AppointmentsList";
@@ -25,6 +26,7 @@ export default function PageAppointment() {
 
     return (
         <>
+            <LoggedMenu />
             {appointments === null && <p>Chargement...</p>}
             {appointments !== null && appointments.length === 0 && (
                 <AppointmentSelection onSubmitSelection={onSubmitSelection} />
