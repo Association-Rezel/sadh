@@ -10,8 +10,17 @@ export class RemoteApi implements ApiInterface {
     fetchBoxes(): Promise<Box[]> {
         throw new Error("Method not implemented.");
     }
-    fetchMyBox(id: number): Promise<Box> {
-        throw new Error("Method not implemented.");
+    //TODO
+    async fetchMyBox(id: number): Promise<Box> {
+        //return await this.fetchOrDefault('/box/fetch/'+id, null);
+        let box: Box = {
+            serial_number: "lfldklkfd",
+            if_adh: null,
+            if_adh_exte: null,
+            if_mgmt: null,
+            ssid: "Rezel Test"
+        }
+        return box;
     }
     updateMyBox(box: Box): Promise<void> {
         throw new Error("Method not implemented.");
