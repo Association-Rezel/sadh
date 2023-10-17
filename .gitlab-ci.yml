@@ -24,7 +24,7 @@ deployfrontend:
     - docker rm faipp-frontend-$CI_PROJECT_NAME || true
   script:
     - docker run --name faipp-frontend-$CI_PROJECT_NAME -d 
-      -e VIRTUAL_HOST=faipp.rezel.net -e LETSENCRYPT_HOST=faipp.rezel.net
+      -e VIRTUAL_HOST=fai.rezel.net,faipp.rezel.net -e LETSENCRYPT_HOST=fai.rezel.net,faipp.rezel.net
       -v /etc/ssl/certs:/etc/ssl/certs:ro
       --network reverse_default --restart unless-stopped
       faipp-frontend:latest
