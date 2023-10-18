@@ -10,6 +10,8 @@ RUN update-ca-certificates
 
 # Make sure requests will trust rezel root CA
 ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+# Make sure httpx will trust rezel root CA
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt 
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 

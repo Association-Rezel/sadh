@@ -1,10 +1,11 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, UserDataBundle } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, UserDataBundle, CommandeAccesInfo } from "./types";
 import { Config } from "./Config";
 import { updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
 
 
 export class RemoteApi implements ApiInterface {
+    
     [x: string]: any;
 
     fetchBoxes(): Promise<Box[]> {
@@ -61,7 +62,7 @@ export class RemoteApi implements ApiInterface {
         keycloak.login();
     }
 
-    async myFetcher(url: string, auth: boolean = false) {
+    async myFetcher(url: string, auth: boolean = false, rawResponse: boolean = false) {
         let config = undefined;
         if (auth) {
             if (!this.token)
@@ -78,13 +79,17 @@ export class RemoteApi implements ApiInterface {
         }
 
         const response = await fetch(Config.API_URL + url, config);
+        if (rawResponse) {
+            return response;
+        }
+
         if (!response.ok) {
             throw new Error("Error while fetching " + url + " : " + response.statusText);
         }
         return await response.json();
     }
 
-    async myAuthenticatedRequest(url: string, body: any, method: string = "POST") {
+    async myAuthenticatedRequest(url: string, body: any, method: string = "POST", rawResponse: boolean = false) {
         if (!this.token)
             throw new Error("Tried to make an authenticated request without being logged in");
 
@@ -99,6 +104,11 @@ export class RemoteApi implements ApiInterface {
         };
 
         const response = await fetch(Config.API_URL + url, config);
+
+        if (rawResponse) {
+            return response;
+        }
+
         if (!response.ok) {
             throw new Error("Error while fetching " + url + " : " + response.statusText);
         }
@@ -318,5 +328,9 @@ export class RemoteApi implements ApiInterface {
     async submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
         const data = await this.myAuthenticatedRequest("/users/" + keycloak_id + "/appointments", slots);
         return data.map((appointment: any) => this.parseAppointment(appointment));
+    }
+
+    async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
+        return await this.myAuthenticatedRequest("/nix/generer_commande_acces", info, "POST", true);
     }
 }

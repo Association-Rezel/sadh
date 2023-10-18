@@ -5,8 +5,9 @@ import os
 import tempfile
 
 import nextcloud_client.nextcloud_client
-from fastapi import HTTPException, UploadFile
+from fastapi import HTTPException
 from fastapi import Response as FastAPIResponse
+from fastapi import UploadFile
 from fastapi.responses import Response
 
 from back.core.appointments import get_subscription_appointments
@@ -171,6 +172,7 @@ async def _me_post_appointment_slots(
 
     return list(map(Appointment.from_orm, added_appointments))
 
+
 @router.get("/me/contract")
 async def _me_get_contract(
     _user: User = user,
@@ -183,6 +185,7 @@ async def _me_get_contract(
         contract = f.read()
     tmp_dir.cleanup()
     return FastAPIResponse(content=contract, media_type="application/pdf")
+
 
 ### ADMIN
 
@@ -235,6 +238,7 @@ async def _user_update(
     _db.commit()
     return User.from_orm(db_user)
 
+
 @router.get("/{keycloak_id}/contract")
 async def _user_get_contract(
     keycloak_id: str,
@@ -249,6 +253,7 @@ async def _user_get_contract(
         contract = f.read()
     tmp_dir.cleanup()
     return FastAPIResponse(content=contract, media_type="application/pdf")
+
 
 @router.post("/{keycloak_id}/contract")
 async def _user_upload_contract(
@@ -267,6 +272,7 @@ async def _user_upload_contract(
     NEXTCLOUD.put_file(tmp_filename)
     send_email_signed_contract(db_user.email, tmp_filename)
     temp_dir.cleanup()
+
 
 @router.get("/{keycloak_id}/subscription")
 async def _user_get_subscription(

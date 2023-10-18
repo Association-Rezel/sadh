@@ -62,7 +62,7 @@ function User() {
                     </Stack>
                     <div className="flex justify-between flex-wrap gap-x-20">
                         <AppointmentSection userBundle={userBundle} setUserBundle={setUserBundle} registerToSubFlowForm={register} />
-                        <InteropSection currentSubFlow={userBundle?.flow} registerToSubFlowForm={register} />
+                        <InteropSection currentSubFlow={userBundle?.flow} registerToSubFlowForm={register} userBundle={userBundle} />
                         <ContractUpload keycloak_id={keycloak_id} />
                     </div>
                     <div className="mt-10">

@@ -133,6 +133,24 @@ export interface UserDataBundle {
     appointments: Appointment[];
 }
 
+// Voir https://gitlab.com/rezel/faipp/nix/-/blob/master/nix/main.py
+export interface CommandeAccesInfo {
+    nom_adherent: string,
+    prenom_adherent: string,
+    email_adherent: string,
+    telephone_adherent: string,
+    residence: string,
+    date_installation: string,
+    e_rdv: string,
+    pm_rack: string,
+    pm_tiroir: string,
+    pm_port: string,
+    ref_interne_rezel_commande: string,
+    ref_appartement: string,
+    ref_pto: string,
+    pto_existant: boolean,
+    numero_sequence: string
+}
 
 export interface BoxInterface {
     mac_address: string;
@@ -194,6 +212,7 @@ export interface ApiInterface {
     fetchUserBox(user_keycloak_id: string): Promise<Box>;
     registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box>;
     submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]>;
+    sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
 }
 
 
