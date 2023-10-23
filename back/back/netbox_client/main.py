@@ -310,6 +310,7 @@ class NetBoxClient:
             ssid=wifi_config.ssid,
             auth_type="wpa-personal",
             tags=[self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
+            custom_fields={"local_id": 0},
             auth_psk=wifi_config.password,
         )
 
@@ -332,15 +333,18 @@ class NetBoxClient:
                     {
                         "assigned_object_id": wan_if.id,
                         "assigned_object_type": "dcim.interface",
+                        "tags": [self.api.extras.tags.get(slug="user-" + str(sub.user_id)).id],  # type: ignore
                     }
                 )
             )
         )
+
         self.api.ipam.ip_addresses.create(
             address=str(mgt_ipv6),
             assigned_object_id=mgt_if.id,
             assigned_object_type="dcim.interface",
         )
+
         wlan0_if.update(
             {
                 "rf_role": "ap",
