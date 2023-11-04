@@ -51,41 +51,9 @@ def get_week_appointment_slots(db: Session, date: datetime, weekOffset: int) -> 
         for slot in hourSlots:
             start = day.replace(hour=slot[0])
             end = day.replace(hour=slot[1])
-            if is_rezel_available(start):
-                slots.append(AppointmentSlot(start=start, end=end))
+            slots.append(AppointmentSlot(start=start, end=end))
 
     return slots
-
-
-def is_rezel_available(datetimee: datetime) -> bool:
-    """Get the availability of Rezel for the given"""
-
-    # Check that the day is at least J+8
-    if datetimee < datetime.now() + timedelta(days=8):
-        return False
-
-    # Hardcoded availability of Rezel members
-    # Monday morning is not ok
-    if datetimee.weekday() == 0 and datetimee.hour < 12:
-        return False
-
-    # Tuesday moring is not ok
-    if datetimee.weekday() == 1 and datetimee.hour < 12:
-        return False
-
-    # Wednesday only early morning is ok
-    if datetimee.weekday() == 2 and datetimee.hour < 11:
-        return False
-
-    # Thursday morning is not ok
-    if datetimee.weekday() == 3 and datetimee.hour < 12:
-        return False
-
-    # Friday is not ok
-    if datetimee.weekday() == 4:
-        return False
-
-    return True
 
 
 def get_subscription_appointments(db: Session, sub_id: UUID) -> list[Appointment]:
