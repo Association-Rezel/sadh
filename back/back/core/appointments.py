@@ -51,7 +51,9 @@ def get_week_appointment_slots(db: Session, date: datetime, weekOffset: int) -> 
         for slot in hourSlots:
             start = day.replace(hour=slot[0])
             end = day.replace(hour=slot[1])
-            slots.append(AppointmentSlot(start=start, end=end))
+            # Check that the day is at least D+8
+            if start > datetime.now() + timedelta(days=8):
+                slots.append(AppointmentSlot(start=start, end=end))
 
     return slots
 
