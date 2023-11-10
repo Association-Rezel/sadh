@@ -32,6 +32,7 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
             ref_appartement: "",
             ref_prestation: "",
             date_mise_en_service: "",
+            ref_pto: "",
         }
     });
 
@@ -49,6 +50,7 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
                 ref_appartement: userBundle.subscription.chambre.name,
                 ref_prestation: userBundle?.flow.ref_prestation,
                 date_mise_en_service: dayjs().format("YYYYMMDD HH:mm"),
+                ref_pto: "",
             });
         })
     }, [userBundle]);
@@ -95,7 +97,7 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
                         {Object.keys(getValues()).map((key: keyof CRMiseEnService) => (
                             <ListItem key={key} >
                                 <TextField
-                                    required={true}
+                                    required={key !== "ref_pto"}
                                     label={key}
                                     {...register(key)}
                                     size='small'
