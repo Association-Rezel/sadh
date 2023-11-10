@@ -43,10 +43,10 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
 
             const splitName = userBundle.user.name.split(" ");
             reset({
-                ref_interne_rezel_commande: "",
+                ref_interne_rezel_commande: userBundle.flow.ref_commande,
                 ref_pto: "",
-                ref_prestation: "",
-                date_mise_en_service: "",
+                ref_prestation: userBundle?.flow.ref_prestation,
+                date_mise_en_service: dayjs().format("YYYYMMDD HH:mm"),
             });
         })
     }, [userBundle]);
