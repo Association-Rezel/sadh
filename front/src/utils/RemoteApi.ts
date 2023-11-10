@@ -334,7 +334,7 @@ export class RemoteApi implements ApiInterface {
         return await this.myAuthenticatedRequest("/nix/generer_commande_acces", info, "POST", true);
     }
 
-    async sendCommandeMiseEnService(info: CRMiseEnService): Promise<Response> {
+    async sendCRMiseEnService(info: CRMiseEnService): Promise<Response> {
         return await this.myAuthenticatedRequest("/nix/generer_cr_mise_en_service", info, "POST", true);
     }
 }
