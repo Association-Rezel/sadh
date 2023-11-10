@@ -25,23 +25,12 @@ export interface CSVFile {
 export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogProps) {
     const [hasONT, setHasONT] = useState<boolean>(false);
 
-    const { register, handleSubmit, getValues, reset } = useForm<CommandeAccesInfo>({
+    const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>({
         defaultValues: {
-            nom_adherent: "",
-            prenom_adherent: "",
-            email_adherent: "",
-            telephone_adherent: "",
-            residence: "",
-            date_installation: "",
-            e_rdv: "",
-            pm_rack: "",
-            pm_tiroir: "",
-            pm_port: "",
             ref_interne_rezel_commande: "",
-            ref_appartement: "",
             ref_pto: "",
-            pto_existant: false,
-            numero_sequence: ""
+            ref_prestation: "",
+            date_mise_en_service: "",
         }
     });
 
@@ -54,21 +43,10 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
 
             const splitName = userBundle.user.name.split(" ");
             reset({
-                nom_adherent: splitName.slice(1).join(" "),
-                prenom_adherent: splitName[0],
-                email_adherent: userBundle.user.email,
-                telephone_adherent: userBundle.user.phone,
-                residence: userBundle.subscription.chambre.residence,
-                date_installation: dayjs(userBundle.appointments[0].slot.start).format("YYYYMMDD HH:mm"),
-                e_rdv: userBundle.flow.erdv_id,
-                pm_rack: "1",
-                pm_tiroir: "1",
-                pm_port: ont.position_PM,
-                ref_interne_rezel_commande: userBundle.flow.ref_commande,
-                ref_appartement: userBundle.subscription.chambre.name,
+                ref_interne_rezel_commande: "",
                 ref_pto: "",
-                pto_existant: true,
-                numero_sequence: ""
+                ref_prestation: "",
+                date_mise_en_service: "",
             });
         })
     }, [userBundle]);
@@ -114,20 +92,12 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
                     <List sx={{ pt: 0 }}>
                         {Object.keys(getValues()).map((key: keyof CRMiseEnService) => (
                             <ListItem key={key} >
-                                {key !== "pto_existant" && (
-                                    <TextField
-                                        required={key !== "ref_pto"}
-                                        label={key}
-                                        {...register(key)}
-                                        size='small'
-                                        fullWidth={true} />
-                                )}
-                                {key === "pto_existant" && (
-                                    <>
-                                        <input type="checkbox" {...register(key)} />
-                                        <p className="pl-2">PTO existant</p>
-                                    </>
-                                )}
+                                <TextField
+                                    required={key !== "ref_pto"}
+                                    label={key}
+                                    {...register(key)}
+                                    size='small'
+                                    fullWidth={true} />
                             </ListItem>
                         ))}
                     </List>
