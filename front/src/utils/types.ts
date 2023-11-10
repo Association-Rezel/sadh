@@ -152,6 +152,14 @@ export interface CommandeAccesInfo {
     numero_sequence: string
 }
 
+// Voir https://gitlab.com/rezel/faipp/nix/-/blob/master/nix/main.py
+export interface CRMiseEnService {
+    ref_interne_rezel_commande: string,
+    ref_pto: string,
+    ref_prestation: string,
+    date_mise_en_service: string,
+}
+
 export interface BoxInterface {
     mac_address: string;
     ipv4s: string[];
@@ -213,6 +221,7 @@ export interface ApiInterface {
     registerUserBox(user_keycloak_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box>;
     submitAppointmentSlots(keycloak_id: string, slots: AppointmentSlot[]): Promise<Appointment[]>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
+    sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
 }
 
 
