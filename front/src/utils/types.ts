@@ -159,6 +159,7 @@ export interface CRMiseEnService {
     ref_appartement: string,
     ref_prestation: string,
     date_mise_en_service: string,
+    ref_pto: string,
 }
 
 export interface BoxInterface {
