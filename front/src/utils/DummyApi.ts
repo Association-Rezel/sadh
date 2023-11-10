@@ -1,8 +1,11 @@
-import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, AppointmentType, Residence, UserDataBundle, CommandeAccesInfo } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, PortRule, Box, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, AppointmentStatus, AppointmentType, Residence, UserDataBundle, CommandeAccesInfo, CRMiseEnService } from "./types";
 import {getAppState, updateAppState} from "./AppState";
 
 export class DummyApi implements ApiInterface {
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
+        throw new Error("Method not implemented.");
+    }
+    sendCRMiseEnService(info: CRMiseEnService): Promise<Response> {
         throw new Error("Method not implemented.");
     }
     uploadFile(url: string, data: FormData): Promise<void> {

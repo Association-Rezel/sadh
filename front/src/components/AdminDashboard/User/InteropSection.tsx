@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, TextField, Typography } from "@mui/material";
 import { SubscriptionFlow } from "../../../utils/types";
 import CmdAccesDialog from './CmdAccesDialog';
+import CRMESDialog from './CRMiseEnService';
 
 export default function InteropSection({
     currentSubFlow,
@@ -13,6 +14,7 @@ export default function InteropSection({
     userBundle: any
 }) {
     const [cmdAccesDialogOpen, setCmdAccesDialogOpen] = React.useState(false);
+    const [CRMESDialogOpen, setCRMESDialogOpen] = React.useState(false);
 
     return (
         <div>
@@ -36,6 +38,11 @@ export default function InteropSection({
                                 Générer CMD_ACCES
                             </Button>
                         </div>
+                        <div className="mt-5">
+                            <Button variant="contained" onClick={() => setCRMESDialogOpen(true)}>
+                                Générer CR_MES
+                            </Button>
+                        </div>
                         <div className="flex items-center mt-5">
                             <input type="checkbox" {...registerToSubFlowForm("cmd_acces_sent")} />
                             <strong className="pl-2">CMD_ACCES envoyé</strong>
@@ -47,6 +54,11 @@ export default function InteropSection({
                         <CmdAccesDialog
                             open={cmdAccesDialogOpen}
                             onClose={() => setCmdAccesDialogOpen(false)}
+                            userBundle={userBundle}
+                        />
+                        <CRMESDialog
+                            open={CRMESDialogOpen}
+                            onClose={() => setCRMESDialogOpen(false)}
                             userBundle={userBundle}
                         />
                     </div>

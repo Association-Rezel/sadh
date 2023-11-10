@@ -1,4 +1,4 @@
-import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, UserDataBundle, CommandeAccesInfo } from "./types";
+import { User, ApiInterface, Order, Device, DHCPLease, Box, PortRule, Subscription, ONT, SubscriptionFlow, AppointmentSlot, Appointment, UserDataBundle, CommandeAccesInfo, CRMiseEnService } from "./types";
 import { Config } from "./Config";
 import { updateAppState } from "./AppState";
 import { keycloak } from "./keycloak";
@@ -332,5 +332,9 @@ export class RemoteApi implements ApiInterface {
 
     async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
         return await this.myAuthenticatedRequest("/nix/generer_commande_acces", info, "POST", true);
+    }
+
+    async sendCommandeMiseEnService(info: CRMiseEnService): Promise<Response> {
+        return await this.myAuthenticatedRequest("/nix/generer_cr_mise_en_service", info, "POST", true);
     }
 }
