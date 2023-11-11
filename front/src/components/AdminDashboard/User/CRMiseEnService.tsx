@@ -28,7 +28,7 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
     const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>({
         defaultValues: {
             ref_interne_rezel_commande: "",
-            ref_residence: "",
+            residence: "",
             ref_appartement: "",
             ref_prestation_prise: "",
             date_mise_en_service: "",
@@ -46,7 +46,7 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
             const splitName = userBundle.user.name.split(" ");
             reset({
                 ref_interne_rezel_commande: userBundle.flow.ref_commande,
-                ref_residence: userBundle.subscription.chambre.residence,
+                residence: userBundle.subscription.chambre.residence,
                 ref_appartement: userBundle.subscription.chambre.name,
                 ref_prestation_prise: userBundle?.flow.ref_prestation,
                 date_mise_en_service: dayjs().format("YYYYMMDD HH:mm"),
