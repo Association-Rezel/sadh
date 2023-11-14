@@ -155,11 +155,10 @@ export interface CommandeAccesInfo {
 // Voir https://gitlab.com/rezel/faipp/nix/-/blob/master/nix/main.py
 export interface CRMiseEnService {
     ref_interne_rezel_commande: string,
-    residence: string,
+    ref_residence: string,
     ref_appartement: string,
-    ref_prestation_prise: string,
+    ref_prestation: string,
     date_mise_en_service: string,
-    ref_pto: string,
 }
 
 export interface BoxInterface {
