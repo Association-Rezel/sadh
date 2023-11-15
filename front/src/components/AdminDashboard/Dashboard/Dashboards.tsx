@@ -29,10 +29,9 @@ export default function Dashboards() {
         }
     };
 
-    const pastAppointNoMesSentFilter: UserFilter = {
+    const crMesToSendFilter: UserFilter = {
         filter(user: UserDataBundle): boolean {
-            return user.appointments.some(
-                appointment => appointment.status === AppointmentStatus.VALIDATED && appointment.slot.start < new Date())
+            return user.subscription.status === SubscriptionStatus.ACTIVE
                 && !user.flow.cr_mes_sent;
         }
     };
@@ -69,7 +68,7 @@ export default function Dashboards() {
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     CR MES à envoyer
                 </Typography>
-                <TableUsers users={filterUsers(users, [pastAppointNoMesSentFilter])} />
+                <TableUsers users={filterUsers(users, [crMesToSendFilter])} />
             </div>
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
