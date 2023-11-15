@@ -31,7 +31,7 @@ export default function Dashboards() {
 
     const crMesToSendFilter: UserFilter = {
         filter(user: UserDataBundle): boolean {
-            return user.subscription.status === SubscriptionStatus.ACTIVE
+            return user.subscription?.status === SubscriptionStatus.ACTIVE
                 && !user.flow.cr_mes_sent;
         }
     };
