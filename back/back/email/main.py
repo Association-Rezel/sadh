@@ -27,13 +27,13 @@ def send_email(
     body: str,
     to: str,
     attachments: list[str] | None = None,
-    bcc: str = "faipp@rezel.net",
+    bcc: str = "fai@rezel.net",
     plain: bool = True,
 ) -> None:
     """Send email."""
     try:
         message = MIMEMultipart("mixed")
-        message["From"] = "FAI Rezel <faipp@rezel.net>"
+        message["From"] = "FAI Rezel <fai@rezel.net>"
         message["To"] = to
         if bcc:
             message["Bcc"] = bcc
@@ -46,7 +46,7 @@ def send_email(
                     part.add_header("Content-Disposition", f"attachment; filename={attachment.split('/')[-1]}")
                     message.attach(part)
         with smtplib.SMTP("smtp.rezel.net", 25) as server:
-            server.sendmail("faipp@rezel.net", [to, bcc] if bcc else to, message.as_string())
+            server.sendmail("fai@rezel.net", [to, bcc] if bcc else to, message.as_string())
     except Exception as e:
         print(f"Error while sending email {e}")
         # TODO: "Implement backup email sending"
@@ -69,7 +69,7 @@ def send_matrix(subject: str, body: str) -> None:
         print("Matrix message sent")
     except Exception as e:
         print(f"Error while sending Matrix message {e}")
-        send_email(subject, body, "faipp@rezel.net")
+        send_email(subject, body, "fai@rezel.net")
 
 
 def send_email_contract(to: str, client_name: str) -> None:
