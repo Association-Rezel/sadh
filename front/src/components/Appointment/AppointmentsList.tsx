@@ -19,13 +19,13 @@ export default function AppointmentsList({ appointments }: { appointments: Appoi
                     </Typography>
                     {appointments.map((appointment) => <PendingAppointment key={appointment.slot.start.getTime()} appointment={appointment} />)}
                     <Typography variant="body1" align="center">
-                        Si vous souhaitez modifier vos disponibilités, veuillez envoyer un mail à faipp@rezel.net
+                        Si vous souhaitez modifier vos disponibilités, veuillez envoyer un mail à fai@rezel.net
                     </Typography>
                 </>
             )}
             {appointments.length !== 1 && appointments.some(a => a.status === AppointmentStatus.VALIDATED) && (
                 <Typography variant="body1" align="center">
-                    Une erreur est survenue. Veuillez envoyer un mail à faipp@rezel.net.
+                    Une erreur est survenue. Veuillez envoyer un mail à fai@rezel.net.
                 </Typography>
             )}
         </div>
