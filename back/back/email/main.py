@@ -31,6 +31,11 @@ def send_email(
     plain: bool = True,
 ) -> None:
     """Send email."""
+
+    # If this is a dev environment, don't send the email
+    if ENV.environment == "dev":
+        return
+
     try:
         message = MIMEMultipart("mixed")
         message["From"] = "FAI Rezel <fai@rezel.net>"
@@ -54,6 +59,11 @@ def send_email(
 
 def send_matrix(subject: str, body: str) -> None:
     """Send matrix message."""
+
+    # If this is a dev environment, don't send the message
+    if ENV.environment == "dev":
+        return
+
     try:
         print("Sending Matrix message")
         matrix_client = MatrixClient("https://matrix.rezel.net")
@@ -74,6 +84,11 @@ def send_matrix(subject: str, body: str) -> None:
 
 def send_email_contract(to: str, client_name: str) -> None:
     """Send email contract."""
+
+    # If this is a dev environment, don't send the email
+    if ENV.environment == "dev":
+        return
+
     pdf_lock.acquire()
     try:
         data_dict = {}
@@ -157,7 +172,12 @@ def send_email_contract(to: str, client_name: str) -> None:
     )
     pdf_lock.release()
 
+
 def send_email_signed_contract(to: str, attachment_path: str) -> None:
+    # If this is a dev environment, don't send the email
+    if ENV.environment == "dev":
+        return
+
     """Send email signed contract."""
     send_email(
         "Rezel - Ton adhésion FAI - contrat",
@@ -174,4 +194,8 @@ def send_email_signed_contract(to: str, attachment_path: str) -> None:
         Le pôle FAI de Rezel<br>
     </body>
 </html>
-""", to, attachments=[attachment_path], plain=False)
+""",
+        to,
+        attachments=[attachment_path],
+        plain=False,
+    )

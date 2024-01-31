@@ -77,17 +77,20 @@ class NetBoxClient:
     def init_vlan_ids(self) -> None:
         """Init vlan ids."""
         if (vlan65 := self.api.ipam.vlans.get(vid="65")) is None:
-            if ENV.environment == "prod":
+            if ENV.environment == "dev":
+                vlan65 = self.api.ipam.vlans.create(vid="65", name="VLAN 65", status="active")
+            else:
                 raise Exception("Vlan 65 not found in Netbox")
-            vlan65 = self.api.ipam.vlans.create(vid="65", name="VLAN 65", status="active")
         if (vlan101 := self.api.ipam.vlans.get(vid="101")) is None:
-            if ENV.environment == "prod":
+            if ENV.environment == "vlans":
+                vlan101 = self.api.ipam.vlans.create(vid="101", name="VLAN 101", status="active")
+            else:
                 raise Exception("Vlan 101 not found in Netbox")
-            vlan101 = self.api.ipam.vlans.create(vid="101", name="VLAN 101", status="active")
         if (vlan102 := self.api.ipam.vlans.get(vid="102")) is None:
-            if ENV.environment == "prod":
+            if ENV.environment == "dev":
+                vlan102 = self.api.ipam.vlans.create(vid="102", name="VLAN 102", status="active")
+            else:
                 raise Exception("Vlan 102 not found in Netbox")
-            vlan102 = self.api.ipam.vlans.create(vid="102", name="VLAN 102", status="active")
 
         self.vlan65_id = vlan65.id  # type: ignore
         self.vlan101_id = vlan101.id  # type: ignore
@@ -241,29 +244,30 @@ class NetBoxClient:
 
         # Everything setup on Netbox, now we can notify Charon
         # Timeout to 5s because front-end is waiting for us
-        try:
-            charon_response = requests.get(
-                f"{ENV.charon_url}register-onu/{ont_device.id}",  # type: ignore
-                headers={"Authorization": f"Bearer {ENV.charon_token}"},
-                timeout=5,
-            )
-        except requests.exceptions.Timeout:
-            logger.error("Charon timed out")
-            send_admin_message(
-                ":x: Erreur :x:",
-                f"Charon a time out lors de l'enregistrement de l'ONT {ont_device.id}",  # type: ignore
-            )
-            raise Exception("Charon timed out")
+        if ENV.environment is not "dev":
+            try:
+                charon_response = requests.get(
+                    f"{ENV.charon_url}register-onu/{ont_device.id}",  # type: ignore
+                    headers={"Authorization": f"Bearer {ENV.charon_token}"},
+                    timeout=5,
+                )
+            except requests.exceptions.Timeout:
+                logger.error("Charon timed out")
+                send_admin_message(
+                    ":x: Erreur :x:",
+                    f"Charon a time out lors de l'enregistrement de l'ONT {ont_device.id}",  # type: ignore
+                )
+                raise Exception("Charon timed out")
 
-        if charon_response.status_code != 200:
-            logger.error("Charon returned an error")
-            logger.error(charon_response.status_code)
-            logger.error(charon_response.text)
-            send_admin_message(
-                ":x: Erreur :x:",
-                f"Charon a retourné une erreur lors de l'enregistrement de l'ONT {ont_device.id}",  # type: ignore
-            )
-            raise Exception("Charon returned an error")
+            if charon_response.status_code != 200:
+                logger.error("Charon returned an error")
+                logger.error(charon_response.status_code)
+                logger.error(charon_response.text)
+                send_admin_message(
+                    ":x: Erreur :x:",
+                    f"Charon a retourné une erreur lors de l'enregistrement de l'ONT {ont_device.id}",  # type: ignore
+                )
+                raise Exception("Charon returned an error")
 
         return ONT(
             serial_number=serial_number,
