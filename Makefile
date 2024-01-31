@@ -28,7 +28,7 @@ install: i-back i-front
 
 
 back/.venv:
-	@bash -c 'cd back && python3 -m venv .venv'
+	@bash -c 'cd back && python3.11 -m venv .venv'
 
 .PHONY: i-back
 i-back: back/.venv

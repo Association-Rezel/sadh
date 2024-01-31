@@ -1,119 +1,81 @@
-# Site web FAIPP
+# Site web fai.rezel.net
+Ce repository contient l'interface de gestion du FAI.  
 
-Ce dossier contient l'interface de gestion de FAIPP.
-
-Il se divise en trois parties :
-
-- front : Le frontend, en Typescript/React
-- back : Le backend, en Python/FastAPI
-- infra : Du code d'infrastructure (Docker)
-
-## Getting started
-
-Pour ouvrir le repo, clonnez lancer le workspace [VS-Code](https://code.visualstudio.com/insiders/):
-
+- `./` Racine du projet
+- `front/` : Le frontend, en Typescript/React
+- `back/` : Le backend, en Python/FastAPI
+- `infra/` : Des fichiers de configuration pour lancer les services annexes en local (netbox, keycloak)
+  
+## Ouvrir le projet sous VS Code
+Pour parcourir le code, ouvrez le workspace [VS-Code](https://code.visualstudio.com/insiders/) avec :
 ```bash
+git clone git@gitlab.com:rezel/faipp/site/site.git
+cd site/
 code all.code-workspace
 ```
 
-## Front-end
+## Installation de l'environnement de développement
+Pour savoir si vous avez déjà docker : `docker --version`. Si oui, mettez le à jour, et sinon, installez la dernière version :
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+sudo usermod -aG docker $USER
+```
+Installez python 3.11
+```bash
+sudo apt install python3.11 python3.11-venv
+```
+Nettoyez les anciennes versions de nodejs éventuelles puis installez la version 21 et la dernière version de npm.
+```bash
+sudo apt autoremove nodejs
+curl -fsSL https://deb.nodesource.com/setup_21.x | sudo -E bash - &&\
+sudo apt-get install -y nodejs npm
+```
+Installez `make`
+```bash
+sudo apt install make
+```
+Vous avez désormais installé tous les outils nécessaires 🎉!
 
-Pour lancer le front-end, il vous faudra :
+Dans le dossier `site/` :
+```bash
+make install # Pour installer toutes les dépendances python et node
+make seed # Pour créer un premier compte dans keycloak
+make start-back # Pour lancer localement l'infrastructure de backend (Le back en python, netbox & keycloak)
+```
+Ouvrez ensuite un nouveau shell et tapez :
+```bash
+make start-front
+```
+Dans votre navigateur préféré, ouvrez http://localhost:5173/, et connectez vous avec :
+**Utilisateur :** test@example.com
+**Mot de passe :** test
 
-- NodeJS avec une version récente (18+)
+Cliquez sur le bouton "J'adhère" pour faire une demande d'adhésion avec le compte (Cela permet de créer un compte dans la base de donnée locale du site)
 
-Vous pouvez vérifier votre version de NodeJS avec `node -v` / `nodejs -v`
-
-### Commandes
-
-( depuis le dossier `front` )
-
-- Installer les modules NodeJS requis pour le front-end : `npm install`  
-&emsp;*(après chaque `git pull` si besoin)*
-- Lancer le serveur de développement : `npm run dev`
-
-### Ressources
-
-- Typescript : https://www.typescriptlang.org/
-- React : https://react.dev/
-- Material UI : https://mui.com/material-ui/getting-started/overview/
-
+Passer ensuite cet utilisateur administrateur du site en ouvrant un nouveau shell et en entrant la commande suivante :
+```bash
+docker exec -it infra-postgres-1 psql -U admin -d database -c "UPDATE users SET is_admin='1' WHERE email='test@example.com'"`
+```
+Rafraichissez la page, et vous êtes désormais administrateur du site.
 ## Back-end
-
 Le backend dépend de plusieurs services :
-
-- Un serveur SQL (base de donnée généraliste)
+- Un serveur PostgreSQL (base de donnée généraliste)
 - Un serveur Keycloak (authentification centralisée)
 - Un serveur Netbox (base de donnée pour équipements réseau)
-- ...
-
-Afin d'éviter la fastidieuse installation manuelle de ces composants chez chaque développeur, nous utilisons Docker, qui permet de déployer chez tout le monde les mêmes services automatiquement.
-
-Ainsi, il vous faudra :
-
-- Python 3
-- Docker : https://docs.docker.com/get-docker/
-- Docker Compose : https://docs.docker.com/compose/  
-
-Vous pouvez vérifier si vous avez déjà Docker Compose avec `docker compose version`.
-Dans ce cas, vous aurez quelque-chose du genre de `Docker Compose version v2.17.2`
-
-### /!\ Attention /!\
-
-Les versions de Docker Compose proposées par Debian/Ubuntu sont dépréciées. Installez manuellement (et *PAS* avec `apt install docker-compose`) en suivant les instructions du lien ci-dessus.
-
-### Commandes
-
-( depuis la racine du projet )
-
-Certaines commandes ci-dessous peuvent nécessiter un lancement en `root`.
-Dans ce cas, il suffit d'insérer `sudo` avant la commande. (ex: `sudo make up`)
-
-- Lancer les conteneurs Docker : `make up`
-- Initialiser Keycloak : `make seed` (à refaire à chaque lancement)
-- Quitter les conteneurs Docker : `make down`
-
-- Voir l'état des conteneurs lancés : `docker ps`
-- Voir l'état des conteneurs lancés ou arrêtés : `docker ps -a`
-
-- Installer les modules Python du back-end : `make i-back`  
-&emsp;*(après chaque `git pull` si besoin)*
-- Lancer le back-end : `make start-back`
-
-Alternativement, le back-end peut être lancé avec le fichier `back/run.py`, à condition que les modules Python aient été installés par ailleurs.  
-(dans le dossier `back`, faire `pip install -r requirements.txt`, après chaque `git pull` si besoin)
-
-### Ressources
-
-- FastAPI : https://fastapi.tiangolo.com/
-- SQLAlchemy : https://www.sqlalchemy.org/
-- Pydantic : https://pydantic.dev/
+ 
+C'est pour éviter la fastidieuse installation manuelle de ces composants chez chaque développeur, que nous utilisons Docker, qui permet de déployer chez tout le monde les mêmes services automatiquement.
 
 ### Keycloak
+Les identifiants du compte d'administration à utiliser sur http://localhost:8080/ sont `admin`/`admin`
 
-Le Keycloak est initialisé avec le compte utilisateur suivant :
+### Exemple de modification de la base de données du site
 
-- email : `test@example.com`
-- mot de passe : `test`  
-
-Les identifiants du compte d'administration sont `admin`/`admin`
-
-## Makefile - Scripts de lancement
-
-(voir les sections ci-dessus pour les dépendances)
-
-Il est possible d'initialiser rapidement le projet après un `git clone` frais :
-
+Pour donner les droits d'admin à un utilisateur, il faut se connecter à la base de données postgresql. La commande suivante permet d'ouvrir un shell postgreSQL dans la base de donnée du site.
 ```bash
-make install
-```
-
-## Modification de la base de données
-Pour donner les droits d'admin à un utilisateur, il faut se connecter à la base de données postgresql : 
-```bash
-docker exec -it infra-postgres-1 psql -U admin -d database
+docker  exec  -it  infra-postgres-1  psql  -U  admin  -d  database
 ```
 Une fois dans la base de données :
 ```sql
-update users set is_admin='t' where email='email@example.com';
+UPDATE users SET is_admin='t' WHERE email='email@example.com';
 ```

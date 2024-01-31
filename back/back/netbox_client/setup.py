@@ -4,6 +4,7 @@ from typing import Any
 
 from pynetbox.core.api import Api
 
+from back.env import ENV
 from back.interfaces.box import DeviceRoles, Models, PublicSubnets, Residence
 
 logger = logging.getLogger(__name__)
@@ -20,14 +21,20 @@ def _sync_nb_objects(objects_to_sync: dict[str, dict[str, Any]], api_group: str,
     """
     _api = getattr(getattr(api, api_group), api_resource)
     objects_present = {str(s) for s in _api.filter(name=list(objects_to_sync.keys()))}
-    objects_to_add = set(objects_to_sync.keys()) - objects_present
-    for obj in objects_to_add:
-        try:
-            print(f"Adding {obj} to {api_group}/{api_resource}")
-            _api.create(slug=obj, **objects_to_sync[obj])
-        except Exception as e:
-            print(f"Erreur: {e}")
-    logger.debug("Added %s entries in the %s/%s table.", len(objects_to_add), api_group, api_resource)
+    objects_not_present = set(objects_to_sync.keys()) - objects_present
+    if ENV.environment == "dev":
+        for obj in objects_not_present:
+            try:
+                print(f"Adding {obj} to {api_group}/{api_resource}")
+                _api.create(slug=obj, **objects_to_sync[obj])
+            except Exception as e:
+                print(f"Erreur: {e}")
+        logger.debug("Added %s entries in the %s/%s table.", len(objects_not_present), api_group, api_resource)
+
+    else:
+        for obj in objects_not_present:
+            print(f"{obj} should be added in {api_group}/{api_resource}")
+        logger.debug("Missing %s entries in the %s/%s table.", len(objects_not_present), api_group, api_resource)
 
 
 def assert_requires(api: Api) -> None:
