@@ -1,6 +1,8 @@
 """NetBoxClient class definition."""
+
 import logging
 import random
+import re
 from datetime import datetime
 from ipaddress import IPv4Interface, IPv6Interface, IPv6Network
 from typing import Any
@@ -402,10 +404,16 @@ class NetBoxClient:
         return device
 
 
+MEC_PORT_PATTERN = re.compile(r"([A-P])([1-8])")
+
+
 def mec_port_name_to_position_in_pon(mec_port_name: str) -> int:
     """Translate MEC port name to position_in_pon."""
-    # Par exemple B4 = 12, C1 = 17
-    return int(mec_port_name[1:]) + 8 * (ord(mec_port_name[0]) - ord("A"))
+    if not MEC_PORT_PATTERN.match(mec_port_name):
+        raise ValueError(f"Invalid MEC port name {mec_port_name}")
+
+    # Par exemple B4 = 12, C1 = 17, E1 = 1, F5 = 13
+    return int(mec_port_name[1:]) + 8 * ((ord(mec_port_name[0]) - ord("A")) % 4)
 
 
 def get_slaac_from_mac(mac: EUI):
