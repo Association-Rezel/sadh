@@ -20,7 +20,8 @@ from back.email.main import send_admin_message
 from back.env import ENV
 from back.errors import NetBoxConnectionError
 from back.interfaces.auth import KeycloakId
-from back.interfaces.box import ONT, Box, BoxInterface, BoxModel, DeviceRoles, Models, WifiConfig
+from back.interfaces.box import (ONT, Box, BoxInterface, BoxModel, DeviceRoles,
+                                 Models, WifiConfig)
 from back.interfaces.subscriptions import Subscription
 from back.interfaces.users import User
 from back.netbox_client.setup import assert_requires
@@ -212,7 +213,7 @@ class NetBoxClient:
 
         if ont_device is None:
             ont_device = self.api.dcim.devices.create(
-                device_role=self.ONT_ROLE_ID,  # type: ignore
+                role=self.ONT_ROLE_ID,  # type: ignore
                 device_type=self.api.dcim.device_types.get(slug=Models.NOKIA_G_010G_Q.value.name.lower()).id,  # type: ignore
                 name=f"ONT {sub.chambre.residence.name}-{sub.chambre.name}",
                 serial=serial_number,
@@ -246,7 +247,7 @@ class NetBoxClient:
 
         # Everything setup on Netbox, now we can notify Charon
         # Timeout to 5s because front-end is waiting for us
-        if ENV.environment is not "dev":
+        if ENV.environment != "dev":
             try:
                 charon_response = requests.get(
                     f"{ENV.charon_url}register-onu/{ont_device.id}",  # type: ignore
@@ -294,7 +295,7 @@ class NetBoxClient:
 
         # Create Box in netbox
         device_box = self.api.dcim.devices.create(
-            device_role=self.BOX_ROLE_ID,  # type: ignore
+            role=self.BOX_ROLE_ID,  # type: ignore
             device_type=self.api.dcim.device_types.get(slug=Models.XIAOMI_AC2350.value.name.lower()).id,  # type: ignore
             name=f"BOX {sub.chambre.residence.name}-{sub.chambre.name}",
             serial=serial_number,
