@@ -141,13 +141,7 @@ def send_email_contract(to: str, client_name: str) -> None:
       <li>t'acquitter du <b>premier mois de cotisation (20€)</b>, et</li>
       <li>nous verser <b>la caution de 50€</b> qui te sera réstituée à la fin de l'adhésion.</li>
     </ul>
-    <p>Comme mentionné dans le contrat, Rezel peut être facturé de 50€
-      par Orange pour le déplacement du technicien Orange lors de
-      l'installation de la ligne (même si la fibre existe déjà). Dans ce
-      cas, <b>Rezel te facturera ces 50€</b> que nous aurons dû
-      avancer.<br>
-      <br>
-      Les <b>paiements de la cotisation et de la caution</b> peuvent se faire au choix :<br>
+    <p>Les <b>paiements de la cotisation et de la caution</b> peuvent se faire au choix :<br>
     </p>
     <ul>
       <li>En liquide aux locaux de l'association (Salle 0A316 à Télécom
