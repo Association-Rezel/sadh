@@ -36,6 +36,7 @@ def build() -> FastAPI:
     else:
         origins = [
             "https://fai.rezel.net",
+            "https://sadh.fai.rezel.net",
         ]
 
     logger.debug("Allowed origins: %s", origins)
