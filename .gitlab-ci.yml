@@ -6,8 +6,8 @@ stages:
   - deploy
 
 variables:
-  FRONT_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-front:$CI_COMMIT_BRANCH
-  BACK_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-back:$CI_COMMIT_BRANCH
+  FRONT_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-front:$CI_COMMIT_SHORT_SHA
+  BACK_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-back:$CI_COMMIT_SHORT_SHA
 
 # From https://docs.gitlab.com/ee/ci/docker/using_kaniko.html#building-a-docker-image-with-kaniko
 buildfrontend:
