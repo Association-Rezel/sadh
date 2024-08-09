@@ -1,7 +1,7 @@
-import { Residence, SubscriptionStatus, UserDataBundle } from "../utils/types";
+import { Residence, MembershipStatus, User } from "../utils/types/types";
 
 export interface UserFilter {
-    filter(user: UserDataBundle): boolean;
+    filter(user: User): boolean;
 }
 
 export class ResidencesFilter implements UserFilter {
@@ -11,29 +11,26 @@ export class ResidencesFilter implements UserFilter {
         this.residence = residence;
     }
 
-    filter(user: UserDataBundle): boolean {
-        return user.subscription?.chambre.residence === this.residence;
+    filter(user: User): boolean {
+        return user.membership?.address.residence === this.residence;
     }
 }
 
 export class StatusFilter implements UserFilter {
-    private status: SubscriptionStatus;
+    private status: MembershipStatus;
 
-    constructor(status: SubscriptionStatus) {
+    constructor(status: MembershipStatus) {
         this.status = status;
     }
 
-    filter(user: UserDataBundle): boolean {
-        return user.subscription?.status === this.status;
+    filter(user: User): boolean {
+        return user.membership?.status === this.status;
     }
 }
 
-export function filterUsers(users: UserDataBundle[], filters: UserFilter[]): UserDataBundle[] {
+export function filterUsers(users: User[], filters: UserFilter[]): User[] {
     let filteredUsers = users;
-    console.log("filters", filters);
-    console.log("filteredUsers", filteredUsers);
     filters.forEach((filter) => {
-        console.log("filteredUsers", filteredUsers);
         filteredUsers = filteredUsers.filter((user) => filter.filter(user));
     });
     return filteredUsers;

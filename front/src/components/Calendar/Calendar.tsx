@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Appointment, AppointmentStatus, User } from "../../utils/types";
+import { Appointment, User } from "../../utils/types/types";
 import { Api } from "../../utils/Api";
 import { Calendar, momentLocalizer } from 'react-big-calendar'
 import moment from 'moment'
@@ -18,16 +18,14 @@ function CalendarComponent() {
     const [calendarProps, setCalendarProps] = useState<CalendarProp[]>([]);
 
     useEffect(() => {
-        Api.fetchUserDataBundles().then((userBundles) => {
+        Api.fetchUsers().then((users) => {
             const calendarPropsNew = [];
-            for (let userBundle of userBundles) {
-                for (let appointment of userBundle.appointments) {
-                    if (appointment.status === AppointmentStatus.VALIDATED) {
-                        calendarPropsNew.push({
-                            appointment: appointment,
-                            user: userBundle.user
-                        })
-                    }
+            for (let user of users) {
+                if (user.membership?.appointment) {
+                    calendarPropsNew.push({
+                        appointment: user.membership.appointment,
+                        user: user
+                    })
                 }   
             }
             setCalendarProps(calendarPropsNew);
@@ -38,14 +36,12 @@ function CalendarComponent() {
         let events = [];
         for (let calendarProp of calendarProps) {
             events.push({
-                id: calendarProp.appointment.appointment_id,
                 start: new Date(calendarProp.appointment.slot.start),
                 end: new Date(calendarProp.appointment.slot.end),
-                title: calendarProp.user.name,
-                userid: calendarProp.user.keycloak_id,
+                title: calendarProp.user.first_name + " " + calendarProp.user.last_name,
+                userid: calendarProp.user.sub,
             },);
         }
-        console.log("events", events)
         return events;
     }
 

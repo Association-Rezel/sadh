@@ -3,17 +3,18 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { CommandeAccesInfo, CRMiseEnService, ONT, UserDataBundle } from '../../../utils/types';
+import { CRMiseEnService, User } from '../../../utils/types/types';
 import { DialogActions, TextField } from '@mui/material';
 import { Api } from '../../../utils/Api';
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
+import { ONTInfos } from '../../../utils/types/pon_types';
 
 export interface CRMESDialogProps {
     open: boolean;
     onClose: () => void;
-    userBundle: UserDataBundle;
+    user: User;
 }
 
 export interface CSVFile {
@@ -22,7 +23,7 @@ export interface CSVFile {
 }
 
 
-export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogProps) {
+export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
     const [hasONT, setHasONT] = useState<boolean>(false);
 
     const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>({
@@ -37,23 +38,23 @@ export default function CRMESDialog({ open, onClose, userBundle }: CRMESDialogPr
     });
 
     useEffect(() => {
-        if (!userBundle?.subscription) return;
+        if (!user?.membership) return;
 
-        Api.fetchONT(userBundle.user.keycloak_id).then((ont: ONT) => {
+        Api.fetchONT(user.sub).then((ont: ONTInfos) => {
             setHasONT(ont !== null);
             if (ont === null) return;
 
-            const splitName = userBundle.user.name.split(" ");
             reset({
-                ref_interne_rezel_commande: userBundle.flow.ref_commande,
-                residence: userBundle.subscription.chambre.residence,
-                ref_appartement: userBundle.subscription.chambre.name,
-                ref_prestation_prise: userBundle?.flow.ref_prestation,
-                date_mise_en_service: dayjs().format("YYYYMMDD HH:mm"),
+                ref_interne_rezel_commande: user.membership.ref_commande,
+                residence: user.membership.address.residence,
+                ref_appartement: user.membership.address.appartement_id,
+                ref_prestation_prise: user.membership.ref_prestation,
+                date_mise_en_service: dayjs(user.membership.appointment.slot.end).format("YYYYMMDD HH:mm"),
                 ref_pto: "",
+                numero_sequence: "1",
             });
         })
-    }, [userBundle]);
+    }, [user]);
 
     const sendData = (info: CRMiseEnService) => {
         Api.sendCRMiseEnService(info).then((res) => {

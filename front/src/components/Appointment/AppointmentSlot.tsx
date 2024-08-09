@@ -1,4 +1,4 @@
-import { AppointmentSlot as AppointmentSlotType, isSameSlot } from "../../utils/types";
+import { AppointmentSlot as AppointmentSlotType, isSameSlot } from "../../utils/types/types";
 
 export default function AppointmentSlot({ slot, selectedSlots, onChange }: { slot: AppointmentSlotType, selectedSlots: AppointmentSlotType[], onChange: any }) {
     let colorStyle: string;

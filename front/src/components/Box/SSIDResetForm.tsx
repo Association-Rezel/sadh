@@ -23,7 +23,7 @@ export default function SsidResetForm({box, setBox, setRefreshKey}){
         const newBox = {...box};
         newBox.SSID = newSSID;
         setBox(newBox);
-        Api.updateMyBox(newBox);
+        // Api.updateMyBox(newBox);
         setRefreshKey((refreshKey) => refreshKey + 1);
     }
 

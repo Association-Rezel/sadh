@@ -1,21 +1,21 @@
 """Manage subscriptions."""
 
 import re
-from fastapi.responses import JSONResponse
 
 import requests
 from fastapi import Request, Response
+from fastapi.responses import JSONResponse
 
 from back.env import ENV
-from back.middlewares import must_be_admin
+from back.middlewares.dependencies import must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("nix")
 
-@router.post("/{path:path}")
+
+@router.post("/{path:path}", dependencies=[must_be_sadh_admin])
 async def _reverse_proxy(
     request: Request,
-    _: None = must_be_admin
 ):
     # On proxy la requête vers nix
     url = f"{ENV.nix_url}{request.url.path.replace('/nix/', '/')}"
@@ -35,7 +35,7 @@ async def _reverse_proxy(
         )
     except requests.exceptions.Timeout:
         return Response(status_code=504)
-    
+
     if response.status_code == 200:
         filename = re.findall("filename=\"(.+)\"", response.headers['content-disposition'])[0]
 
@@ -43,6 +43,6 @@ async def _reverse_proxy(
             content={"filename": filename, "content": response.content.decode()},
             status_code=response.status_code,
         )
-    
+
     else:
         return Response(content=response.content, status_code=response.status_code)

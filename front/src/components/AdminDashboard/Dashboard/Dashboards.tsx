@@ -1,46 +1,52 @@
 import { useEffect, useState } from "react";
 import { TableUsers } from "../../Users/TableUsers";
-import { AppointmentStatus, SubscriptionStatus, UserDataBundle } from "../../../utils/types";
+import { MembershipStatus, User } from "../../../utils/types/types";
 import { StatusFilter, filterUsers, UserFilter } from "../../../filters/UserFilters";
 import { Api } from "../../../utils/Api";
 import { Typography } from "@mui/material";
 
 export default function Dashboards() {
-    const [users, setUsers] = useState<UserDataBundle[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
 
     useEffect(() => {
-        Api.fetchUserDataBundles().then((users: UserDataBundle[]) => {
+        Api.fetchUsers().then((users: User[]) => {
             setUsers(users);
         });
     }, []);
 
-    const pendingSubscriptionsFilter = new StatusFilter(SubscriptionStatus.PENDING_VALIDATION);
+    const pendingMembershipsFilter = new StatusFilter(MembershipStatus.REQUEST_PENDING_VALIDATION);
 
-    const noAppointmentFilter: UserFilter = {
-        filter(user: UserDataBundle): boolean {
-            return user.appointments.length === 0;
+    // Users with a validated membership, no appointment and no availability slots
+    const validatedWithoutFilter: UserFilter[] = [
+        new StatusFilter(MembershipStatus.VALIDATED), 
+        {
+            filter(user: User): boolean {
+                return user.availability_slots.length === 0 && user.membership?.appointment === null;
+            }
+        }
+    ];
+
+    // Users with a validated membership and, availability slots and no appointment
+    const toConfirmAppointmentFilter: UserFilter = {
+        filter(user: User): boolean {
+            return user.availability_slots.length > 0 && user.membership?.appointment === null;
         }
     };
-    const validatedWithoutFilter: UserFilter[] = [new StatusFilter(SubscriptionStatus.VALIDATED), noAppointmentFilter];
 
-    const appointmentsNotValidated: UserFilter = {
-        filter(user: UserDataBundle): boolean {
-            return user.appointments.some(appointment => appointment.status === AppointmentStatus.PENDING_VALIDATION);
-        }
-    };
-
+    // Users with an active membership and no CR MES sent (i.e we must send a CR MES asap)
     const crMesToSendFilter: UserFilter = {
-        filter(user: UserDataBundle): boolean {
-            return user.subscription?.status === SubscriptionStatus.ACTIVE
-                && !user.flow.cr_mes_sent;
+        filter(user: User): boolean {
+            return user.membership?.status === MembershipStatus.ACTIVE
+                && !user.membership?.cr_mes_sent;
         }
     };
 
+    // Users with an appointment and no CMD_ACCES sent (i.e we must send a CMD_ACCES asap)
     const cmdAccesToSendFilter: UserFilter = {
-        filter(user: UserDataBundle): boolean {
-            return user.appointments.some(
-                appointment => appointment.status === AppointmentStatus.VALIDATED)
-                && !user.flow.cmd_acces_sent;
+        filter(user: User): boolean {
+            return user.membership
+                && user.membership.appointment
+                && !user.membership.cmd_acces_sent;
         }
     };
 
@@ -56,7 +62,7 @@ export default function Dashboards() {
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     Rendez-vous en attente de validation
                 </Typography>
-                <TableUsers users={filterUsers(users, [appointmentsNotValidated])} />
+                <TableUsers users={filterUsers(users, [toConfirmAppointmentFilter])} />
             </div>
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
@@ -74,7 +80,7 @@ export default function Dashboards() {
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     A relancer
                 </Typography>
-                <TableUsers users={filterUsers(users, [pendingSubscriptionsFilter])} />
+                <TableUsers users={filterUsers(users, [pendingMembershipsFilter])} />
             </div>
         </div>
     );

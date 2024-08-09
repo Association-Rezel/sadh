@@ -1,54 +1,115 @@
 default:
   image: docker:24.0
-  before_script:
-    - docker info
-
-variables:
-  DOCKER_HOST: unix:///var/run/docker.sock
 
 stages:
   - build
   - deploy
 
+variables:
+  FRONT_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-front:$CI_COMMIT_BRANCH
+  BACK_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-back:$CI_COMMIT_BRANCH
 
+# From https://docs.gitlab.com/ee/ci/docker/using_kaniko.html#building-a-docker-image-with-kaniko
 buildfrontend:
   stage: build
+  rules:
+    - if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      changes:
+        - front/**
+      variables:
+        DEPLOY_ENV: "prod"
+    - changes:
+        - front/**
+      variables:
+        DEPLOY_ENV: "dev"
+  environment: # Gitlab environment for Gitlab CI/CD variables
+    name: $DEPLOY_ENV
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.0-debug
+    entrypoint: [""]
   script:
-    - cat $ENV_FRONT > front/.env
-    - docker build -t faipp-frontend front/
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/front"
+      --dockerfile "${CI_PROJECT_DIR}/front/Dockerfile"
+      --destination "${FRONT_IMAGE_TAG}"
+      --build-arg mode=${DEPLOY_ENV}
 
-deployfrontend:
-  stage: deploy
-  before_script:
-    - docker stop faipp-frontend-$CI_PROJECT_NAME || true
-    - docker rm faipp-frontend-$CI_PROJECT_NAME || true
-  script:
-    - docker run --name faipp-frontend-$CI_PROJECT_NAME -d 
-      -e VIRTUAL_HOST=fai.rezel.net,faipp.rezel.net -e LETSENCRYPT_HOST=fai.rezel.net,faipp.rezel.net
-      -v /etc/ssl/certs:/etc/ssl/certs:ro
-      --network reverse_default --restart unless-stopped
-      faipp-frontend:latest
-
-buildinfra:
-  stage: build
-  script:
-    - cat $ENV_VARIABLES > .env
-    - docker compose up -d --remove-orphans
-
+# From https://docs.gitlab.com/ee/ci/docker/using_kaniko.html#building-a-docker-image-with-kaniko
 buildbackend:
   stage: build
+  rules:
+    - changes:
+        - back/**
+      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      variables:
+        DEPLOY_ENV: "prod"
+    - changes:
+        - back/**
+      variables:
+        DEPLOY_ENV: "dev"
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.0-debug
+    entrypoint: [""]
   script:
-    - cat $ENV_BACK > back/.env
-    - docker build -t faipp-backend back/
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}/back"
+      --dockerfile "${CI_PROJECT_DIR}/back/Dockerfile"
+      --destination "${BACK_IMAGE_TAG}"
 
 deploybackend:
   stage: deploy
-  before_script:
-    - docker stop faipp-backend-$CI_PROJECT_NAME || true
-    - docker rm faipp-backend-$CI_PROJECT_NAME || true
+  rules:
+    - changes:
+        - back/**
+      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      variables:
+        DEPLOY_ENV: "prod"
+    - changes:
+        - back/**
+      variables:
+        DEPLOY_ENV: "dev"
+      when: manual
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
   script:
-    - docker run --name faipp-backend-$CI_PROJECT_NAME -d 
-      -e VIRTUAL_HOST=api.fai.rezel.net -e LETSENCRYPT_HOST=api.fai.rezel.net
-      -v /etc/ssl/certs:/etc/ssl/certs:ro
-      --network reverse_default --restart unless-stopped
-      faipp-backend:latest
+    # Substitute environment variables in Kubernetes manifests
+    - mkdir back/k8s-envsubst
+    - |
+      for file in back/k8s/*.yaml; do
+        envsubst < $file | tee back/k8s-envsubst/$(basename $file)
+      done
+    # Apply Kubernetes manifests
+    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl apply -f k8s-envsubst/
+    # Clean up
+    - rm -rf back/k8s-envsubst
+
+deployfrontend:
+  stage: deploy
+  rules:
+    - changes:
+        - front/**
+      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      variables:
+        DEPLOY_ENV: "prod"
+    - changes:
+        - front/**
+      variables:
+        DEPLOY_ENV: "dev"
+      when: manual
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  script:
+    # Substitute environment variables in Kubernetes manifests
+    - mkdir front/k8s-envsubst
+    - |
+      for file in front/k8s/*.yaml; do
+        envsubst < $file | tee front/k8s-envsubst/$(basename $file)
+      done
+    # Apply Kubernetes manifests
+    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl apply -f k8s-envsubst/
+    # Clean up
+    - rm -rf front/k8s-envsubst

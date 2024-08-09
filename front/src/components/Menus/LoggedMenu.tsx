@@ -1,87 +1,110 @@
 import { useContext, useState } from "react";
-import { keycloak } from "../../utils/keycloak";
-import { AppStateContext, updateAppState } from "../../utils/AppState";
-import { Api } from "../../utils/Api";
+import { AppStateContext } from "../../utils/AppStateContext";
 import { Link } from "react-router-dom";
-import { AppBar, Button, CssBaseline, GlobalStyles, IconButton, Toolbar } from "@mui/material";
+import { AppBar, Box, Button, CssBaseline, Divider, Drawer, GlobalStyles, IconButton, List, ListItem, ListItemButton, ListItemText, Toolbar, Typography } from "@mui/material";
 import logoRezel from "../../ressources/img/cotcot.svg"
-import { SubscriptionStatus } from "../../utils/types";
+import MenuIcon from '@mui/icons-material/Menu';
+import { MembershipStatus } from "../../utils/types/types";
+
+const drawerWidth = 240;
 
 function LoggedMenu() {
-    const appState = useContext(AppStateContext);
+    const { appState } = useContext(AppStateContext);
 
-    const logout = () => {
-        Api.logout();
-        keycloak.logout();
-    }
+    const [mobileOpen, setMobileOpen] = useState(false);
 
-    if (appState.logged) {
-        return (
-            <div>
-                <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: "none" } }} />
-                <CssBaseline />
-                <AppBar
-                    position="static"
-                    color="default"
-                    elevation={0}
-                    sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
-                >
-                    <Toolbar sx={{ flexWrap: "wrap" }} >
-                        <div style={{ position: 'absolute', left: 0 }}>
-                            <IconButton>
-                                <Link to={"/"}>
-                                    <img src={logoRezel} alt="logo" style={{ height: 50 }} />
-                                </Link>
-                            </IconButton>
-                        </div>
-                        <div style={{ position: 'absolute', right: 0}}>
-                            <Button >
-                                <Link to={"/account/appointment"}>Mon compte</Link>
-                            </Button>
-                            {(appState.subscription && appState.subscription?.status != SubscriptionStatus.PENDING_VALIDATION && appState.subscription?.status != SubscriptionStatus.REJECTED) && (
-                                <Button>
-                                    <Link to={"/contract"}>Contrat</Link>
-                                </Button>
-                            )}
-                            {appState.user?.is_admin && (
-                                <Button>
-                                    <Link to={"/admin"}>Interface admin</Link>
-                                </Button>
-                            )}
-                            <Button onClick={logout}>
-                                { /* TODO : déconnexion auprès du Keycloak également */}
-                                Déconnexion
-                            </Button>
-                        </div>
-                    </Toolbar>
-                </AppBar>
-            </div>
-        );
-    }
+    const handleDrawerToggle = () => {
+        setMobileOpen((prevState) => !prevState);
+    };
+
+    const navItems = [
+        { text: "Mon compte", link: "/account", condition: [MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user?.membership?.status) },
+        { text: "Interface admin", link: "/admin", condition: appState.admin },
+        { text: "Déconnexion", link: "/logout", condition: appState.user },
+        { text: "Connexion", link: "/login", condition: !appState.user },
+        { text: "Inscription", link: "/becomeMember", condition: !appState.user }
+    ];
+
+    const drawer = (
+        <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
+            <IconButton>
+                <Link to={"/"}>
+                    <img src={logoRezel} alt="logo" style={{ height: 50 }} />
+                </Link>
+            </IconButton>
+            <Divider />
+            <List>
+                {navItems.map((item) => (
+                    item.condition && (
+                        <ListItem key={item.text} component={Link} to={item.link}>
+                            <ListItemButton sx={{ textAlign: 'center' }}>
+                                <ListItemText primary={item.text} />
+                            </ListItemButton>
+                        </ListItem>
+                    )
+                ))}
+            </List>
+        </Box>
+    );
+
     return (
-        <div>
-            <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: "none" } }} />
+        <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <AppBar
+                component="nav"
                 position="static"
                 color="default"
                 elevation={0}
-                sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}
-            >
-                <Toolbar sx={{ flexWrap: "wrap" }} >
-                    <div style={{ position: 'absolute', left: 0 }}>
-                        <IconButton>
-                            <Link to={"/"}>
-                                <img src={logoRezel} alt="logo" style={{ height: 50 }} />
-                            </Link>
-                        </IconButton>
-                    </div>
-                    <div style={{ position: 'absolute', right: 0 }}>
-                        <Button onClick={() => Api.login()}>Connexion</Button>
-                    </div>
+                sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }} >
+                <Toolbar>
+                    <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        edge="start"
+                        onClick={handleDrawerToggle}
+                        sx={{ mr: 2, display: { sm: 'none' } }}
+                    >
+                        <MenuIcon />
+                    </IconButton>
+
+                    <IconButton sx={{ display: { xs: 'none', sm: 'block' } }}>
+                        <Link to={"/"}>
+                            <img src={logoRezel} alt="logo" style={{ height: 50 }} />
+                        </Link>
+                    </IconButton>
+
+                    <Box sx={{ flexGrow: 1 }} />
+
+
+                    <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                        {navItems.map((item) => (
+                            item.condition && (
+                                <Button key={item.text} sx={{ color: '#fff' }}>
+                                    <Link to={item.link}>{item.text}</Link>
+                                </Button>
+                            )
+                        ))}
+                    </Box>
                 </Toolbar>
             </AppBar>
-        </div>
+            <nav>
+                <Drawer
+                    // container={container}
+                    variant="temporary"
+                    open={mobileOpen}
+                    onClose={handleDrawerToggle}
+                    ModalProps={{
+                        keepMounted: true, // Better open performance on mobile.
+                    }}
+                    sx={{
+                        display: { xs: 'block', sm: 'none' },
+                        '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+                    }}
+                >
+                    {drawer}
+                </Drawer>
+            </nav>
+        </Box>
     );
 }
 

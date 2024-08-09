@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { User as UserType } from "../../../utils/types";
+import { User as UserType } from "../../../utils/types/types";
 
 import { Api } from "../../../utils/Api";
 import { Config } from "../../../utils/Config";
@@ -17,28 +17,28 @@ const blobToBase64 = blob => {
     });
 };
 
-export default function ContractUpload({ keycloak_id }: { keycloak_id: string }) {
+export default function ContractUpload({ zitadel_sub }: { zitadel_sub: string }) {
     const [user, setUser] = useState<UserType>();
     const [fileB64, setFileB64] = useState<string>();
 
     useEffect(() => {
-        Api.fetchUser(keycloak_id).then(user => {
+        Api.fetchUser(zitadel_sub).then(user => {
             setUser(user);
         });
-        Api.fetchFile("/users/"+keycloak_id+"/contract").then(file => {
+        Api.fetchFile("/users/"+zitadel_sub+"/contract").then(file => {
             blobToBase64(file).then((b64: string) => {
                 setFileB64(b64);
             });
         }).catch(error => {
             setFileB64("0");
         });
-    }, [keycloak_id]);
+    }, [zitadel_sub]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
         let data = new FormData();
         data.append("file", event.target.file.files[0]);
-        Api.uploadFile("/users/"+keycloak_id+"/contract", data)
+        Api.uploadFile("/users/"+zitadel_sub+"/contract", data)
         .catch(error => {
             alert("Erreur lors de l'upload du contrat. Vous êtes peut-être déconnecté. La page va se rafraichir automatiquement.");
         }).finally(() => {

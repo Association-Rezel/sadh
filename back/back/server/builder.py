@@ -1,10 +1,13 @@
 """Build the server."""
+
 import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 
+from back.env import ENV
+from back.mongodb.db import close_db, init_db
 from back.utils.logger import init_logger
 from back.utils.router_manager import ROUTEURS
 
@@ -20,13 +23,21 @@ def build() -> FastAPI:
     """Build the app from interfaces."""
     init_logger()
     app = FastAPI()
-    origins = [
-        "http://localhost:5173", 
-        "http://localhost:8080", 
-        "http://localhost:8000",
-        "https://fai.rezel.net",
-        "https://faipp.rezel.net"
-    ]
+
+    if ENV.deploy_env in ["dev", "local"]:
+        origins = [
+            "http://localhost:5173",
+            "http://localhost:8080",
+            "http://localhost:8000",
+            "https://sadh.dev.fai.rezel.net",
+            "https://fai.rezel.net",
+        ]
+    else:
+        origins = [
+            "https://fai.rezel.net",
+        ]
+
+    logger.debug("Allowed origins: %s", origins)
 
     app.add_middleware(
         CORSMiddleware,
@@ -35,13 +46,9 @@ def build() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    
-    origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:5173"
-    ]
-    
+
+    app.add_event_handler("startup", init_db)
+    app.add_event_handler("shutdown", close_db)
 
     app.get("/")(root)
 

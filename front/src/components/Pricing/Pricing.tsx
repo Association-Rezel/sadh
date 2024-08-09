@@ -1,28 +1,24 @@
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
-import CssBaseline from "@mui/material/CssBaseline";
 import Grid from "@mui/material/Grid";
 import StarIcon from "@mui/icons-material/StarBorder";
-import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import GlobalStyles from "@mui/material/GlobalStyles";
 import Container from "@mui/material/Container";
-import { getAppState } from "../../utils/AppState";
-import { Api } from "../../utils/Api";
-import { useLocation } from "react-router-dom";
+import { Fragment } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { IconButton, Tooltip } from "@mui/material";
+import HelpIcon from '@mui/icons-material/Help';
+
 
 function Copyright(props: any) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
             {"Copyright © "}
-            <Link color="inherit" href="https://rezel.net/">
+            <Link color="inherit" to="https://rezel.net/">
                 Rezel
             </Link>{" "}
             {new Date().getFullYear()}
@@ -36,9 +32,10 @@ const tiers = [
         title: "Box",
         subheader: "",
         price: "20",
-        description: ["Votre propre box chez vous", "Jusqu' à 1Gb/s symétrique"],
+        description: ["1Gb/s symétrique", "Sans engagement", "0€ de frais d'installation", "0€ de frais de résiliation"],
+        tooltips: [null, "Rezel est une association à laquelle vous cotiserez, vous octroyant le statut d'adhérent. Il ne peut pas y avoir de notion d'engagement.", null, null],
         buttonText: "J'adhère",
-        buttonRedirectPath: "/subscribe",
+        buttonRedirectPath: "/becomeMember",
         buttonVariant: "contained",
     },
     /*{
@@ -70,24 +67,26 @@ const footers = [
 ];
 
 function PricingContent() {
+    const navigate = useNavigate();
+
     return (
-        <React.Fragment>
+        <Fragment>
             {/* Hero unit */}
             <Container disableGutters maxWidth="md" component="main" sx={{ pt: 8, pb: 6 }}>
                 <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
                     Rezel FAI
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
-                    Vous souhaitez la fibre optique directement dans votre logement ?
+                    Vous souhaitez la fibre optique directement dans votre logement ?
                 </Typography>
                 <Typography variant="h6" align="center" color="text.secondary" component="p">
-                    Rezel propose un accès à internet pour 20€/mois !
+                    Rezel propose un accès à internet pour 20€/mois !
                 </Typography>
             </Container>
             {/* End hero unit */}
             <Container maxWidth="md" component="main">
-                <Grid 
-                    container spacing={5} 
+                <Grid
+                    container spacing={5}
                     alignItems="flex-end"
                     justifyContent="center">
                     {tiers.map((tier) => (
@@ -125,16 +124,23 @@ function PricingContent() {
                                             /mois
                                         </Typography>
                                     </Box>
-                                    <ul>
-                                        {tier.description.map((line) => (
-                                            <Typography component="li" variant="subtitle1" align="center" key={line}>
-                                                {line}
-                                            </Typography>
-                                        ))}
-                                    </ul>
+                                    <div className="flex justify-center">
+                                        <ul>
+                                            {tier.description.map((line, i) => (
+                                                <Typography component="li" variant="subtitle1" align="left" className="flex" key={line}>
+                                                    {line}
+                                                    {tier.tooltips[i] &&
+                                                        <Tooltip title={tier.tooltips[i]}>
+                                                            <HelpIcon fontSize="small"  className="ml-2 self-center" />
+                                                        </Tooltip>
+                                                    }
+                                                </Typography>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </CardContent>
                                 <CardActions>
-                                    <Button fullWidth variant={tier.buttonVariant as "outlined" | "contained"} onClick={() => {if(!getAppState().logged){return Api.loginRedirect(window.location.href+"subscribe");} window.location.href = tier.buttonRedirectPath}}>
+                                    <Button fullWidth variant={tier.buttonVariant as "outlined" | "contained"} onClick={() => navigate(tier.buttonRedirectPath)}>
                                         {tier.buttonText}
                                     </Button>
                                 </CardActions>
@@ -176,7 +182,7 @@ function PricingContent() {
                 <Copyright />
             </Container>
             {/* End footer */}
-        </React.Fragment>
+        </Fragment>
     );
 }
 

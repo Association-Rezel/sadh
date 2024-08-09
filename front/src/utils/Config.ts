@@ -1,5 +1,10 @@
-export const Config={
-    API_URL: process.env.API_URL,
-    KC_URL: process.env.KC_URL,
-    API_DUMMY: process.env.API_DUMMY=="TRUE"?true:false,
+export const Config = {
+    API_DUMMY: import.meta.env.VITE_API_DUMMY == "TRUE" ? true : false,
+    API_URL: import.meta.env.VITE_API_URL,
+    ZITADEL_CLIENT_ID: import.meta.env.VITE_ZITADEL_CLIENT_ID,
+    ZITADEL_ORG_ID: import.meta.env.VITE_ZITADEL_ORG_ID,
+    ZITADEL_ROLE_SITE_ADMIN: import.meta.env.VITE_ZITADEL_ROLE_SITE_ADMIN,
+}
+if (import.meta.env.DEV) {
+    console.log("Config", Config)
 }

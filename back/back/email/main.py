@@ -108,7 +108,7 @@ def send_email_contract(to: str, client_name: str) -> None:
                 data_dict[k] = "Président"
             elif fieldName == "adherentName":
                 data_dict[k] = client_name
-        r = fillpdfs.write_fillable_pdf(
+        fillpdfs.write_fillable_pdf(
             "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
             "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
             data_dict,

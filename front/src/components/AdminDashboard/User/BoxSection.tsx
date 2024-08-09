@@ -1,42 +1,51 @@
 import { useEffect, useState } from "react";
-import { Box, SubscriptionFlow } from "../../../utils/types";
-import { Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from "@mui/material";
+import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
 import { Warning } from "@mui/icons-material";
+import { Box } from "../../../utils/types/hermes_types";
 
-export default function BoxSection({ keycloak_id, registerToSubFlowForm, currentSubFlow }: { keycloak_id: string, registerToSubFlowForm: any, currentSubFlow: SubscriptionFlow }) {
+export default function BoxSection({
+    zitadel_sub }: {
+        zitadel_sub: string
+    }) {
 
     const [box, setBox] = useState<Box>();
     const [boxStillLoading, setBoxStillLoading] = useState<boolean>(true);
-    const [serial, setSerial] = useState<string>("");
+    const [boxType, setBoxType] = useState<string>("");
     const [macAddress, setMacAddress] = useState<string>("");
     const [isTelecomian, setIsTelecomian] = useState<boolean>(false);
 
+    const main_unet = box?.unets.filter(u => u.unet_id === box.main_unet_id)[0];
+
     const handleSubmit = () => {
         //Check not empty 
-        if (!serial || !macAddress) {
+        if (!boxType || !macAddress) {
             alert("Veuillez remplir tous les champs");
             return;
         }
         // Check MAC format
-        if(!macAddress.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
+        if (!macAddress.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
             alert("Adresse MAC invalide");
             return;
         }
         setBoxStillLoading(true);
-        Api.registerUserBox(keycloak_id, serial, macAddress, isTelecomian).then(box => {
+        Api.registerUserBox(zitadel_sub, boxType, macAddress, isTelecomian).then(box => {
             setBox(box);
+            setBoxStillLoading(false);
+        }).catch(e => {
+            alert("Erreur lors de l'assignation de la box : " + e);
             setBoxStillLoading(false);
         });
     }
 
     useEffect(() => {
-        Api.fetchUserBox(keycloak_id).then(box => {
+        Api.fetchUserBox(zitadel_sub).then(box => {
             setBox(box);
             setBoxStillLoading(false);
         });
-    }, [keycloak_id]);
+    }, [zitadel_sub]);
 
+    const [maskedPsk, setMaskedPsk] = useState("**********");
 
     return (
         <div className="mt-10">
@@ -44,21 +53,28 @@ export default function BoxSection({ keycloak_id, registerToSubFlowForm, current
                 Box
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                {(!currentSubFlow || boxStillLoading) && <p>Chargement...</p>}
+                {(boxStillLoading) && <p>Chargement...</p>}
 
-                {currentSubFlow && !boxStillLoading && !box && (
+                {!boxStillLoading && !box && (
                     <Stack direction={"column"}
                         spacing={2}>
                         <FormControlLabel control={<Checkbox checked={isTelecomian} />}
                             label={<span>IP Télécomienne <Warning /></span>}
                             onChange={() => setIsTelecomian(!isTelecomian)}
                         />
-                        <TextField name="serial_number"
-                            className="bg-white"
-                            required
-                            label="Numéro de série"
-                            onChange={(e) => setSerial(e.target.value)}
-                        />
+                        <FormControl>
+                            <InputLabel id="boxtype-label">Type de box</InputLabel>
+                            <Select
+                                labelId="boxtype-label"
+                                id="boxtype-select"
+                                label="Type de box"
+                                onChange={(e) => setBoxType(e.target.value as string)}
+                            >
+                                <MenuItem value="ac2350">AC 2350 (Box orange)</MenuItem>
+
+                            </Select>
+                        </FormControl>
+
                         <TextField name="mac_address"
                             className="bg-white"
                             required
@@ -70,21 +86,14 @@ export default function BoxSection({ keycloak_id, registerToSubFlowForm, current
                     </Stack>
                 )}
 
-                {currentSubFlow && !boxStillLoading && box && (
+                {!boxStillLoading && box && (
                     <>
-                        <strong>Numéro de série</strong> : {box.serial_number}<br />
-                        <strong>MAC</strong> : {box.if_mgmt.mac_address}<br />
-                        <strong>IPs WAN</strong> : {[box.if_adh.ipv4s, box.if_adh.ipv6s, box.if_adh_exte.ipv4s, box.if_adh_exte.ipv6s].flat().join(", ")}<br />
-                        <strong>IP mgt</strong> : {box.if_mgmt.ipv6s}<br />
-                        <strong>SSID</strong> : {box.ssid}<br />
-                        <strong>Informations</strong>
-                        <div className="my-3">
-                            <TextField multiline variant="outlined" className="bg-white w-80" minRows={3} {...registerToSubFlowForm("box_information")} />
-                        </div>
-                        <div className="flex items-center">
-                            <input type="checkbox" {...registerToSubFlowForm("box_lent")} />
-                            <strong className="pl-2">Box confiée à l'adhérent</strong>
-                        </div>
+                        <strong>MAC</strong> : {box.mac}<br />
+                        <strong>IPv4 WAN</strong> : {main_unet.network.wan_ipv4.ip}<br />
+                        <strong>IPv6 WAN</strong> : {main_unet.network.wan_ipv6.ip}<br />
+                        <strong>SSID</strong> : {main_unet.wifi.ssid}<br />
+                        <strong>PSK</strong> : {maskedPsk}<br />
+                        <Button onClick={() => setMaskedPsk(main_unet.wifi.psk)}>Afficher PSK</Button>
                     </>
                 )}
             </Typography>

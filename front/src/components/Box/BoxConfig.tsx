@@ -1,6 +1,5 @@
 import { Divider, Stack, Button, Tooltip } from "@mui/material";
 // import box interface from utils
-import { Box } from "../../utils/types";
 import React, { useEffect } from "react";
 import { Api } from "../../utils/Api";
 import PasswordResetForm from "./PasswordResetForm";
@@ -10,6 +9,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DoneIcon from '@mui/icons-material/Done';
 
 import ImgUrl from "/src/ressources/img/router.png"
+import { Box } from "../../utils/types/hermes_types";
 
 
 export default function BoxConfigurationPage() {
@@ -17,7 +17,7 @@ export default function BoxConfigurationPage() {
     const [refreshKey, setRefreshKey] = React.useState<number>(0);
     React.useEffect(() => {
         // l'id donné est bidon, jusqu'a modif des types...
-        Api.fetchMyBox(1).then((myBox) => setMyBox(myBox));
+        // Api.fetchMyBox(1).then((myBox) => setMyBox(myBox));
     }, [refreshKey]);
 
     if (myBox === null) return <div>Chargement...</div>;

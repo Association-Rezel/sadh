@@ -1,35 +1,58 @@
 import { useEffect, useState } from "react";
-import { ONT } from "../../../utils/types";
 import { Api } from "../../../utils/Api";
-import { Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from "@mui/material";
-import { Warning } from "@mui/icons-material";
+import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { ONTInfos, PMInfos, RegisterONT } from "../../../utils/types/pon_types";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { keycloak_id: string, registerToSubFlowForm: any }) {
+export default function ONTSection({ zitadel_sub }: { zitadel_sub: string }) {
+    const { register, handleSubmit, getValues, reset, control } = useForm<RegisterONT>({
+        defaultValues: {
+            serial_number: "",
+            software_version: "3FE45655AOCK88",
+            box_mac_address: "",
+            pm_id: ""
+        }
+    });
 
-    const [ont, setONT] = useState<ONT>();
     const [ontStillLoading, setONTStillLoading] = useState<boolean>(true);
-    const [serial, setSerial] = useState<string>("");
-    const [softwareVersion, setSoftwareVersion] = useState<string>("3FE45655AOCK88");
+    const [ont, setONT] = useState<ONTInfos | null>(null);
+    const [pms, setPms] = useState<PMInfos[] | null>(null);
 
-    const handleSubmit = () => {
-        // serial is like ALCL:F887945B
-        if (!serial || !serial.startsWith("ALCL:") || serial.length !== 13) {
+    const onSubmit: SubmitHandler<RegisterONT> = (register: RegisterONT) => {
+        //Check not empty 
+        if (!register.serial_number || !register.software_version) {
+            alert("Veuillez remplir tous les champs");
+            return;
+        }
+        // Check serial format
+        if (!register.serial_number.match(/^ALCL:[0-9A-Fa-f]{8}$/)) {
             alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
             return;
         }
         setONTStillLoading(true);
-        Api.registerONT(keycloak_id, serial, softwareVersion).then(ont => {
+        Api.registerONT(zitadel_sub, register).then(ont => {
             setONT(ont);
+            setONTStillLoading(false);
+        }).catch(e => {
+            alert("Erreur lors de l'assignation de l'ONT : " + e);
             setONTStillLoading(false);
         });
     }
 
+
     useEffect(() => {
-        Api.fetchONT(keycloak_id).then(ont => {
+        Api.fetchONT(zitadel_sub).then(ont => {
             setONT(ont);
             setONTStillLoading(false);
         });
-    }, [keycloak_id]);
+    }, [zitadel_sub]);
+
+    useEffect(() => {
+        Api.fetchPMs().then(pms => {
+            setPms(pms);
+            console.log(pms);
+        });
+    }, []);
 
 
     return (
@@ -41,34 +64,59 @@ export default function ONTSection({ keycloak_id, registerToSubFlowForm }: { key
                 {ontStillLoading && <p>Chargement...</p>}
 
                 {!ontStillLoading && !ont && (
-                    <Stack direction={"column"}
-                        spacing={2}>
+                    <div className="inline-flex flex-col gap-y-3 flex-wrap">
+                        <TextField name="box_mac_address"
+                            className="bg-white"
+                            required
+                            label="Adresse MAC de la box"
+                            {...register("box_mac_address")}
+                        />
+
                         <TextField name="serial_number"
                             className="bg-white"
                             required
-                            label="Numéro de série"
-                            onChange={(e) => setSerial(e.target.value)}
+                            label="Numéro de série de l'ONT"
+                            {...register("serial_number")}
                         />
+
+                        <Controller
+                            name="pm_id"
+                            control={control}
+                            render={({ field }) => (
+                                <FormControl>
+                                    <InputLabel id="pm_id-label">PM</InputLabel>
+                                    <Select
+                                        labelId="pm_id-label"
+                                        id="pm_id-select"
+                                        label="PM"
+                                        {...field}
+                                    >
+                                        {pms && pms?.map(pm => (
+                                            <MenuItem key={pm.id} value={pm.id}>{pm.description}</MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            )}
+                        />
+
                         <TextField name="software_version"
                             className="bg-white"
                             required
-                            label="Software version"
-                            defaultValue={softwareVersion}
-                            onChange={(e) => setSoftwareVersion(e.target.value)}
+                            label="Version du logiciel"
+                            {...register("software_version")}
                         />
-                        <Button variant="contained" onClick={handleSubmit}>Assigner l'ONT</Button>
-                    </Stack>
+
+                        <Button variant="contained" onClick={handleSubmit(onSubmit)}>Assigner l'ONT</Button>
+                    </div>
                 )}
 
                 {!ontStillLoading && ont && (
                     <>
                         <strong>Numéro de série</strong> : {ont.serial_number}<br />
-                        <strong>Position au PM</strong> : {ont.position_PM}<br />
-                        <strong>Netbox ID</strong> : {ont.netbox_id}<br />
-                        <div className="flex items-center">
-                            <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToSubFlowForm("ont_lent")} />
-                            <strong className="pl-2">ONT confié à l'adhérent</strong>
-                        </div>
+                        <strong>Position au PM</strong> : {ont.mec128_position}<br />
+                        <strong>Local PON ID</strong> : {ont.local_pon_id}<br />
+                        <strong>PM</strong> : {ont.pm_description}<br />
+                        <strong>Position porte droite</strong> : {ont.position_in_subscriber_panel}<br />
                     </>
                 )}
             </Typography>
