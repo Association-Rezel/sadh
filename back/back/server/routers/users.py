@@ -1,252 +1,197 @@
 """Get or edit users."""
 
-
-import os
-import tempfile
+from pprint import pprint
 
 import nextcloud_client.nextcloud_client
 from fastapi import HTTPException
 from fastapi import Response as FastAPIResponse
-from fastapi import UploadFile
-from fastapi.responses import Response
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic import BaseModel
+from pymongo import ReturnDocument
 
-from back.core.appointments import get_subscription_appointments
-from back.core.subscriptions import create_empty_subscription_flow
-from back.core.users import get_subscriptions, get_user_bundles, get_users
-from back.database import Session
-from back.database.appointments import DBAppointment
-from back.database.subscriptions import DBSubscription
-from back.database.users import DBUser
-from back.email import send_admin_message, send_email_contract, send_email_signed_contract
-from back.env import ENV
-from back.interfaces.appointments import Appointment, AppointmentSlot
-from back.interfaces.auth import KeycloakId
-from back.interfaces.box import ONT, Box, Chambre, Status
-from back.interfaces.subscriptions import Subscription
-from back.interfaces.users import User, UserDataBundle
-from back.middlewares import db, must_be_admin, user
-from back.netbox_client import NETBOX
+from back.core.hermes import register_box_for_new_ftth_adh
+from back.core.pon import position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
+from back.middlewares.dependencies import get_box_from_sub, get_user_from_sub, get_user_me, must_be_sadh_admin
+from back.mongodb.db import get_db
+from back.mongodb.hermes_models import Box
+from back.mongodb.pon_models import ONT, PM, ONTInfos, RegisterONT
+from back.mongodb.user_models import (
+    Address,
+    AppointmentSlot,
+    DepositStatus,
+    EquipmentStatus,
+    MembershipRequest,
+    MembershipStatus,
+    MembershipUpdate,
+    User,
+    UserUpdate,
+)
 from back.nextcloud import NEXTCLOUD
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("users")
 
 
-@router.get("/me")
-async def _me(
-    _user: User = user,
-) -> User:
-    """Get the current user's identity."""
-    return _user
-
-
-@router.get("/me/subscription")
-async def _get_me_subscription(
-    response: Response,
-    _user: User = user,
-    _db: Session = db,
+@router.get("/me", response_model=User)
+def _me(
+    user: User = get_user_me,
 ):
-    """Get subscription of the current user."""
-    sub = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
-    if not sub:
-        response.status_code = 404
-        return HTTPException(status_code=404, detail="User has no subscription")
-    return Subscription.from_orm(sub)
+    """Get the current user's identity."""
+    if user.membership:
+        user.membership.redact_for_non_admin()
+    return user
 
 
-@router.post("/me/subscription", status_code=201)
-async def _me_subscribe(
-    response: Response,
-    chambre: Chambre,
-    _user: User = user,
-    _db: Session = db,
+class CreateMembership(BaseModel):
+    address: Address
+    phone_number: str
+
+
+@router.post("/me/membershipRequest", status_code=201, response_model=User)
+async def _me_create_membershipRequest(
+    request: MembershipRequest,
+    user: User = get_user_me,
+    db: AsyncIOMotorDatabase = get_db,
 ):
     """Ask to subscribe."""
-    if _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first():
-        response.status_code = 400
-        return HTTPException(status_code=400, detail="User already subscribed")
-    # Create subscription
-    subscription = DBSubscription(
-        user_id=_user.keycloak_id,
-        chambre=chambre,
+
+    if user.membership:
+        raise HTTPException(status_code=400, detail="User is already a member")
+
+    userdict = await db.users.find_one_and_update(
+        {"sub": user.sub},
+        {
+            "$set": {
+                "phone_number": request.phone_number,
+                "membership.address": request.address.model_dump(),
+                "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
+                "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
+                "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
+                "membership.init.payment_method_first_month": request.payment_method_first_month,
+                "membership.init.payment_method_deposit": request.payment_method_deposit,
+            }
+        },
+        return_document=ReturnDocument.AFTER,
     )
-    _db.add(subscription)
-    _db.commit()
 
-    create_empty_subscription_flow(_db, str(subscription.subscription_id))
+    user = User.model_validate(userdict)
 
-    send_admin_message(
-        "Demande d'abonnement",
-        f"Un utilisateur a demandé à s'abonner: {_user.name} - {_user.email}\n\nResidence : {chambre.residence}\nChambre : {chambre.name}\n\nPour valider l'abonnement, rendez-vous sur {ENV.frontend_url}/admin/ \n\nUn email avec les détails lui a été envoyé.",
-    )
-    send_email_contract(_user.email, _user.name)
-    return Subscription.from_orm(subscription)
+    # send_admin_message(
+    #     "Demande d'adhésion",
+    #     "\n".join(
+    #         [
+    #             f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
+    #             "",
+    #             f"Adresse : {create.address.residence} {create.address.appartement_id}",
+    #             "",
+    #             "Un email avec les détails lui a été envoyé.",
+    #         ],
+    #     ),
+    # )
 
-
-@router.put("/me/subscription", status_code=200)
-async def _me_update_subscription(
-    response: Response,
-    chambre: Chambre,
-    _user: User = user,
-    _db: Session = db,
-):
-    """Update subscription."""
-    subscription = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
-    if not subscription:
-        response.status_code = 404
-        return HTTPException(status_code=404, detail="User did not subscribed")
-    if subscription.status != Status.PENDING_VALIDATION:
-        response.status_code = 400
-        return HTTPException(status_code=400, detail="Can't modify not pending subscription")
-    subscription.chambre = chambre
-    _db.commit()
-    return Subscription.from_orm(subscription)
-
-
-@router.delete("/me/subscription", status_code=200)
-async def _me_unsubscribe(
-    response: Response,
-    unsubscribe_reason: str,
-    _user: User = user,
-    _db: Session = db,
-):
-    """Unsubscribe."""
-    subscription = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
-    if not subscription:
-        response.status_code = 404
-        return HTTPException(status_code=404, detail="User has no subscription")
-    if unsubscribe_reason is None:
-        response.status_code = 400
-        return HTTPException(status_code=400, detail="Missing unsubscribe reason")
-    subscription.unsubscribe_reason = unsubscribe_reason
-    subscription.status = Status.PENDING_UNSUBSCRIPTION
-    _db.commit()
-
-    send_admin_message(
-        "Demande de désabonnement",
-        f"Un utilisateur a demandé à se désabonner : {_user.name} - {_user.email}\n\nPour valider la désinscription, rendez-vous sur {ENV.frontend_url}/admin/",
-    )
-    return Subscription.from_orm(subscription)
-
-
-@router.get("/me/appointments")
-async def _me_get_appointments(
-    _db: Session = db,
-    _user: User = user,
-) -> list[Appointment]:
-    """Get all appointments of the current user."""
-    sub = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=400, detail="User has no subscription")
-
-    return get_subscription_appointments(_db, sub.subscription_id)
-
-
-@router.post("/me/appointments")
-async def _me_post_appointment_slots(
-    slots: list[AppointmentSlot],
-    _db: Session = db,
-    _user: User = user,
-) -> list[Appointment]:
-    """Submit appointment slots."""
-    sub = _db.query(DBSubscription).filter_by(user_id=_user.keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=400, detail="User has no subscription")
-
-    user_appointments = get_subscription_appointments(_db, sub.subscription_id)
-    if len(user_appointments) > 0:
-        raise HTTPException(status_code=400, detail="User already has appointments")
-
-    added_appointments = []
-
-    for slot in slots:
-        db_app = DBAppointment(
-            subscription_id=sub.subscription_id,
-            slot_start=slot.start.isoformat(),
-            slot_end=slot.end.isoformat(),
-            status=Status.PENDING_VALIDATION,
-        )
-        added_appointments.append(db_app)
-        _db.add(db_app)
-    _db.commit()
-
-    return list(map(Appointment.from_orm, added_appointments))
+    # send_email_contract(user.email, user.first_name + " " + user.last_name)
+    return user
 
 
 @router.get("/me/contract")
-async def _me_get_contract(
-    _user: User = user,
+def _me_get_contract(
+    user: User = get_user_me,
 ) -> FastAPIResponse:
     try:
-        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{_user.keycloak_id}.pdf")
+        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.sub}.pdf")
     except nextcloud_client.nextcloud_client.HTTPResponseError:
         raise HTTPException(status_code=404, detail="User not found")
     with open(tmp_filename, "rb") as f:
         contract = f.read()
     tmp_dir.cleanup()
     return FastAPIResponse(content=contract, media_type="application/pdf")
+
+
+@router.post("/me/availability", response_model=set[AppointmentSlot])
+async def _me_add_availability_slots(
+    slots: list[AppointmentSlot],
+    user: User = get_user_me,
+    db: AsyncIOMotorDatabase = get_db,
+) -> set[AppointmentSlot]:
+    userdict = await db.users.find_one_and_update(
+        {"sub": user.sub},
+        {"$push": {"availability_slots": {"$each": [slot.model_dump() for slot in slots]}}},
+        return_document=ReturnDocument.AFTER,
+    )
+    return User.model_validate(userdict).availability_slots
 
 
 ### ADMIN
 
 
-@router.get("/")
-def _get_users(_db: Session = db, _: None = must_be_admin) -> list[User]:
+@router.get("/", dependencies=[must_be_sadh_admin], response_model=list[User])
+async def _get_users(
+    db: AsyncIOMotorDatabase = get_db,
+) -> list[User]:
     """Get all users."""
-    return get_users(_db)
+    return await db.users.find().to_list(None)
 
 
-@router.get("/subscriptions")
-def _get_subscriptions(_db: Session = db, _: None = must_be_admin) -> list[Subscription]:
-    """Get all subscriptions."""
-    return get_subscriptions(_db)
-
-
-@router.get("/dataBundles")
-def _get_data_bundles(
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> list[UserDataBundle]:
-    """Get all user data bundles."""
-    return get_user_bundles(_db)
-
-
-@router.get("/{keycloak_id}")
+@router.get("/{user_sub}", dependencies=[must_be_sadh_admin], response_model=User)
 async def _user_get(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
+    user: User = get_user_from_sub,
 ) -> User:
-    u = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
-    if not u:
-        raise HTTPException(status_code=404, detail="User not found")
-    return User.from_orm(u)
+    return user
 
 
-@router.put("/{keycloak_id}")
+@router.patch("/{user_sub}", dependencies=[must_be_sadh_admin], response_model=User)
 async def _user_update(
-    u: User,
-    _db: Session = db,
-    _: None = must_be_admin,
+    user_sub: str,
+    update: UserUpdate,
+    db: AsyncIOMotorDatabase = get_db,
 ) -> User:
-    db_user = _db.query(DBUser).filter_by(keycloak_id=u.keycloak_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    db_user.name = u.name
-    db_user.email = u.email
-    db_user.is_admin = u.is_admin
-    _db.commit()
-    return User.from_orm(db_user)
+
+    # mode="json" is used to avoid issues with sets
+    # see https://github.com/pydantic/pydantic/issues/8016#issuecomment-1794530831
+
+    userdict = await db.users.find_one_and_update(
+        {"sub": user_sub},
+        {"$set": update.model_dump(exclude_unset=True, mode="json")},
+        return_document=ReturnDocument.AFTER,
+    )
+
+    return User.model_validate(userdict)
 
 
-@router.get("/{keycloak_id}/contract")
-async def _user_get_contract(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
+@router.patch("/{user_sub}/membership", dependencies=[must_be_sadh_admin], response_model=User)
+async def _user_update_membership(
+    user_sub: str,
+    update: MembershipUpdate,
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_sub,
+) -> User:
+    """Edit the user's membership."""
+
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    # Remove all non-set fields from the update
+    updatedict = {key: getattr(update, key) for key, _dict_value in update.model_dump(exclude_unset=True).items()}
+
+    print(updatedict)
+
+    updated = user.membership.model_copy(update=updatedict)
+
+    userdict = await db.users.find_one_and_update(
+        {"sub": user_sub},
+        {"$set": {"membership": updated.model_dump(exclude_unset=True)}},
+        return_document=ReturnDocument.AFTER,
+    )
+
+    return User.model_validate(userdict)
+
+
+@router.get("/{user_sub}/contract", dependencies=[must_be_sadh_admin])
+def _user_get_contract(
+    user: User = get_user_from_sub,
 ) -> FastAPIResponse:
     try:
-        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{keycloak_id}.pdf")
+        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.sub}.pdf")
     except nextcloud_client.nextcloud_client.HTTPResponseError:
         raise HTTPException(status_code=404, detail="User not found")
     with open(tmp_filename, "rb") as f:
@@ -255,171 +200,129 @@ async def _user_get_contract(
     return FastAPIResponse(content=contract, media_type="application/pdf")
 
 
-@router.post("/{keycloak_id}/contract")
-async def _user_upload_contract(
-    keycloak_id: str,
-    file: UploadFile,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> None:
-    db_user = _db.query(DBUser).filter_by(keycloak_id=keycloak_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    temp_dir = tempfile.TemporaryDirectory()
-    tmp_filename = os.path.join(temp_dir.name, f"{keycloak_id}.pdf")
-    with open(tmp_filename, "wb") as f:
-        f.write(file.file.read())
-    NEXTCLOUD.put_file(tmp_filename)
-    send_email_signed_contract(db_user.email, tmp_filename)
-    temp_dir.cleanup()
+# @router.post("/{user_sub}/contract", dependencies=[must_be_sadh_admin])
+# async def _user_upload_contract(
+#     file: UploadFile,
+#     user: User = get_user_from_sub,
+# ):
+#     temp_dir = tempfile.TemporaryDirectory()
+#     tmp_filename = os.path.join(temp_dir.name, f"{user.sub}.pdf")
+#     with open(tmp_filename, "wb") as f:
+#         f.write(file.file.read())
+#     NEXTCLOUD.put_file(tmp_filename)
+#     send_email_signed_contract(user.email, tmp_filename)
+#     temp_dir.cleanup()
 
 
-@router.get("/{keycloak_id}/subscription")
-async def _user_get_subscription(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> Subscription:
-    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=404, detail="User has no subscription")
-    return Subscription.from_orm(sub)
-
-
-@router.put("/{keycloak_id}/subscription")
-async def _user_update_subscription(
-    subscription: Subscription,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> Subscription:
-    sub = _db.query(DBSubscription).filter_by(user_id=subscription.user_id).first()
-    if not sub:
-        raise HTTPException(status_code=404, detail="User has no subscription")
-    sub.chambre = subscription.chambre
-    sub.status = subscription.status
-    sub.unsubscribe_reason = subscription.unsubscribe_reason
-    _db.commit()
-    return Subscription.from_orm(sub)
-
-
-@router.get("/{keycloak_id}/ont")
+@router.get("/{user_sub}/ont", dependencies=[must_be_sadh_admin])
 async def _user_get_ont(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> ONT:
-    ont = NETBOX.get_ont_from_user(KeycloakId(keycloak_id))
-    if not ont:
+    db: AsyncIOMotorDatabase = get_db,
+    box: Box | None = get_box_from_sub,
+) -> ONTInfos:
+    if not box:
+        raise HTTPException(
+            status_code=404,
+            detail="No box found for this user. The user is likely not linked to the main unet of a box",
+        )
+
+    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+
+    if not pm:  # No PM has this ONT
         raise HTTPException(status_code=404, detail="No ONT found for this user")
-    return ont
+
+    pm = PM.model_validate(pm)
+
+    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
+
+    ont_infos = ONTInfos(
+        serial_number=ont.serial_number,
+        software_version=ont.software_version,
+        box_mac_address=ont.box_mac_address,
+        mec128_position=position_in_pon_to_mec128_string(pm, pm.pon_list[0], ont.position_in_pon),
+        local_pon_id=pm.pon_list[0].local_pon_id,
+        pm_description=pm.description,
+        position_in_subscriber_panel=ont.position_in_subscriber_panel,
+        pon_rack=pm.pon_list[0].rack,
+        pon_tiroir=pm.pon_list[0].tiroir,
+    )
+
+    return ont_infos
 
 
-@router.post("/{keycloak_id}/ont")
+@router.post("/{user_sub}/ont", dependencies=[must_be_sadh_admin])
 async def _user_register_ont(
-    keycloak_id: str,
-    serial_number: str,
-    software_version: str,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> ONT:
-    if NETBOX.get_ont_from_user(KeycloakId(keycloak_id)):
-        raise HTTPException(status_code=400, detail="User already has an ONT")
-
-    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=404, detail="User has no subscription")
-
-    ont = NETBOX.register_ont(serial_number, software_version, sub)
-    if not ont:
-        raise HTTPException(status_code=500, detail="Error while registering ONT")
-
-    return ont
-
-
-@router.get("/{keycloak_id}/box")
-async def _user_get_box(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> Box:
-    box: Box | None
+    register: RegisterONT,
+    db: AsyncIOMotorDatabase = get_db,
+) -> ONTInfos:
     try:
-        box = NETBOX.get_box_from_user(KeycloakId(keycloak_id))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
+        ont_infos = await register_ont_for_new_ftth_adh(
+            db, register.pm_id, register.serial_number, register.software_version, register.box_mac_address
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return ont_infos
+
+
+@router.get("/{user_sub}/box", dependencies=[must_be_sadh_admin], response_model=Box)
+async def _user_get_box(
+    user: User = get_user_from_sub,
+    box: Box | None = get_box_from_sub,
+) -> Box:
+
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if not user.membership.unetid:
+        raise HTTPException(status_code=404, detail="User has no unetid")
+
     if not box:
         raise HTTPException(status_code=404, detail="No box found for this user")
+
     return box
 
 
-@router.post("/{keycloak_id}/box")
+@router.post("/{user_sub}/box", dependencies=[must_be_sadh_admin], response_model=Box)
 async def _user_register_box(
-    keycloak_id: str,
+    box_type: str,
     telecomian: bool,
-    serial_number: str,
     mac_address: str,
-    _db: Session = db,
-    _: None = must_be_admin,
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_sub,
 ) -> Box:
-    #  Verifiy Non-existing box
-    try:
-        box = NETBOX.get_box_from_user(KeycloakId(keycloak_id))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
 
-    if box:
-        raise HTTPException(status_code=400, detail="User already has a box")
+    if not user.membership or user.membership.unetid:
+        raise HTTPException(status_code=400, detail="User has no membership or already has a unetid attached")
 
-    # Verify existing subscription
-    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=404, detail="User has no subscription")
+    if await db.boxes.find_one({"mac": mac_address}):
+        raise HTTPException(status_code=400, detail="Box with this MAC address already exists")
 
-    # Register box
-    try:
-        box = NETBOX.register_box(serial_number, mac_address, sub, telecomian)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail="Erreur interne sur la communication avec Netbox")
+    new_box = await register_box_for_new_ftth_adh(db, box_type, mac_address, telecomian)
 
-    return box
+    await db.users.find_one_and_update(
+        {"sub": user.sub},
+        {"$set": {"membership.unetid": new_box.main_unet_id}},
+    )
+
+    return new_box
 
 
-@router.get("/{keycloak_id}/dataBundle")
-async def _user_get_data_bundles(
-    keycloak_id: str,
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> UserDataBundle:
-    """Get all user data bundles."""
-    bundleList = get_user_bundles(_db, KeycloakId(keycloak_id))
-    if not bundleList:
-        raise HTTPException(status_code=404, detail="User not found")
-    return bundleList[0]
+# TODO Remove probably useless
+# @router.post("/{user_sub}/availability", dependencies=[must_be_sadh_admin], response_model=Box)
+# async def _user_create_appointment_slots(
+#     user_sub: str,
+#     slots: list[AppointmentSlot],
+#     db: AsyncIOMotorDatabase = get_db,
+# ) -> list[AppointmentSlot]:
+#     """Submit appointment slots."""
+#     user = await db.users.find_one({"sub": user_sub})
+#     if not user:
+#         raise HTTPException(status_code=404, detail="User not found")
 
+#     user = await db.users.find_one_and_update(
+#         {"sub": user_sub},
+#         {"$push": {"availability_slots": slots}},
+#         return_document=ReturnDocument.AFTER,
+#     )
 
-@router.post("/{keycloak_id}/appointments")
-async def _user_post_appointment_slots(
-    keycloak_id: str,
-    slots: list[AppointmentSlot],
-    _db: Session = db,
-    _: None = must_be_admin,
-) -> list[Appointment]:
-    """Submit appointment slots."""
-    sub = _db.query(DBSubscription).filter_by(user_id=keycloak_id).first()
-    if not sub:
-        raise HTTPException(status_code=400, detail="User has no subscription")
-
-    added_appointments = []
-
-    for slot in slots:
-        db_app = DBAppointment(
-            subscription_id=sub.subscription_id,
-            slot_start=slot.start.isoformat(),
-            slot_end=slot.end.isoformat(),
-            status=Status.PENDING_VALIDATION,
-        )
-        added_appointments.append(db_app)
-        _db.add(db_app)
-    _db.commit()
-
-    return list(map(Appointment.from_orm, added_appointments))
+#     return user.availability_slots

@@ -1,6 +1,6 @@
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { useState } from "react";
-import { Residence } from "../../utils/types";
+import { Residence } from "../../utils/types/types";
 
 interface FilterProps {
     changeResidence: (residence: string) => void;

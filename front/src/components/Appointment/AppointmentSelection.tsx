@@ -2,7 +2,7 @@ import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Api } from "../../utils/Api";
-import { AppointmentSlot, isSameSlot } from "../../utils/types";
+import { AppointmentSlot, isSameSlot } from "../../utils/types/types";
 import { default as AppointmentSlotComponent } from "./AppointmentSlot";
 
 export default function AppointmentSelection({ onSubmitSelection }: { onSubmitSelection: any }) {
@@ -32,7 +32,7 @@ export default function AppointmentSelection({ onSubmitSelection }: { onSubmitSe
 
     return (
         <div className="mt-10 flex flex-col items-center">
-            <Typography variant="h2" marginBottom="20px">Prise de rendez-vous</Typography>
+            <Typography variant="h2" marginBottom="20px">Raccordement à la fibre</Typography>
             <div className="flex lg:flex-row flex-col gap-8 justify-center">
                 <div className="mx-10 self-center">
                     <IconButton color="primary" onClick={() => setWeekOffset(weekOffset - 1)} disabled={weekOffset <= 1}>
@@ -51,12 +51,12 @@ export default function AppointmentSelection({ onSubmitSelection }: { onSubmitSe
                     </IconButton>
                 </div>
             </div>
-            <div className="max-w-md mt-12 mx-4">
+            <div className="max-w-2xl mt-12 mx-4">
                 <Typography variant="body1" align="justify" >
-                    Veuillez séléctionner au moins 3 créneaux sur lesquels vous êtes disponible.
+                    Séléctionne au moins 3 créneaux sur lesquels tu es disponible.
                     <br />
                     <br />
-                    Nous vous contacterons pour vous confirmer le créneau de votre rendez-vous,
+                    Nous te contacterons pour te confirmer le créneau de ton rendez-vous,
                     selon les disponibilités des membres de Rezel et des techniciens Orange.
                     <br />
                     <br />

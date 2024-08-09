@@ -3,17 +3,18 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { CommandeAccesInfo as CommandeAccesInfo, ONT, UserDataBundle } from '../../../utils/types';
+import { CommandeAccesInfo as CommandeAccesInfo, User } from '../../../utils/types/types';
 import { DialogActions, TextField } from '@mui/material';
 import { Api } from '../../../utils/Api';
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
+import { ONTInfos } from '../../../utils/types/pon_types';
 
 export interface CmdAccesDialogProps {
     open: boolean;
     onClose: () => void;
-    userBundle: UserDataBundle;
+    user: User;
 }
 
 export interface CSVFile {
@@ -22,7 +23,7 @@ export interface CSVFile {
 }
 
 
-export default function CmdAccesDialog({ open, onClose, userBundle }: CmdAccesDialogProps) {
+export default function CmdAccesDialog({ open, onClose, user }: CmdAccesDialogProps) {
     const [hasONT, setHasONT] = useState<boolean>(false);
 
     const { register, handleSubmit, getValues, reset } = useForm<CommandeAccesInfo>({
@@ -46,32 +47,31 @@ export default function CmdAccesDialog({ open, onClose, userBundle }: CmdAccesDi
     });
 
     useEffect(() => {
-        if (!userBundle?.subscription) return;
+        if (!user?.membership?.appointment) return;
 
-        Api.fetchONT(userBundle.user.keycloak_id).then((ont: ONT) => {
+        Api.fetchONT(user.sub).then((ont: ONTInfos) => {
             setHasONT(ont !== null);
             if (ont === null) return;
 
-            const splitName = userBundle.user.name.split(" ");
             reset({
-                nom_adherent: splitName.slice(1).join(" "),
-                prenom_adherent: splitName[0],
-                email_adherent: userBundle.user.email,
-                telephone_adherent: userBundle.user.phone,
-                residence: userBundle.subscription.chambre.residence,
-                date_installation: dayjs(userBundle.appointments[0].slot.start).format("YYYYMMDD HH:mm"),
-                e_rdv: userBundle.flow.erdv_id,
-                pm_rack: "1",
-                pm_tiroir: "1",
-                pm_port: ont.position_PM,
-                ref_interne_rezel_commande: userBundle.flow.ref_commande,
-                ref_appartement: userBundle.subscription.chambre.name,
+                nom_adherent: user.last_name,
+                prenom_adherent: user.first_name,
+                email_adherent: user.email,
+                telephone_adherent: user.phone_number,
+                residence: user.membership.address.residence,
+                date_installation: dayjs(user.membership.appointment.slot.start).format("YYYYMMDD HH:mm"),
+                e_rdv: user.membership.erdv_id,
+                pm_rack: ont.pon_rack.toString(),
+                pm_tiroir: ont.pon_tiroir.toString(),
+                pm_port: ont.mec128_position,
+                ref_interne_rezel_commande: user.membership.ref_commande,
+                ref_appartement: user.membership.address.appartement_id,
                 ref_pto: "",
                 pto_existant: true,
                 numero_sequence: ""
             });
         })
-    }, [userBundle]);
+    }, [user]);
 
     const sendData = (info: CommandeAccesInfo) => {
         Api.sendCommandeAccesInfo(info).then((res) => {
@@ -134,7 +134,7 @@ export default function CmdAccesDialog({ open, onClose, userBundle }: CmdAccesDi
                     </>
                 )}
                 {!hasONT && (
-                    <DialogTitle>Vous devez d'abord assigner un ONT</DialogTitle>
+                    <DialogTitle>Vous devez d'abord assigner un ONT et valider un créneau de rendez-vous</DialogTitle>
                 )}
                 <DialogActions>
                     <Button variant="outlined" onClick={onClose}>Annuler</Button>

@@ -1,37 +1,23 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppointmentSelection from "../../components/Appointment/AppointmentSelection";
 import { Api } from "../../utils/Api";
-import { Appointment, AppointmentSlot } from "../../utils/types";
-import AppointmentsList from "../../components/Appointment/AppointmentsList";
+import { Appointment, AppointmentSlot, MembershipStatus, User } from "../../utils/types/types";
+import AppointmentSlotList from "../../components/Appointment/AppointmentSlotList";
+import { AppStateContext } from "../../utils/AppStateContext";
 
 export default function PageAppointment() {
-    const [appointments, setAppointments] = useState<Appointment[]>(null);
-
-    useEffect(() => {
-        Api.fetchMyAppointments().then((data: Appointment[]) => {
-            setAppointments(data);
-        }).catch((error) => {
-            alert("Erreur lors de la récupération des rendez-vous. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
-        });
-    }, []);
+    const { appState, updateAppState } = useContext(AppStateContext);
 
     const onSubmitSelection = (selectedSlots: AppointmentSlot[]) => {
-        Api.submitMyAppointmentSlots(selectedSlots).then((data) => {
-            setAppointments(data);
+        Api.updateMyAvailabilities(selectedSlots).then((user: User) => {
+            updateAppState({ user: {...user} });
         }).catch((error) => {
             alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
     }
-
-    return (
-        <>
-            {appointments === null && <p>Chargement...</p>}
-            {appointments !== null && appointments.length === 0 && (
-                <AppointmentSelection onSubmitSelection={onSubmitSelection} />
-            )}
-            {appointments !== null && appointments.length > 0 && (
-                <AppointmentsList appointments={appointments} />
-            )}
-        </>
-    )
+    if (!appState.user.membership.appointment && appState.user.availability_slots.length === 0) {
+        return <AppointmentSelection onSubmitSelection={onSubmitSelection} />;
+    } else {
+        return <AppointmentSlotList />;
+    }
 }

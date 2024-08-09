@@ -41,25 +41,13 @@ i-front:
 ###################
 # RUN
 
-.PHONY: up
-up:
-	@bash -c 'docker compose -f infra/docker-compose.yaml up -d --wait'
-
-.PHONY: down
-down:
-	@bash -c 'docker compose -f infra/docker-compose.yaml down'
-
-.PHONY: down-v
-down-v:
-	@bash -c 'docker compose -f infra/docker-compose.yaml down -v'
-
 .PHONY: start-back
-start-back: up
+start-back:
 	@bash -c 'cd back && source .venv/bin/activate && python -m uvicorn --factory back:make_app --reload --port 8000 --log-level debug'
 
 .PHONY: start-front
 start-front:
-	@bash -c 'cd front && npm run dev'
+	@bash -c 'cd front && npm run dev -- --mode dev'
 
 .PHONY: types
 types:

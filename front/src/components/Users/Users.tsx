@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { SubscriptionStatus, Residence, UserDataBundle } from "../../utils/types";
+import { MembershipStatus, Residence, User } from "../../utils/types/types";
 import { TableUsers } from "./TableUsers";
 import { Api } from "../../utils/Api";
 import InputLabel from '@mui/material/InputLabel';
@@ -10,11 +10,11 @@ import FormGroup from '@mui/material/FormGroup';
 import { ResidencesFilter, StatusFilter, UserFilter, filterUsers } from "../../filters/UserFilters";
 
 function Users() {
-    const [users, setUsers] = useState<UserDataBundle[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [filters, setFilters] = useState<UserFilter[]>([]);
 
     useEffect(() => {
-        Api.fetchUserDataBundles().then((users: UserDataBundle[]) => {
+        Api.fetchUsers().then((users: User[]) => {
             setUsers(users);
         });
     }, []);
@@ -30,7 +30,7 @@ function Users() {
 
     const handleStatusChange = (statusName: string) => {
         let newFilters = filters.filter((filter) => !(filter instanceof StatusFilter));
-        let status = SubscriptionStatus[statusName];
+        let status = MembershipStatus[statusName];
         if (status !== undefined) {
             newFilters.push(new StatusFilter(status));
         }
@@ -51,7 +51,7 @@ function Users() {
                         defaultValue=""
                     >
                         <MenuItem value="">Désélectionner</MenuItem>
-                        {Object.values(SubscriptionStatus).filter(item => isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
+                        {Object.values(MembershipStatus).filter(item => isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
                     </Select>
                 </FormControl>
                 <FormControl>

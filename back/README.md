@@ -3,13 +3,13 @@
 Pour installer les libs :
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+cd site/
+make install
 ```
 
 Pour lancer le backend
 
 ```bash
-python -m uvicorn --factory back:make_app
+cd site/
+make start-back
 ```

@@ -1,8 +1,9 @@
 """Environment definitions for the back-end."""
+
+import json
 from os import getenv
 
 from dotenv import load_dotenv
-from pydantic import PostgresDsn  # pylint: disable=no-name-in-module
 
 __all__ = ["EnvError", "ENV"]
 
@@ -35,16 +36,18 @@ def get_or_none(key: str) -> str | None:
     return value
 
 
+def get_or_default(key: str, default: str) -> str:
+    """Get value from environment or return default."""
+    value = getenv(key)
+    if not value:
+        return default
+    return value
+
+
 class Env:  # pylint: disable=too-many-instance-attributes
     """Check environment variables types and constraints."""
 
-    database_url: str
-    login_redirect_url: str
-
-    # Frontend
-    frontend_url: str
-    frontend_host: str
-    frontend_port: str
+    deploy_env: str
 
     # Netbox
     netbox_url: str
@@ -53,10 +56,16 @@ class Env:  # pylint: disable=too-many-instance-attributes
     # Logs
     log_level: str
 
-    # Keycloak
-    kc_url: str
-    kc_client_id: str
-    kc_client_secret: str
+    # Zitadel
+    zitadel_app_secret: dict
+    zitadel_url: str
+    zitadel_introspection_url: str
+    zitadel_org_id: str
+    zitadel_admin_role: str
+
+    # MongoDB
+    db_uri: str
+    db_name: str
 
     charon_url: str
     charon_token: str
@@ -66,23 +75,13 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     def __init__(self) -> None:
         """Load all variables."""
-        load_dotenv()
-        _database = get_or_raise("DB_DATABASE")
-        if not _database.startswith("/"):
-            _database = f"/{_database}"
-        self.database_url = PostgresDsn.build(
-            scheme="postgresql",
-            user=get_or_raise("DB_USER"),
-            password=get_or_raise("DB_PASSWORD"),
-            host=get_or_raise("DB_ADDR"),
-            port=get_or_none("DB_PORT"),
-            path=_database,
-        )
 
-        self.frontend_port = get_or_raise("FRONTEND_PORT")
-        self.frontend_host = get_or_raise("FRONTEND_HOST")
-        self.frontend_url = f"http://{self.frontend_host}:{self.frontend_port}"
-        self.login_redirect_url = f"{self.frontend_url}/auth/login"
+        # If we are in a kubernetes pod, we need to load vault secrets
+        if getenv("KUBERNETES_SERVICE_HOST"):
+            load_dotenv("/vault/secrets/env")
+
+        self.deploy_env = get_or_default("DEPLOY_ENV", "local")
+        load_dotenv(f".env.{self.deploy_env}")
 
         self.netbox_url = get_or_raise("NETBOX_URL")
         self.netbox_token = get_or_raise("NETBOX_TOKEN")
@@ -90,9 +89,20 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
         self.environment = get_or_none("ENV") or "prod"
 
-        self.kc_url = get_or_raise("KC_URL")
-        self.kc_client_id = get_or_raise("KC_CLIENT_ID")
-        self.kc_client_secret = get_or_raise("KC_CLIENT_SECRET")
+        zitadel_secret_file = get_or_none("ZITADEL_SECRET_FILE")
+        if zitadel_secret_file:
+            with open(zitadel_secret_file, "r", encoding="utf-8") as f:
+                self.zitadel_app_secret = json.load(f)
+        else:
+            self.zitadel_app_secret = json.loads(get_or_raise("ZITADEL_APP_SECRET"))
+
+        self.zitadel_url = get_or_raise("ZITADEL_URL")
+        self.zitadel_introspection_url = get_or_raise("ZITADEL_INTROSPECTION_URL")
+        self.zitadel_org_id = get_or_raise("ZITADEL_ORG_ID")
+        self.zitadel_admin_role = get_or_raise("ZITADEL_ADMIN_ROLE")
+
+        self.db_uri = get_or_raise("DB_URI")
+        self.db_name = get_or_raise("DB_NAME")
 
         self.matrix_user = get_or_raise("MATRIX_USER")
         self.matrix_password = get_or_raise("MATRIX_PASSWORD")

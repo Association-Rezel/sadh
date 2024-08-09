@@ -2,69 +2,56 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PageAdmin } from "./pages/admin/PageAdmin";
 import { PageContract } from "./pages/contract/PageContract";
 import Index from "./pages/index";
-import Subscribe from "./components/Subscription/Subscribe";
+import BecomeMember from "./components/MembershipRequest/BecomeMember";
 import "./App.css";
 import Page404 from "./components/Page404";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import AccountDashboard from "./components/AccountDashboard/AccountDashboard";
 import Users from "./components/Users/Users";
 import CalendarComponent from "./components/Calendar/Calendar";
-import { AppStateContext, AppStateWrapper } from "./utils/AppState";
+import { AppState, AppStateContext, AppStateWrapper } from "./utils/AppStateContext";
 import { useContext } from "react";
-import User from "./components/AdminDashboard/User/User";
-import { SubscriptionStatus } from "./utils/types";
+import UserComponent from "./components/AdminDashboard/User/User";
+import { MembershipStatus } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
-import WaitAppointment from "./pages/appointment/WaitAppointment";
-import NoAppointment from "./pages/appointment/NoAppointment";
-import LoginPage from "./components/LoginPage";
+import { LoginPage, RegisterPage } from "./pages/auth/LoginPage";
+import { ZitadelContextWrapper } from "./utils/ZitadelContext";
+import LoginCallback from "./pages/auth/LoginCallback";
+import LogoutPage from "./pages/auth/LogoutPage";
+import { CircularProgress } from "@mui/material";
 
 function AppRouter() {
-    const appState = useContext(AppStateContext);
-    console.log("appState", appState)
+    const { appState } = useContext(AppStateContext);
 
-    const appointementSelection = () => {
-        if (appState.subscription?.status === SubscriptionStatus.PENDING_VALIDATION) {
-            return <Route path="appointment" Component={WaitAppointment} />
-        } 
-        if (appState.subscription?.status === SubscriptionStatus.VALIDATED) {
-            return <Route path="appointment" Component={PageAppointment} />
-        }
-        return <Route path="appointment" Component={NoAppointment} />
+    if (!appState.loaded) {
+        return <div className="flex justify-center items-center h-screen">
+            <CircularProgress />
+        </div>
     }
 
     return <BrowserRouter>
         <Routes>
             <Route path="/">
                 <Route index element={<Index />} />
-                <Route path="subscribe" element={
-                    (appState.logged || /.*state=.*&session_state=.*&code=.*/.test(window.location.href)) ? <Subscribe /> : <Navigate to="/" />
-                } />
-                {appState.logged ? (
-                    <Route path="account" element={<AccountDashboard />}>
-                        {appointementSelection()}
-                        {/*
-                        <Route index Component={PageAccueil} />
-                        <Route path="orders" Component={Orders} />
-                        <Route path="devices" Component={ConnectedDevices} />
-                        <Route path="DHCP" Component={DHCP} />
-                        <Route path="ports" Component={Ports} />
-                        */}
-                    </Route>
-                ) : (
-                    <Route path="account/*" element={<LoginPage />} />
-                )}
-                {appState.logged && appState.user?.is_admin && (
+                <Route path="login" Component={LoginPage} />
+                <Route path="logout" Component={LogoutPage} />
+                <Route path="loginCallback" Component={LoginCallback} />
+                <Route path="becomeMember" Component={appState.user ? BecomeMember : RegisterPage} />
+
+                {accountRoute({ appState })}
+
+                {appState.user && appState.admin && (
                     <Route path="admin" element={<AdminDashboard />}>
                         <Route index Component={PageAdmin} />
                         <Route path="calendar" Component={CalendarComponent} />
                         <Route path="users" Component={Users} />
-                        <Route path="users/:keycloak_id" Component={User} />
+                        <Route path="users/:zitadel_sub" Component={UserComponent} />
                     </Route>
                 )}
 
                 <Route path="appointment" element={<Navigate to="/account/appointment" />} />
 
-                {appState.logged && appState.subscription?.status != SubscriptionStatus.PENDING_VALIDATION && appState.subscription?.status != SubscriptionStatus.REJECTED && (
+                {appState.user && appState.user?.membership?.status != MembershipStatus.REQUEST_PENDING_VALIDATION && appState.user?.membership?.status != MembershipStatus.REJECTED && (
                     <Route path="contract" Component={PageContract} />
                 )}
                 <Route path="*" Component={Page404} />
@@ -75,10 +62,42 @@ function AppRouter() {
 
 function App() {
     return (
-        <AppStateWrapper>
-            <AppRouter />
-        </AppStateWrapper>
+        <ZitadelContextWrapper>
+            <AppStateWrapper>
+                <AppRouter />
+            </AppStateWrapper>
+        </ZitadelContextWrapper>
+
     );
+}
+
+function accountRoute({ appState }: { appState: AppState }) {
+    if (!appState.user) {
+        return <Route path="account" element={<Navigate to="/login" />} />
+    }
+
+    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)) {
+        return (
+            <Route path="account" element={<AccountDashboard />}>
+                <Route path="appointment" Component={PageAppointment} />
+                {/*
+                        <Route index Component={PageAccueil} />
+                        <Route path="orders" Component={Orders} />
+                        <Route path="devices" Component={ConnectedDevices} />
+                        <Route path="DHCP" Component={DHCP} />
+                        <Route path="ports" Component={Ports} />
+                        */}
+            </Route>
+        )
+    }
+
+    else if (appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {
+        return <Route path="account" element={<Navigate to="/becomeMember" />} />
+    }
+
+    else {
+        return <Route path="account" element={<Navigate to="/login" />} />
+    }
 }
 
 export default App;

@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import AppointmentSelection from "../../components/Appointment/AppointmentSelection";
 import LoggedMenu from "../../components/Menus/LoggedMenu";
 import { Api } from "../../utils/Api";
-import { Appointment, AppointmentSlot } from "../../utils/types";
-import AppointmentsList from "../../components/Appointment/AppointmentsList";
-import Page404 from "../../components/Page404";
 
 const blobToBase64 = (blob: Blob) => {
     const reader = new FileReader();

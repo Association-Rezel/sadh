@@ -1,5 +1,5 @@
 import {useContext} from "react";
-import {AppStateContext} from "../../utils/AppState";
+import {AppStateContext} from "../../utils/AppStateContext";
 import Dashboards from "../../components/AdminDashboard/Dashboard/Dashboards";
 
 export function PageAdmin() {

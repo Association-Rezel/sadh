@@ -1,4 +1,4 @@
-FROM node:18 as faipp-frontend-build-step
+FROM node:18 as sadh-front-build-step
 
 RUN mkdir -p /app
 RUN npm cache clear --force
@@ -11,12 +11,12 @@ RUN npm install
 
 COPY . /app
 
-RUN npm run build
-
+ARG mode
+RUN npm run build -- --mode $mode
 
 FROM nginx
 RUN rm -rfd /usr/share/nginx/html
-COPY --from=faipp-frontend-build-step /app/dist /usr/share/nginx/html
+COPY --from=sadh-front-build-step /app/dist /usr/share/nginx/html
 
 RUN sed -i 's/index  index.html index.htm;/index  index.html index.htm;\n        try_files $uri $uri\/ $uri.html \/index.html;/g' /etc/nginx/conf.d/default.conf
 

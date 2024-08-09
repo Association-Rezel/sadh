@@ -1,5 +1,5 @@
 FROM python:3.11.2
-
+#test
 WORKDIR /app
 
 COPY ./ /app/
@@ -14,5 +14,8 @@ ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt 
 
 RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+
+# Any proxy will be trusted. Since we control our network, this should be safe.
+ENV FORWARDED_ALLOW_IPS="*"
 
 CMD ["uvicorn", "--factory", "back:make_app", "--host", "0.0.0.0", "--port", "80"]

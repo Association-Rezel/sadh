@@ -14,7 +14,7 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import { SubscriptionStatus, UserDataBundle } from "../../utils/types";
+import { DepositStatus, MembershipStatus, User } from "../../utils/types/types";
 import { Link } from "react-router-dom";
 
 interface TablePaginationActionsProps {
@@ -73,7 +73,7 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
 export function TableUsers({ users,
     rowsPerPageOptions = [5, 10, 25, { label: "All", value: -1 }],
     rowsPerPageDefault = 5 }: {
-        users: UserDataBundle[],
+        users: User[],
         rowsPerPageOptions?: Array<number | { value: number; label: string }>,
         rowsPerPageDefault?: number
     }) {
@@ -100,24 +100,24 @@ export function TableUsers({ users,
                         {(rowsPerPage > 0
                             ? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             : users
-                        ).map((bundle: UserDataBundle) => (
-                            <TableRow key={bundle.user.keycloak_id}>
+                        ).map((user: User) => (
+                            <TableRow key={user.sub}>
                                 <TableCell component="th" scope="row">
-                                    <Link to={"/admin/users/" + bundle.user.keycloak_id}>
-                                        {bundle.user.name}
+                                    <Link to={"/admin/users/" + user.sub}>
+                                        {user.first_name} {user.last_name}
                                     </Link>
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {SubscriptionStatus[bundle.subscription?.status]}
+                                    {MembershipStatus[user.membership?.status]}
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {bundle?.flow?.paid_caution ? <p className="text-green-700">Caution</p> : <p className="text-red-700">Caution</p>}
+                                    {user.membership?.deposit_status == DepositStatus.PAID ? <p className="text-green-700">Caution</p> : <p className="text-red-700">Caution</p>}
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {bundle?.flow?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
+                                    {user.membership?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
                                 </TableCell>
                                 <TableCell style={{ width: 160 }} align="right">
-                                    {bundle?.flow?.contract_signed ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
+                                    {user.membership?.contract_signed ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
                                 </TableCell>
                             </TableRow>
                         ))}
