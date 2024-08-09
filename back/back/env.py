@@ -49,10 +49,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     deploy_env: str
 
-    # Netbox
-    netbox_url: str
-    netbox_token: str
-
     # Logs
     log_level: str
 
@@ -82,9 +78,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.deploy_env = get_or_default("DEPLOY_ENV", "local")
         load_dotenv(f".env.{self.deploy_env}")
-
-        self.netbox_url = get_or_raise("NETBOX_URL")
-        self.netbox_token = get_or_raise("NETBOX_TOKEN")
 
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
         self.environment = get_or_none("ENV") or "prod"
