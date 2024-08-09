@@ -81,7 +81,7 @@ deploybackend:
       done
     # Apply Kubernetes manifests
     - kubectl config use-context fai/k8s-cluster:main-k8s-agent
-    - kubectl apply -f k8s-envsubst/
+    - kubectl apply -f back/k8s-envsubst/
     # Clean up
     - rm -rf back/k8s-envsubst
 
@@ -110,6 +110,6 @@ deployfrontend:
       done
     # Apply Kubernetes manifests
     - kubectl config use-context fai/k8s-cluster:main-k8s-agent
-    - kubectl apply -f k8s-envsubst/
+    - kubectl apply -f front/k8s-envsubst/
     # Clean up
     - rm -rf front/k8s-envsubst
