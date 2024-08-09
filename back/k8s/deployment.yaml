@@ -28,7 +28,7 @@ spec:
       serviceAccountName: sadh-back-ksa
       containers:
       - name: sadh-back-container
-        image: $IMAGE_TAG
+        image: $BACK_IMAGE_TAG
         ports:
         - containerPort: 8000
         resources:

@@ -28,7 +28,7 @@ spec:
       serviceAccountName: sadh-front-ksa
       containers:
       - name: sadh-front-container
-        image: $IMAGE_TAG
+        image: $FRONT_IMAGE_TAG
         ports:
         - containerPort: 8000
         resources:
