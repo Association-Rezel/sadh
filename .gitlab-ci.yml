@@ -15,11 +15,11 @@ buildfrontend:
   rules:
     - if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
       changes:
-        - front/**
+        - front/**/*
       variables:
         DEPLOY_ENV: "prod"
     - changes:
-        - front/**
+        - front/**/*
       variables:
         DEPLOY_ENV: "dev"
   environment: # Gitlab environment for Gitlab CI/CD variables
@@ -39,12 +39,12 @@ buildbackend:
   stage: build
   rules:
     - changes:
-        - back/**
+        - back/**/*
       if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
-        - back/**
+        - back/**/*
       variables:
         DEPLOY_ENV: "dev"
   image:
@@ -60,12 +60,12 @@ deploybackend:
   stage: deploy
   rules:
     - changes:
-        - back/**
+        - back/**/*
       if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
-        - back/**
+        - back/**/*
       variables:
         DEPLOY_ENV: "dev"
       when: manual
@@ -89,12 +89,12 @@ deployfrontend:
   stage: deploy
   rules:
     - changes:
-        - front/**
+        - front/**/*
       if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
-        - front/**
+        - front/**/*
       variables:
         DEPLOY_ENV: "dev"
       when: manual
