@@ -19,7 +19,10 @@ spec:
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "sadh_${DEPLOY_ENV}"
-        vault.hashicorp.com/agent-inject-secret-zitadel_secret: "kv/data/sadh_${DEPLOY_ENV}/zitadel_secret" # Writes at /vault/secrets/zitadel_secret
+        vault.hashicorp.com/agent-inject-template-zitadel_secret.json:  | # Writes at /vault/secrets/zitadel_secret.json
+          {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
+            {{ .Data.data.zitadel_secret }}
+          {{- end }}
         vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
           {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
             MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
