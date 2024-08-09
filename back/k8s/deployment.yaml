@@ -33,7 +33,7 @@ spec:
       - name: sadh-back-container
         image: $BACK_IMAGE_TAG
         ports:
-        - containerPort: 8000
+        - containerPort: 80
         resources:
           limits:
             cpu: "1"
