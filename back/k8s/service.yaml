@@ -14,5 +14,5 @@ spec:
   loadBalancerClass: kube-vip.io/kube-vip-class
   ports:
     - protocol: TCP
-      port: 9000
+      port: 10000
       targetPort: 80

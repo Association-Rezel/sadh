@@ -10,9 +10,9 @@ spec:
   ipFamilyPolicy: RequireDualStack
   selector:
     app: sadh
-    tier: back
+    tier: front
   loadBalancerClass: kube-vip.io/kube-vip-class
   ports:
     - protocol: TCP
-      port: 10000
+      port: 9000
       targetPort: 80
