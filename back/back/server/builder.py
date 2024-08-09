@@ -31,6 +31,7 @@ def build() -> FastAPI:
             "http://localhost:8000",
             "https://sadh.dev.fai.rezel.net",
             "https://fai.rezel.net",
+            "https://sadh.fai.rezel.net",
         ]
     else:
         origins = [
