@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sadh-back-deployment
+  labels:
+    app: sadh
+    tier: back
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sadh
+      tier: back
+  template:
+    metadata:
+      labels:
+        app: sadh
+        tier: back
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "sadh_${DEPLOY_ENV}"
+        vault.hashicorp.com/agent-inject-zitadel_secret: "kv/data/sadh_${DEPLOY_ENV}/zitadel_secret" # Writes at /vault/secrets/zitadel_secret
+        vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
+          {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
+            MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
+          {{- end }}
+    spec:
+      serviceAccountName: sadh-back-ksa
+      containers:
+      - name: sadh-back-container
+        image: $IMAGE_TAG
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+        env:
+        - name: DEPLOY_ENV
+          value: "${DEPLOY_ENV}"
+      imagePullSecrets:
+       - name: gitlab-registery-credentials
