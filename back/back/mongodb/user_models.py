@@ -108,9 +108,6 @@ class Membership(BaseModel):
         self.ref_prestation = None
         self.cmd_acces_sent = False
         self.cr_mes_sent = False
-        self.paid_first_month = False
-        self.contract_signed = False
-        self.appointment = None
         self.unetid = None
 
 
