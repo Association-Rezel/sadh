@@ -86,6 +86,7 @@ export default function ONTSection({ user_id }: { user_id: string }) {
                                 <FormControl>
                                     <InputLabel id="pm_id-label">PM</InputLabel>
                                     <Select
+                                        className="bg-white"
                                         labelId="pm_id-label"
                                         id="pm_id-select"
                                         label="PM"

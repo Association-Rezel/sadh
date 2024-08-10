@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 
 class MembershipStatus(int, Enum):
@@ -112,7 +112,7 @@ class Membership(BaseModel):
 
 
 class User(BaseModel):
-    id: UUID = Field(validation_alias="_id")
+    id: UUID = Field(validation_alias=AliasChoices("id", "_id"))
     email: str = Field(...)
     phone_number: Optional[str] = Field(None)
     first_name: str = Field(...)

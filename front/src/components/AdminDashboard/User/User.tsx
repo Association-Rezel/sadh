@@ -9,7 +9,7 @@ import { Membership, User } from "../../../utils/types/types";
 import { SubmitHandler, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
-import { Button, Divider, Stack, Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import ContractUpload from "./ContractUpload";
 
 

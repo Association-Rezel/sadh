@@ -1,5 +1,5 @@
 import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus } from "../../../utils/types/types";
-import { TextField, Button, IconButton, MenuItem, Select, Typography } from "@mui/material";
+import { TextField, Button, IconButton, MenuItem, Select, Typography, Alert } from "@mui/material";
 import { useState } from "react";
 import { Api } from "../../../utils/Api";
 import { Controller } from "react-hook-form";
@@ -14,6 +14,12 @@ export default function MembershipSection({ user, registerToMembershipUpdateForm
             <Typography variant="h5" align="left" color="text.primary" component="div">
                 Adhésion FTTH
             </Typography>
+            {user?.membership?.contract_signed &&
+                user?.membership?.paid_first_month &&
+                user?.membership?.deposit_status == DepositStatus.PAID &&
+                user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION &&
+                <Alert severity="error">Le statut de l'adhésion devrait probablement être VALIDATED</Alert>
+            }
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <strong>Adresse</strong> : {user?.membership.address.appartement_id} - {user?.membership.address.residence}
                 <br />
