@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
 
@@ -32,7 +32,7 @@ class PON(BaseModel):
 
 
 class PM(BaseModel):
-    id: str = Field(validation_alias='_id')
+    id: str = Field(validation_alias=AliasChoices("id", "_id"))
     description: str = Field(...)
     pon_list: list[PON] = Field(default_factory=list)
 
@@ -55,7 +55,7 @@ class ONTInfos(BaseModel):
 
 
 class PMInfos(BaseModel):
-    id: str = Field(..., validation_alias='_id')
+    id: str = Field(..., validation_alias=AliasChoices("id", "_id"))
     description: str = Field(...)
 
 

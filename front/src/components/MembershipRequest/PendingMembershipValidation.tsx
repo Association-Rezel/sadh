@@ -16,6 +16,13 @@ export default function PendingMembershipValidation(): JSX.Element {
             </Typography>
             <div className="flex flex-col gap-8">
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                    {appState.user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    <span className="ml-2">
+                        Contrat de fourniture de service
+                    </span>
+                </Typography>
+                <ContractSignatureInfo signed={appState.user.membership.contract_signed} />
+                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     {appState.user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Caution 50€
@@ -33,13 +40,17 @@ export default function PendingMembershipValidation(): JSX.Element {
                     Et ensuite ?
                 </Typography>
                 <Typography variant="body1" color="text.secondary" component="p" align="justify">
-                    Nous t'enverrons un mail dès que les paiements auront été vérifiés. Ensuite, 
+                    Nous t'enverrons un mail dès que les paiements auront été vérifiés. Ensuite,
                     tu pourras récupèrer tes équipements (Box Internet), et nous
-                    te demanderons un créneau pendant lequel tu es disponible pour qu'un technicien 
+                    te demanderons un créneau pendant lequel tu es disponible pour qu'un technicien
                     mandaté par Orange procède à l'installation de la fibre. Cette étape est obligatoire
                     car les infrastructures FTTH (Fibre To The Home) sont mutualisées. Ton adhésion
                     commencera le jour de l'installation de la fibre, et nous te demanderons de régler
                     ta cotisation de 20€ tous les mois à partir de ce moment.
+                    <br />
+                    <br />
+                    Si tu as la moindre question, n'hésites pas à paser au local de l'association,
+                    ou bien à envoyer un mail à fai@rezel.net
                 </Typography>
             </div>
         </>
@@ -49,6 +60,27 @@ export default function PendingMembershipValidation(): JSX.Element {
 enum PaymentType {
     DEPOSIT = "deposit",
     MEMBERSHIP = "membership"
+}
+
+function ContractSignatureInfo({ signed }: { signed: boolean }) {
+    if (signed)
+        return (
+            <Typography variant="body1" color="text.secondary" component="p" align="left">
+                Contrat signé reçu ! Tu recevras par mail une copie du contrat signé par le président de l'association.
+            </Typography>
+        );
+
+    else
+        return (
+            <div className="flex flex-col gap-4 items-start">
+                <Typography variant="body1" color="text.secondary" component="p" align="left">
+                    Tu n'as pas encore envoyé le contrat signé à l'adresse fai@rezel.net.
+                </Typography>
+                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/contrat.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                    Télécharger le contrat
+                </Button>
+            </div>
+        );
 }
 
 function PaymentInfo({ type, method, paid }: { type: PaymentType, method: PaymentMethod, paid: boolean }) {
@@ -77,7 +109,7 @@ function PaymentInfo({ type, method, paid }: { type: PaymentType, method: Paymen
                     Tu as choisi de payer <strong>par virement bancaire</strong>.<br />
                     ⚠️ Tu dois impérativement mentionner <strong>ton nom et prénom dans le libellé du virement.</strong><br />
                 </Typography>
-                    <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
                     Télécharger le RIB de Rezel
                 </Button>
 
