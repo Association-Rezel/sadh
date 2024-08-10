@@ -33,7 +33,7 @@ export function ValidatedAppointment({ appointment }: { appointment: Appointment
     return (
         <div className="mt-12 max-w-md">
             <Typography variant="body1" align="center">
-                Votre rendez-vous aura lieu le <br />
+                Votre rendez-vous de raccordement à la fibre aura lieu le <br />
                 <br />
                 <b>{appointment.slot.start.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</b>
                 &nbsp;de <b>{appointment.slot.start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</b>

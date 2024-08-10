@@ -48,12 +48,12 @@ function UserComponent() {
             {user && !user?.membership && <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>Aucune adhésion trouvée</Typography>}
             {user && user?.membership && (
                 <>
-                    <div className="flex gap-x-20 flex-wrap">
+                    <div className="flex gap-x-20 flex-wrap justify-between">
                         <MembershipSection user={user} registerToMembershipUpdateForm={register} formControl={control} />
                         <ONTSection user_id={user_id} />
                         <BoxSection user_id={user_id} />
                     </div>
-                    <div className="flex flex-wrap gap-x-20">
+                    <div className="flex flex-wrap gap-x-20 justify-between">
                         <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                         <InteropSection registerToMembershipUpdateForm={register} user={user} />
                         <ContractUpload user_id={user_id} />

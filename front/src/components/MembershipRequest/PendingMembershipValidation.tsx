@@ -77,7 +77,7 @@ function PaymentInfo({ type, method, paid }: { type: PaymentType, method: Paymen
                     Tu as choisi de payer <strong>par virement bancaire</strong>.<br />
                     ⚠️ Tu dois impérativement mentionner <strong>ton nom et prénom dans le libellé du virement.</strong><br />
                 </Typography>
-                <Button variant="contained" color="primary" href="/rib" className="mt-2" startIcon={<DownloadIcon />} >
+                    <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
                     Télécharger le RIB de Rezel
                 </Button>
 

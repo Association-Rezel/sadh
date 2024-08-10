@@ -153,23 +153,6 @@ export default function MembershipForm() {
                                 )} />
                             <FormHelperText error> {errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
-
-                        <div>
-                            {watch("paymentMethodFirstMonth") === PaymentMethod.VIREMENT &&
-                                <FormControl>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                required
-                                                {...register("firstMonthPaymentConfirmed", { required: true })}
-                                            />
-                                        }
-                                        label="Je confirme avoir bien effectué le virement de 20€ sur le compte de l'association Rezel"
-                                        className="text-left"
-                                    />
-                                </FormControl>
-                            }
-                        </div>
                     </div>
 
                     <div className="mt-10 mb-8">
@@ -201,21 +184,6 @@ export default function MembershipForm() {
                                 )} />
                             <FormHelperText error> {errors.paymentMethodDeposit && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
-
-                        {watch("paymentMethodDeposit") === PaymentMethod.VIREMENT &&
-                            <FormControl>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            required
-                                            {...register("depositPaymentConfirmed", { required: true })}
-                                        />
-                                    }
-                                    label="Je confirme avoir bien effectué le virement de 50€ sur le compte de l'association Rezel"
-                                    className="text-left"
-                                />
-                            </FormControl>
-                        }
                     </div>
 
                     <div className="mt-16">

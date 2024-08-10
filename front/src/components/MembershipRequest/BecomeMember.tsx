@@ -44,12 +44,12 @@ function BecomeMember(): JSX.Element {
             <LoggedMenu />
 
             <React.Fragment>
+                {appState.user?.membership?.status == MembershipStatus.VALIDATED && (
+                    <PageAppointment />
+                )}
                 <Container component="main" className="m-16">
                     {appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION && (
                         <PendingMembershipValidation />
-                    )}
-                    {appState.user?.membership?.status == MembershipStatus.VALIDATED && (
-                        <PageAppointment />
                     )}
                     {!appState.user?.membership && (
                         <MembershipForm />

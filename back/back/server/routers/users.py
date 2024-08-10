@@ -59,7 +59,7 @@ async def _me_create_membershipRequest(
         raise HTTPException(status_code=400, detail="User is already a member")
 
     userdict = await db.users.find_one_and_update(
-        {"_id": user.id},
+        {"_id": str(user.id)},
         {
             "$set": {
                 "phone_number": request.phone_number,
@@ -107,18 +107,18 @@ def _me_get_contract(
     return FastAPIResponse(content=contract, media_type="application/pdf")
 
 
-@router.post("/me/availability", response_model=set[AppointmentSlot])
+@router.post("/me/availability", response_model=User)
 async def _me_add_availability_slots(
     slots: list[AppointmentSlot],
     user: User = get_user_me,
     db: AsyncIOMotorDatabase = get_db,
-) -> set[AppointmentSlot]:
+) -> User:
     userdict = await db.users.find_one_and_update(
-        {"_id": user.id},
+        {"_id": str(user.id)},
         {"$push": {"availability_slots": {"$each": [slot.model_dump() for slot in slots]}}},
         return_document=ReturnDocument.AFTER,
     )
-    return User.model_validate(userdict).availability_slots
+    return User.model_validate(userdict)
 
 
 ### ADMIN
@@ -300,7 +300,7 @@ async def _user_register_box(
     new_box = await register_box_for_new_ftth_adh(db, box_type, mac_address, telecomian)
 
     await db.users.find_one_and_update(
-        {"_id": user.id},
+        {"_id": str(user.id)},
         {"$set": {"membership.unetid": new_box.main_unet_id}},
     )
 
