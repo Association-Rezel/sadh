@@ -13,16 +13,16 @@
 //     fetchFile(url: string): Promise<Blob> {
 //         throw new Error("Method not implemented.");
 //     }
-//     fetchUserBox(user_zitadel_sub: string): Promise<Box> {
+//     fetchUserBox(user_id: string): Promise<Box> {
 //         throw new Error("Method not implemented.");
 //     }
-//     registerUserBox(user_zitadel_sub: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box> {
-//         throw new Error("Method not implemented.");
+//     registerUserBox(user_id: string, serial_number: string, mac_address: string, telecomian: boolean): Promise<Box> {
 //     }
-//     submitAppointmentSlots(zitadel_sub: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
+//         throw new Error("Method not implemented.");
+//     submitAppointmentSlots(user_id: string, slots: AppointmentSlot[]): Promise<Appointment[]> {
 //         return Promise.resolve([]);
 //     }
-//     fetchUser(user_zitadel_sub: string): Promise<User> {
+//     fetchUser(user_id: string): Promise<User> {
 //         throw new Error("Method not implemented.");
 //     }
 //     fetchUsers(): Promise<User[]> {
@@ -86,12 +86,12 @@
 //             contract_signed:true
 //         });
 //     }
-//     registerONT(user_zitadel_sub: string, serial_number: string, software_version: string): Promise<ONT> {
+//     registerONT(user_id: string, serial_number: string, software_version: string): Promise<ONT> {
 //         throw new Error("Method not implemented.");
 //     }
-//     fetchUser(user_zitadel_sub: string): Promise<User> {
+//     fetchUser(user_id: string): Promise<User> {
 //         return Promise.resolve({
-//             zitadel_sub: "7897",
+//             user_id: "7897",
 //             is_admin: true,
 //             name: "itsme",
 //             email: "me@example.com",
@@ -101,7 +101,7 @@
 //     fetchMemberships(): Promise<Membership[]> {
 //         return Promise.resolve([]);
 //     }
-//     fetchMembership(user_zitadel_sub: string): Promise<Membership> {
+//     fetchMembership(user_id: string): Promise<Membership> {
 //         return Promise.resolve({
 //             membership_id:"azertyuiop",
 //             user_id:"azertyuiop",
@@ -113,7 +113,7 @@
 //             unsubscribe_reason:""
 //         });
 //     }
-//     fetchONT(user_zitadel_sub: string): Promise<ONT> {
+//     fetchONT(user_id: string): Promise<ONT> {
 //         return Promise.resolve({
 //             serial_number: "ALCL:F887917B",
 //             position_PM: "A3",
@@ -121,7 +121,7 @@
 //         });
 //     }
 //     fetchMyMembership(): Promise<Membership> {
-//         return this.fetchMembership("getAppState().user.zitadel_sub");
+//         return this.fetchMembership("getAppState().user.user_id");
 //     }
 //     addMyMembership(membership: any): Promise<void> {
 //         throw new Error("Method not implemented.");

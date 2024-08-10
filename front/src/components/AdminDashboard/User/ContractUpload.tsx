@@ -17,28 +17,28 @@ const blobToBase64 = blob => {
     });
 };
 
-export default function ContractUpload({ zitadel_sub }: { zitadel_sub: string }) {
+export default function ContractUpload({ user_id }: { user_id: string }) {
     const [user, setUser] = useState<UserType>();
     const [fileB64, setFileB64] = useState<string>();
 
     useEffect(() => {
-        Api.fetchUser(zitadel_sub).then(user => {
+        Api.fetchUser(user_id).then(user => {
             setUser(user);
         });
-        Api.fetchFile("/users/"+zitadel_sub+"/contract").then(file => {
+        Api.fetchFile("/users/"+user_id+"/contract").then(file => {
             blobToBase64(file).then((b64: string) => {
                 setFileB64(b64);
             });
         }).catch(error => {
             setFileB64("0");
         });
-    }, [zitadel_sub]);
+    }, [user_id]);
 
     const handleSubmit = (event) => {
         event.preventDefault();
         let data = new FormData();
         data.append("file", event.target.file.files[0]);
-        Api.uploadFile("/users/"+zitadel_sub+"/contract", data)
+        Api.uploadFile("/users/"+user_id+"/contract", data)
         .catch(error => {
             alert("Erreur lors de l'upload du contrat. Vous êtes peut-être déconnecté. La page va se rafraichir automatiquement.");
         }).finally(() => {

@@ -1,4 +1,5 @@
 """Build the server."""
+
 import logging
 
 from fastapi import APIRouter, FastAPI

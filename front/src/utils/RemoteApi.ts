@@ -184,36 +184,36 @@ export class RemoteApi implements ApiInterface {
         return users.map((user: any) => this.parseUser(user));
     }
 
-    async fetchUser(user_zitadel_sub: string): Promise<User> {
-        return this.parseUser(await this.fetchOrDefault("/users/" + user_zitadel_sub, null, true));
+    async fetchUser(user_id: string): Promise<User> {
+        return this.parseUser(await this.fetchOrDefault("/users/" + user_id, null, true));
     }
 
     async fetchPMs(): Promise<PMInfos[]> {
         return await this.fetchOrDefault("/pms", [], true);
     }
 
-    async fetchONT(user_zitadel_sub: string): Promise<ONTInfos> {
-        return await this.fetchOrDefault("/users/" + user_zitadel_sub + "/ont", null, true);
+    async fetchONT(user_id: string): Promise<ONTInfos> {
+        return await this.fetchOrDefault("/users/" + user_id + "/ont", null, true);
     }
 
-    async registerONT(user_zitadel_sub: string, register: RegisterONT): Promise<ONTInfos> {
-        return await this.myAuthenticatedRequest("/users/" + user_zitadel_sub + "/ont", register, "POST");
+    async registerONT(user_id: string, register: RegisterONT): Promise<ONTInfos> {
+        return await this.myAuthenticatedRequest("/users/" + user_id + "/ont", register, "POST");
     }
 
-    async updateUser(user_zitadel_sub: string, update: Partial<User>): Promise<User> {
-        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_zitadel_sub}`, update, "PATCH"));
+    async updateUser(user_id: string, update: Partial<User>): Promise<User> {
+        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}`, update, "PATCH"));
     }
 
-    async updateMembership(user_zitadel_sub: string, membership: Partial<Membership>): Promise<User> {
-        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_zitadel_sub}/membership`, membership, "PATCH"));
+    async updateMembership(user_id: string, membership: Partial<Membership>): Promise<User> {
+        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/membership`, membership, "PATCH"));
     }
 
-    async fetchUserBox(user_zitadel_sub: string): Promise<Box> {
-        return await this.fetchOrDefault("/users/" + user_zitadel_sub + "/box", null, true);
+    async fetchUserBox(user_id: string): Promise<Box> {
+        return await this.fetchOrDefault("/users/" + user_id + "/box", null, true);
     }
 
-    async registerUserBox(user_zitadel_sub: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box> {
-        return await this.myAuthenticatedRequest("/users/" + user_zitadel_sub + "/box?box_type=" + box_type + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null, "POST");
+    async registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box> {
+        return await this.myAuthenticatedRequest("/users/" + user_id + "/box?box_type=" + box_type + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null, "POST");
     }
 
     async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {

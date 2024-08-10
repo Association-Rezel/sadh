@@ -80,7 +80,7 @@ export interface Membership {
 }
 
 export interface User {
-    sub: string;
+    id: string;
     email: string;
     phone_number?: string;
     first_name: string;
@@ -141,15 +141,15 @@ export interface ApiInterface {
     updateMyAvailabilities: (availabilities: AppointmentSlot[]) => Promise<User>;
     fetchMe(): Promise<User>;
     submitMyMembershipRequest(request: MembershipRequest): Promise<User>;
-    fetchUser(user_zitadel_sub: string): Promise<User>;
-    updateUser(user_zitadel_sub: string, update: Partial<User>): Promise<User>;
+    fetchUser(user_id: string): Promise<User>;
+    updateUser(user_id: string, update: Partial<User>): Promise<User>;
     fetchPMs(): Promise<PMInfos[]>;
-    fetchONT(user_zitadel_sub: string): Promise<ONTInfos>;
-    registerONT(user_zitadel_sub: string, register: RegisterONT): Promise<ONTInfos>;
+    fetchONT(user_id: string): Promise<ONTInfos>;
+    registerONT(user_id: string, register: RegisterONT): Promise<ONTInfos>;
     updateMembership(membership_id: string, membership: Partial<Membership>): Promise<User>;
     fetchFile(url: string): Promise<Blob>;
-    fetchUserBox(user_zitadel_sub: string): Promise<Box>;
-    registerUserBox(user_zitadel_sub: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
+    fetchUserBox(user_id: string): Promise<Box>;
+    registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
     sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
 }

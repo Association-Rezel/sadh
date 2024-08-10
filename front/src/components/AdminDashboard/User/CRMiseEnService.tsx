@@ -40,7 +40,7 @@ export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
     useEffect(() => {
         if (!user?.membership) return;
 
-        Api.fetchONT(user.sub).then((ont: ONTInfos) => {
+        Api.fetchONT(user.id).then((ont: ONTInfos) => {
             setHasONT(ont !== null);
             if (ont === null) return;
 

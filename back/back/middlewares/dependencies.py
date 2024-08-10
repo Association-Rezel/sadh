@@ -1,3 +1,6 @@
+import uuid
+from uuid import UUID
+
 from fastapi import Depends, Header, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
@@ -30,7 +33,6 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
             is_admin = False
 
         return ZitadelUserInfos(
-            sub=introspected["sub"],
             given_name=introspected["given_name"],
             family_name=introspected["family_name"],
             email=introspected["email"],
@@ -57,14 +59,16 @@ async def get_user_me(
     If the user does not exist, it is created.
     """
     userdict = await db.users.find_one_and_update(
-        {"sub": userInfos.sub},
+        {"email": userInfos.email},
         {
             "$set": {
-                "sub": userInfos.sub,
                 "first_name": userInfos.given_name,
                 "last_name": userInfos.family_name,
                 "email": userInfos.email,
-            }
+            },
+            "$setOnInsert": {
+                "_id": str(uuid.uuid4()),
+            },
         },
         upsert=True,
         return_document=ReturnDocument.AFTER,
@@ -76,23 +80,23 @@ async def get_user_me(
 
 
 @Depends
-async def get_user_from_sub(
-    user_sub: str,
+async def get_user_from_user_id(
+    user_id: str,
     db: AsyncIOMotorDatabase = get_db,
 ) -> User:
-    """Can be used on routes with a user_sub parameter to get the user object from the database."""
-    user = await db.users.find_one({"sub": user_sub})
+    """Can be used on routes with a user_id parameter to get the user object from the database."""
+    user = await db.users.find_one({"_id": user_id})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return User.model_validate(user)
 
 
 @Depends
-async def get_box_from_sub(
-    user: User = get_user_from_sub,
+async def get_box_from_user_id(
+    user: User = get_user_from_user_id,
     db: AsyncIOMotorDatabase = get_db,
 ) -> Box | None:
-    """Can be used on routes with a user_sub parameter to get the box from the database."""
+    """Can be used on routes with a user_id parameter to get the box from the database."""
     return await get_box(db, user)
 
 

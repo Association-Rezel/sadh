@@ -32,7 +32,7 @@ class PON(BaseModel):
 
 
 class PM(BaseModel):
-    id: str = Field(alias='_id')
+    id: str = Field(validation_alias='_id')
     description: str = Field(...)
     pon_list: list[PON] = Field(default_factory=list)
 
@@ -55,7 +55,7 @@ class ONTInfos(BaseModel):
 
 
 class PMInfos(BaseModel):
-    id: str = Field(..., alias='_id')
+    id: str = Field(..., validation_alias='_id')
     description: str = Field(...)
 
 
