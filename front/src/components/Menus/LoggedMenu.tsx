@@ -22,7 +22,7 @@ function LoggedMenu() {
         { text: "Interface admin", link: "/admin", condition: appState.admin },
         { text: "Déconnexion", link: "/logout", condition: appState.user },
         { text: "Connexion", link: "/login", condition: !appState.user },
-        { text: "Inscription", link: "/becomeMember", condition: !appState.user }
+        { text: "Inscription", link: "/adherer", condition: !appState.user }
     ];
 
     const drawer = (

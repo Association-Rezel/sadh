@@ -36,7 +36,7 @@ function AppRouter() {
                 <Route path="login" Component={LoginPage} />
                 <Route path="logout" Component={LogoutPage} />
                 <Route path="loginCallback" Component={LoginCallback} />
-                <Route path="becomeMember" Component={appState.user ? BecomeMember : RegisterPage} />
+                <Route path="adherer" Component={appState.user ? BecomeMember : RegisterPage} />
 
                 {accountRoute({ appState })}
 
@@ -92,7 +92,7 @@ function accountRoute({ appState }: { appState: AppState }) {
     }
 
     else if (appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {
-        return <Route path="account" element={<Navigate to="/becomeMember" />} />
+        return <Route path="account" element={<Navigate to="/adherer" />} />
     }
 
     else {

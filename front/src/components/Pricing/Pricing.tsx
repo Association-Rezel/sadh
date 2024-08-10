@@ -35,7 +35,7 @@ const tiers = [
         description: ["1Gb/s symétrique", "Sans engagement", "0€ de frais d'installation", "0€ de frais de résiliation"],
         tooltips: [null, "Rezel est une association à laquelle vous cotiserez, vous octroyant le statut d'adhérent. Il ne peut pas y avoir de notion d'engagement.", null, null],
         buttonText: "J'adhère",
-        buttonRedirectPath: "/becomeMember",
+        buttonRedirectPath: "/adherer",
         buttonVariant: "contained",
     },
     /*{
