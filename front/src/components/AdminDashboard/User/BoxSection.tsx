@@ -5,8 +5,8 @@ import { Warning } from "@mui/icons-material";
 import { Box } from "../../../utils/types/hermes_types";
 
 export default function BoxSection({
-    zitadel_sub }: {
-        zitadel_sub: string
+    user_id }: {
+        user_id: string
     }) {
 
     const [box, setBox] = useState<Box>();
@@ -29,7 +29,7 @@ export default function BoxSection({
             return;
         }
         setBoxStillLoading(true);
-        Api.registerUserBox(zitadel_sub, boxType, macAddress, isTelecomian).then(box => {
+        Api.registerUserBox(user_id, boxType, macAddress, isTelecomian).then(box => {
             setBox(box);
             setBoxStillLoading(false);
         }).catch(e => {
@@ -39,11 +39,11 @@ export default function BoxSection({
     }
 
     useEffect(() => {
-        Api.fetchUserBox(zitadel_sub).then(box => {
+        Api.fetchUserBox(user_id).then(box => {
             setBox(box);
             setBoxStillLoading(false);
         });
-    }, [zitadel_sub]);
+    }, [user_id]);
 
     const [maskedPsk, setMaskedPsk] = useState("**********");
 

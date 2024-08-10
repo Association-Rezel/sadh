@@ -1,5 +1,3 @@
-"""Manage subscriptions."""
-
 import re
 
 import requests

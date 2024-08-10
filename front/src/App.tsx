@@ -45,7 +45,7 @@ function AppRouter() {
                         <Route index Component={PageAdmin} />
                         <Route path="calendar" Component={CalendarComponent} />
                         <Route path="users" Component={Users} />
-                        <Route path="users/:zitadel_sub" Component={UserComponent} />
+                        <Route path="users/:user_id" Component={UserComponent} />
                     </Route>
                 )}
 

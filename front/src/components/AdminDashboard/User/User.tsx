@@ -14,14 +14,14 @@ import ContractUpload from "./ContractUpload";
 
 
 function UserComponent() {
-    const { zitadel_sub } = useParams<string>();
+    const { user_id } = useParams<string>();
     const [user, setUser] = useState<User>(null);
     const { register, handleSubmit, reset, formState, control } = useForm({
         defaultValues: user?.membership
     });
 
     const onSubmit: SubmitHandler<Membership> = (membership: Membership) => {
-        Api.updateMembership(user.sub, membership)
+        Api.updateMembership(user.id, membership)
             .then((updatedUser) => {
                 if (updatedUser === null) {
                     alert("Erreur lors de la modification. Veuillez essayer de recharger la page.");
@@ -35,11 +35,11 @@ function UserComponent() {
     }
 
     useEffect(() => {
-        Api.fetchUser(zitadel_sub).then((user: User) => {
+        Api.fetchUser(user_id).then((user: User) => {
             setUser(user);
             reset(user.membership);
         });
-    }, [zitadel_sub]);
+    }, [user_id]);
 
     return (
         <div>
@@ -50,13 +50,13 @@ function UserComponent() {
                 <>
                     <div className="flex gap-x-20 flex-wrap">
                         <MembershipSection user={user} registerToMembershipUpdateForm={register} formControl={control} />
-                        <ONTSection zitadel_sub={zitadel_sub} />
-                        <BoxSection zitadel_sub={zitadel_sub} />
+                        <ONTSection user_id={user_id} />
+                        <BoxSection user_id={user_id} />
                     </div>
                     <div className="flex flex-wrap gap-x-20">
                         <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                         <InteropSection registerToMembershipUpdateForm={register} user={user} />
-                        <ContractUpload zitadel_sub={zitadel_sub} />
+                        <ContractUpload user_id={user_id} />
                     </div>
                     <div className="mt-10">
                         <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

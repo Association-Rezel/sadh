@@ -1,5 +1,3 @@
-"""Manage subscriptions."""
-
 from datetime import datetime
 
 from fastapi import HTTPException, Response

@@ -25,7 +25,7 @@ export default function AppointmentSection({ user, setUser, registerToMembership
 
 const syncAvailabilitySlots = () => {
     Api.updateUser(
-        user.sub,
+        user.id,
         {
             availability_slots: user.availability_slots,
         }).then((user: User) => {
@@ -37,7 +37,7 @@ const syncAvailabilitySlots = () => {
 
 const syncAppointment = () => {
     Api.updateMembership(
-        user.sub,
+        user.id,
         {
             appointment: user.membership.appointment,
         }).then((user: User) => {

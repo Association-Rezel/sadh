@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Optional
+from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -114,7 +115,7 @@ class Membership(BaseModel):
 
 
 class User(BaseModel):
-    sub: str = Field(...)
+    id: UUID = Field(validation_alias="_id")
     email: str = Field(...)
     phone_number: Optional[str] = Field(None)
     first_name: str = Field(...)

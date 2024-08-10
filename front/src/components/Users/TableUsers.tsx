@@ -101,9 +101,9 @@ export function TableUsers({ users,
                             ? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             : users
                         ).map((user: User) => (
-                            <TableRow key={user.sub}>
+                            <TableRow key={user.id}>
                                 <TableCell component="th" scope="row">
-                                    <Link to={"/admin/users/" + user.sub}>
+                                    <Link to={"/admin/users/" + user.id}>
                                         {user.first_name} {user.last_name}
                                     </Link>
                                 </TableCell>

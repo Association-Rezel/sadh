@@ -4,7 +4,7 @@ import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Ty
 import { ONTInfos, PMInfos, RegisterONT } from "../../../utils/types/pon_types";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
-export default function ONTSection({ zitadel_sub }: { zitadel_sub: string }) {
+export default function ONTSection({ user_id }: { user_id: string }) {
     const { register, handleSubmit, getValues, reset, control } = useForm<RegisterONT>({
         defaultValues: {
             serial_number: "",
@@ -30,7 +30,7 @@ export default function ONTSection({ zitadel_sub }: { zitadel_sub: string }) {
             return;
         }
         setONTStillLoading(true);
-        Api.registerONT(zitadel_sub, register).then(ont => {
+        Api.registerONT(user_id, register).then(ont => {
             setONT(ont);
             setONTStillLoading(false);
         }).catch(e => {
@@ -41,11 +41,11 @@ export default function ONTSection({ zitadel_sub }: { zitadel_sub: string }) {
 
 
     useEffect(() => {
-        Api.fetchONT(zitadel_sub).then(ont => {
+        Api.fetchONT(user_id).then(ont => {
             setONT(ont);
             setONTStillLoading(false);
         });
-    }, [zitadel_sub]);
+    }, [user_id]);
 
     useEffect(() => {
         Api.fetchPMs().then(pms => {

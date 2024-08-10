@@ -49,7 +49,7 @@ export default function CmdAccesDialog({ open, onClose, user }: CmdAccesDialogPr
     useEffect(() => {
         if (!user?.membership?.appointment) return;
 
-        Api.fetchONT(user.sub).then((ont: ONTInfos) => {
+        Api.fetchONT(user.id).then((ont: ONTInfos) => {
             setHasONT(ont !== null);
             if (ont === null) return;
 

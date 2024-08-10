@@ -39,7 +39,7 @@ function CalendarComponent() {
                 start: new Date(calendarProp.appointment.slot.start),
                 end: new Date(calendarProp.appointment.slot.end),
                 title: calendarProp.user.first_name + " " + calendarProp.user.last_name,
-                userid: calendarProp.user.sub,
+                userid: calendarProp.user.id,
             },);
         }
         return events;

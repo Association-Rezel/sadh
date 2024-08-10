@@ -14,7 +14,6 @@ router = ROUTEURS.new("pms")
     "/",
     response_model=List[PMInfos],
     dependencies=[must_be_sadh_admin],
-    response_model_by_alias=False,  # So we return id instead of _id
 )
 async def _list_pms(
     db: AsyncIOMotorDatabase = get_db,
