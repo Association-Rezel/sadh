@@ -78,7 +78,7 @@ export default function Dashboards() {
             </div>
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
-                    A relancer
+                    Utilisateurs en attente de validation
                 </Typography>
                 <TableUsers users={filterUsers(users, [pendingMembershipsFilter])} />
             </div>
