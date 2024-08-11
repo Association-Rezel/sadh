@@ -86,16 +86,9 @@ def send_email_contract(to: str, adherent_name: str) -> None:
             data_dict,
             flatten=False,
         )
-    except Exception as e:
-        send_matrix_message(
-            f"❌ Erreur lors de la génération du contrat pour {adherent_name}",
-            "```",
-            str(e),
-            "```",
-        )
-    send_email(
-        "Rezel - Ton adhésion FAI",
-        """<!DOCTYPE html>
+        send_email(
+            "Rezel - Ton adhésion FAI",
+            """<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -132,8 +125,15 @@ def send_email_contract(to: str, adherent_name: str) -> None:
   </body>
 </html>
 """,
-        to,
-        attachments=[os.path.join("resources/membership", file) for file in os.listdir("resources/membership")],
-        plain=False,
-    )
-    pdf_lock.release()
+            to,
+            attachments=[os.path.join("resources/membership", file) for file in os.listdir("resources/membership")],
+            plain=False,
+        )
+        pdf_lock.release()
+    except Exception as e:
+        send_matrix_message(
+            f"❌ Erreur lors de la génération du contrat pour {adherent_name}",
+            "```",
+            str(e),
+            "```",
+        )
