@@ -115,7 +115,7 @@ export default function ONTSection({ user_id }: { user_id: string }) {
                     <>
                         <strong>Numéro de série</strong> : {ont.serial_number}<br />
                         <strong>Position au PM</strong> : {ont.mec128_position}<br />
-                        <strong>Local PON ID</strong> : {ont.local_pon_id}<br />
+                        <strong>PON Interface</strong> : {ont.olt_interface}<br />
                         <strong>PM</strong> : {ont.pm_description}<br />
                         <strong>Position porte droite</strong> : {ont.position_in_subscriber_panel}<br />
                     </>
