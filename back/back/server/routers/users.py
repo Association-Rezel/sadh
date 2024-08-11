@@ -238,7 +238,7 @@ async def _user_get_ont(
         serial_number=ont.serial_number,
         software_version=ont.software_version,
         box_mac_address=ont.box_mac_address,
-        mec128_position=position_in_pon_to_mec128_string(pm, pm.pon_list[0], ont.position_in_pon),
+        mec128_position=position_in_pon_to_mec128_string(pm.pon_list[0], ont.position_in_pon),
         olt_interface=pm.pon_list[0].olt_interface,
         pm_description=pm.description,
         position_in_subscriber_panel=ont.position_in_subscriber_panel,
