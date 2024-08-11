@@ -133,10 +133,7 @@ def send_email_contract(to: str, adherent_name: str) -> None:
 </html>
 """,
         to,
-        attachments=[
-            os.path.join("resources/email/files/subscription", file)
-            for file in os.listdir("resources/email/files/subscription")
-        ],
+        attachments=[os.path.join("resources/membership", file) for file in os.listdir("resources/membership")],
         plain=False,
     )
     pdf_lock.release()
