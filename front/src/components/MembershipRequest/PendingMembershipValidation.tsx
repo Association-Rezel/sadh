@@ -74,11 +74,9 @@ function ContractSignatureInfo({ signed }: { signed: boolean }) {
         return (
             <div className="flex flex-col gap-4 items-start">
                 <Typography variant="body1" color="text.secondary" component="p" align="left">
-                    Tu n'as pas encore envoyé le contrat signé à l'adresse fai@rezel.net.
+                    Un mail t'as été envoyé avec le contrat de fourniture de service pré-rempli. <br />
+                    Merci de le signer et de le renvoyer à fai@rezel.net.
                 </Typography>
-                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/contrat.pdf" className="mt-2" startIcon={<DownloadIcon />} >
-                    Télécharger le contrat
-                </Button>
             </div>
         );
 }

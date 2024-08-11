@@ -10,16 +10,11 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from fillpdf import fillpdfs
-from matrix_client.client import MatrixClient
 
 from back.env import ENV
+from back.messaging.matrix import send_matrix_message
 
 pdf_lock = threading.Lock()
-
-
-def send_admin_message(subject: str, body: str) -> None:
-    """Send admin message."""
-    threading.Thread(target=send_matrix, args=(subject, body)).start()
 
 
 def send_email(
@@ -33,7 +28,9 @@ def send_email(
     """Send email."""
 
     # If this is a dev environment, don't send the email
-    if ENV.environment == "dev":
+    if ENV.deploy_env != "prod":
+        print("Email NOT SENT in non-prod environment")
+        print(f"Email to {to} with subject {subject}:\n{body}")
         return
 
     try:
@@ -53,41 +50,16 @@ def send_email(
         with smtplib.SMTP("smtp.rezel.net", 25) as server:
             server.sendmail("fai@rezel.net", [to, bcc] if bcc else to, message.as_string())
     except Exception as e:
-        print(f"Error while sending email {e}")
-        # TODO: "Implement backup email sending"
-
-
-def send_matrix(subject: str, body: str) -> None:
-    """Send matrix message."""
-
-    # If this is a dev environment, don't send the message
-    if ENV.environment == "dev":
-        return
-
-    try:
-        print("Sending Matrix message")
-        matrix_client = MatrixClient("https://matrix.rezel.net")
-        token = matrix_client.login(
-            username=ENV.matrix_user,
-            password=ENV.matrix_password,
+        send_matrix_message(
+            f"❌ Erreur lors de l'envoi du mail à {to}, Sujet : {subject}",
+            "```",
+            str(e),
+            "```",
         )
-        room = matrix_client.join_room("!jrAyfdcVwGsyJMXYny:matrix.rezel.net")
-        room.send_text(
-            f"----\n\n{subject}\n\n{body}",
-        )
-        matrix_client.logout()
-        print("Matrix message sent")
-    except Exception as e:
-        print(f"Error while sending Matrix message {e}")
-        send_email(subject, body, "fai@rezel.net")
 
 
-def send_email_contract(to: str, client_name: str) -> None:
+def send_email_contract(to: str, adherent_name: str) -> None:
     """Send email contract."""
-
-    # If this is a dev environment, don't send the email
-    if ENV.environment == "dev":
-        return
 
     pdf_lock.acquire()
     try:
@@ -103,11 +75,11 @@ def send_email_contract(to: str, client_name: str) -> None:
             elif fieldName == "placeRezel":
                 data_dict[k] = "Palaiseau"
             elif fieldName == "nameRezel":
-                data_dict[k] = "Thomas PUJOL"
+                data_dict[k] = "Antonin Blot"
             elif fieldName == "fonctionRezel":
                 data_dict[k] = "Président"
             elif fieldName == "adherentName":
-                data_dict[k] = client_name
+                data_dict[k] = adherent_name
         fillpdfs.write_fillable_pdf(
             "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
             "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
@@ -115,9 +87,11 @@ def send_email_contract(to: str, client_name: str) -> None:
             flatten=False,
         )
     except Exception as e:
-        send_admin_message(
-            "Erreur lors de la génération du contrat",
-            f"Erreur lors de la génération du contrat pour {client_name}: {e}",
+        send_matrix_message(
+            f"❌ Erreur lors de la génération du contrat pour {adherent_name}",
+            "```",
+            str(e),
+            "```",
         )
     send_email(
         "Rezel - Ton adhésion FAI",
@@ -165,31 +139,3 @@ def send_email_contract(to: str, client_name: str) -> None:
         plain=False,
     )
     pdf_lock.release()
-
-
-def send_email_signed_contract(to: str, attachment_path: str) -> None:
-    # If this is a dev environment, don't send the email
-    if ENV.environment == "dev":
-        return
-
-    """Send email signed contract."""
-    send_email(
-        "Rezel - Ton adhésion FAI - contrat",
-        """<!DOCTYPE html>
-<html>
-    <body>
-        <p>Bonjour,<br>
-        <br>
-        Tu as récemment adhéré à Rezel via <a href="https://fai.rezel.net">https://fai.rezel.net</a>.<br>
-        <br>
-        Tu trouveras ci-joint le contrat signé. Tu peux également le retrouver à tout moment sur <a href="https://fai.rezel.net/contract">https://fai.rezel.net/contract</a>.<br>
-        <br>
-        A bientôt,<br>
-        Le pôle FAI de Rezel<br>
-    </body>
-</html>
-""",
-        to,
-        attachments=[attachment_path],
-        plain=False,
-    )

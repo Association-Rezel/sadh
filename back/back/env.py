@@ -59,6 +59,10 @@ class Env:  # pylint: disable=too-many-instance-attributes
     zitadel_org_id: str
     zitadel_admin_role: str
 
+    matrix_user: str
+    matrix_password: str
+    matrix_room: str
+
     # MongoDB
     db_uri: str
     db_name: str
@@ -80,7 +84,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
         load_dotenv(f".env.{self.deploy_env}")
 
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
-        self.environment = get_or_none("ENV") or "prod"
 
         zitadel_secret_file = get_or_none("ZITADEL_SECRET_FILE")
         if zitadel_secret_file:
@@ -99,6 +102,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.matrix_user = get_or_raise("MATRIX_USER")
         self.matrix_password = get_or_raise("MATRIX_PASSWORD")
+        self.matrix_room = get_or_raise("MATRIX_ROOM")
 
         self.charon_url = get_or_raise("CHARON_URL")
         self.charon_token = get_or_raise("CHARON_TOKEN")
