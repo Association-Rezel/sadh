@@ -65,7 +65,7 @@ def send_email_contract(to: str, adherent_name: str) -> None:
     try:
         data_dict = {}
         for k in fillpdfs.get_form_fields(
-            "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
+            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
             sort=False,
             page_number=None,
         ):
@@ -81,8 +81,8 @@ def send_email_contract(to: str, adherent_name: str) -> None:
             elif fieldName == "adherentName":
                 data_dict[k] = adherent_name
         fillpdfs.write_fillable_pdf(
-            "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
-            "back/email/files/subscription/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
+            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
+            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
             data_dict,
             flatten=False,
         )
@@ -134,7 +134,8 @@ def send_email_contract(to: str, adherent_name: str) -> None:
 """,
         to,
         attachments=[
-            os.path.join("back/email/files/subscription", file) for file in os.listdir("back/email/files/subscription")
+            os.path.join("resources/email/files/subscription", file)
+            for file in os.listdir("resources/email/files/subscription")
         ],
         plain=False,
     )
