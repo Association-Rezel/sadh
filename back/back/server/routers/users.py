@@ -11,7 +11,7 @@ from pymongo import ReturnDocument
 
 from back.core.hermes import register_box_for_new_ftth_adh
 from back.core.pon import position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
-from back.messaging.main import send_email_contract
+from back.messaging.mails import send_email_contract
 from back.messaging.matrix import send_matrix_message
 from back.middlewares.dependencies import get_box_from_user_id, get_user_from_user_id, get_user_me, must_be_sadh_admin
 from back.mongodb.db import get_db
