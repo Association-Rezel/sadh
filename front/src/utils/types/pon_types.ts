@@ -3,7 +3,7 @@ export interface ONTInfos {
     software_version: string;
     box_mac_address: string;
     mec128_position: string;
-    local_pon_id: number;
+    olt_interface: string;
     pm_description: string;
     position_in_subscriber_panel: string;
     pon_rack: number;

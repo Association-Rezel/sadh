@@ -13,15 +13,8 @@ def get_first_free_port(pm: PM) -> Tuple[PON, int]:
     raise ValueError("No free port available")
 
 
-def position_in_pon_to_mec128_string(pm: PM, pon: PON, position_in_pon: int) -> str:
-    offset = 0
-    for pon_idx in sorted(pm.pon_list, key=lambda pon: pon.local_pon_id):
-        if pon_idx.local_pon_id < pon.local_pon_id:
-            offset += pon_idx.number_of_ports
-        else:
-            break
-
-    return f"{chr(ord('A') + offset + position_in_pon // 8)}{position_in_pon % 8}"
+def position_in_pon_to_mec128_string(pon: PON, position_in_pon: int) -> str:
+    return f"{chr(ord('A') + pon.mec128_offset + position_in_pon // 8)}{position_in_pon % 8}"
 
 
 async def register_ont_for_new_ftth_adh(
@@ -57,7 +50,7 @@ async def register_ont_for_new_ftth_adh(
     )
 
     await db.pms.update_one(
-        {"_id": pm.id, "pon_list.local_pon_id": pon.local_pon_id},
+        {"_id": pm.id, "pon_list.olt_interface": pon.olt_interface, "pon_list.olt_id": pon.olt_id},
         {"$push": {"pon_list.$.ont_list": new_ont.model_dump()}},
     )
 
@@ -65,8 +58,8 @@ async def register_ont_for_new_ftth_adh(
         serial_number=serial_number,
         software_version=software_version,
         box_mac_address=box_mac_address,
-        mec128_position=position_in_pon_to_mec128_string(pm, pon, position_in_pon),
-        local_pon_id=pon.local_pon_id,
+        mec128_position=position_in_pon_to_mec128_string(pon, position_in_pon),
+        olt_interface=pon.olt_interface,
         pm_description=pm.description,
         pon_rack=pon.rack,
         pon_tiroir=pon.tiroir,

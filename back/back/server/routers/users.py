@@ -239,7 +239,7 @@ async def _user_get_ont(
         software_version=ont.software_version,
         box_mac_address=ont.box_mac_address,
         mec128_position=position_in_pon_to_mec128_string(pm, pm.pon_list[0], ont.position_in_pon),
-        local_pon_id=pm.pon_list[0].local_pon_id,
+        olt_interface=pm.pon_list[0].olt_interface,
         pm_description=pm.description,
         position_in_subscriber_panel=ont.position_in_subscriber_panel,
         pon_rack=pm.pon_list[0].rack,

@@ -13,19 +13,21 @@ class ONT(BaseModel):
 
 
 class PON(BaseModel):
-    local_pon_id: int = Field(...)
+    olt_interface: str = Field(...)
+    olt_id: str = Field(...)
+    mec128_offset: int = Field(...)
     number_of_ports: int = Field(...)
     rack: int = Field(...)
     tiroir: int = Field(...)
     ont_list: list[ONT] = Field(default_factory=list)
 
-    @field_validator('ont_list', mode='after')
+    @field_validator("ont_list", mode="after")
     def check_ont_list(cls, v: list[ONT], info: FieldValidationInfo):
-        if len(v) > info.data['number_of_ports']:
-            raise ValueError('The number of ONTs is greater than the number of ports')
+        if len(v) > info.data["number_of_ports"]:
+            raise ValueError("The number of ONTs is greater than the number of ports")
 
         for ont in v:
-            if ont.position_in_pon > info.data['number_of_ports']:
+            if ont.position_in_pon > info.data["number_of_ports"]:
                 raise ValueError(f"The position of the ONT {ont.serial_number} is greater than the number of ports")
 
         return v
@@ -47,7 +49,7 @@ class ONTInfos(BaseModel):
     software_version: str = Field(...)
     box_mac_address: str = Field(...)
     mec128_position: str = Field(...)
-    local_pon_id: int = Field(...)
+    olt_interface: str = Field(...)
     pm_description: str = Field(...)
     position_in_subscriber_panel: Optional[str] = Field(default=None)
     pon_rack: int = Field(...)
