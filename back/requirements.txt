@@ -3,7 +3,7 @@ fastapi==0.111.0
 psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 pydantic==2.7.1
-matrix-client==0.4.0
+matrix-nio==0.24.0
 requests==2.31.0
 fillpdf==0.7.2
 httpx==0.25.0

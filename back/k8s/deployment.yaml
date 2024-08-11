@@ -26,6 +26,7 @@ spec:
         vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
           {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
             MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
+            MATRIX_PASSWORD="{{ .Data.data.matrix_password }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa

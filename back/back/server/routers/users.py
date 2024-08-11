@@ -11,6 +11,7 @@ from pymongo import ReturnDocument
 
 from back.core.hermes import register_box_for_new_ftth_adh
 from back.core.pon import position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
+from back.messaging.matrix import send_matrix_message
 from back.middlewares.dependencies import get_box_from_user_id, get_user_from_user_id, get_user_me, must_be_sadh_admin
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
@@ -76,18 +77,10 @@ async def _me_create_membershipRequest(
 
     user = User.model_validate(userdict)
 
-    # send_admin_message(
-    #     "Demande d'adhésion",
-    #     "\n".join(
-    #         [
-    #             f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
-    #             "",
-    #             f"Adresse : {create.address.residence} {create.address.appartement_id}",
-    #             "",
-    #             "Un email avec les détails lui a été envoyé.",
-    #         ],
-    #     ),
-    # )
+    send_matrix_message(
+        "<h4>🆕 Demande d'adhésion</h4>",
+        f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
+    )
 
     # send_email_contract(user.email, user.first_name + " " + user.last_name)
     return user
@@ -118,6 +111,12 @@ async def _me_add_availability_slots(
         {"$push": {"availability_slots": {"$each": [slot.model_dump() for slot in slots]}}},
         return_document=ReturnDocument.AFTER,
     )
+
+    send_matrix_message(
+        "<h4>⌚ Créneaux de disponibilité</h4>"
+        f"{user.first_name} {user.last_name} a ajouté des créneaux de disponibilité",
+    )
+
     return User.model_validate(userdict)
 
 
