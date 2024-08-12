@@ -14,7 +14,7 @@ def get_first_free_port(pm: PM) -> Tuple[PON, int]:
 
 
 def position_in_pon_to_mec128_string(pon: PON, position_in_pon: int) -> str:
-    return f"{chr(ord('A') + (pon.mec128_offset + position_in_pon) // 8)}{((position_in_pon) % 8)}"
+    return f"{chr(ord('A') + (pon.mec128_offset + position_in_pon) // 8)}{((position_in_pon) % 8) + 1}"
 
 
 async def register_ont_for_new_ftth_adh(
