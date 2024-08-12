@@ -7,15 +7,14 @@ from back.mongodb.pon_models import ONT, PM, PON, ONTInfos
 
 def get_first_free_port(pm: PM) -> Tuple[PON, int]:
     for pon in pm.pon_list:
-        for i in range(1, pon.number_of_ports + 1):
+        for i in range(0, pon.number_of_ports):
             if not any(ont.position_in_pon == i for ont in pon.ont_list):
                 return pon, i
     raise ValueError("No free port available")
 
 
 def position_in_pon_to_mec128_string(pon: PON, position_in_pon: int) -> str:
-    # position_in_pon starts at 1 (see get_first_free_port)
-    return f"{chr(ord('A') + (pon.mec128_offset + position_in_pon - 1) // 8)}{((position_in_pon - 1) % 8) + 1}"
+    return f"{chr(ord('A') + (pon.mec128_offset + position_in_pon) // 8)}{((position_in_pon) % 8)}"
 
 
 async def register_ont_for_new_ftth_adh(
