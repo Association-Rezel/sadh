@@ -13,7 +13,7 @@ variables:
 buildfrontend:
   stage: build
   rules:
-    - if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes:
         - front/**/*
       variables:
@@ -22,6 +22,7 @@ buildfrontend:
         - front/**/*
       variables:
         DEPLOY_ENV: "dev"
+    - when: never # Defaults to not run (e.g. merge requests pipelines)
   environment: # Gitlab environment for Gitlab CI/CD variables
     name: $DEPLOY_ENV
   image:
@@ -40,13 +41,14 @@ buildbackend:
   rules:
     - changes:
         - back/**/*
-      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
         - back/**/*
       variables:
         DEPLOY_ENV: "dev"
+    - when: never # Defaults to not run (e.g. merge requests pipelines)
   image:
     name: gcr.io/kaniko-project/executor:v1.23.0-debug
     entrypoint: [""]
@@ -61,7 +63,7 @@ deploybackend:
   rules:
     - changes:
         - back/**/*
-      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
@@ -69,6 +71,7 @@ deploybackend:
       variables:
         DEPLOY_ENV: "dev"
       when: manual
+    - when: never # Defaults to not run (e.g. merge requests pipelines)
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']
@@ -90,7 +93,7 @@ deployfrontend:
   rules:
     - changes:
         - front/**/*
-      if: $CI_COMMIT_BRANCH =~ $CI_DEFAULT_BRANCH
+      if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
     - changes:
@@ -98,6 +101,7 @@ deployfrontend:
       variables:
         DEPLOY_ENV: "dev"
       when: manual
+    - when: never # Defaults to not run (e.g. merge requests pipelines)
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']
