@@ -66,10 +66,12 @@ deploybackend:
       if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
+        DEPLOY_NAMESPACE: "default"
     - changes:
         - back/**/*
       variables:
         DEPLOY_ENV: "dev"
+        DEPLOY_NAMESPACE: "dev"
       when: manual
     - when: never # Defaults to not run (e.g. merge requests pipelines)
   image:
@@ -96,10 +98,12 @@ deployfrontend:
       if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
+        DEPLOY_NAMESPACE: "default"
     - changes:
         - front/**/*
       variables:
         DEPLOY_ENV: "dev"
+        DEPLOY_NAMESPACE: "dev"
       when: manual
     - when: never # Defaults to not run (e.g. merge requests pipelines)
   image:

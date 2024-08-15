@@ -16,3 +16,22 @@ spec:
     - protocol: TCP
       port: 10000
       targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sadh-back-service
+  namespace: dev
+  annotations:
+    kube-vip.io/loadbalancerIPs: 137.194.15.36,2a09:6847:fa10:2270::1536
+spec:
+  type: LoadBalancer
+  ipFamilyPolicy: RequireDualStack
+  selector:
+    app: sadh
+    tier: back
+  loadBalancerClass: kube-vip.io/kube-vip-class
+  ports:
+    - protocol: TCP
+      port: 10100
+      targetPort: 80
