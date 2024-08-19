@@ -17,10 +17,6 @@ async def _reverse_proxy(
 ):
     # On proxy la requête vers nix
     url = f"{ENV.nix_url}{request.url.path.replace('/nix/', '/')}"
-    # On récupère les headers
-    headers = {
-        'Authorization': f"Bearer {ENV.nix_token}",
-    }
     # On lance la requête
     data = await request.body()
     try:
@@ -28,7 +24,6 @@ async def _reverse_proxy(
             request.method,
             url,
             data=data,
-            headers=headers,
             timeout=15,
         )
     except requests.exceptions.Timeout:
