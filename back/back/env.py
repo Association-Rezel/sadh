@@ -71,7 +71,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
     charon_token: str
 
     nix_url: str
-    nix_token: str
 
     def __init__(self) -> None:
         """Load all variables."""
@@ -111,7 +110,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.nextcloud_share_password = get_or_raise("NEXTCLOUD_SHARE_PASSWORD")
 
         self.nix_url = get_or_raise("NIX_URL")
-        self.nix_token = get_or_raise("NIX_TOKEN")
 
 
 ENV = Env()
