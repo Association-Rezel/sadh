@@ -65,7 +65,7 @@ async def _me_create_membershipRequest(
         {
             "$set": {
                 "phone_number": request.phone_number,
-                "membership.address": request.address.model_dump(),
+                "membership.address": request.address.model_dump(mode="json"),
                 "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
                 "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
                 "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
@@ -109,7 +109,7 @@ async def _me_add_availability_slots(
 ) -> User:
     userdict = await db.users.find_one_and_update(
         {"_id": str(user.id)},
-        {"$push": {"availability_slots": {"$each": [slot.model_dump() for slot in slots]}}},
+        {"$push": {"availability_slots": {"$each": [slot.model_dump(mode="json") for slot in slots]}}},
         return_document=ReturnDocument.AFTER,
     )
 
@@ -171,7 +171,9 @@ async def _user_update_membership(
         raise HTTPException(status_code=400, detail="User has no membership")
 
     # Remove all non-set fields from the update
-    updatedict = {key: getattr(update, key) for key, _dict_value in update.model_dump(exclude_unset=True).items()}
+    updatedict = {
+        key: getattr(update, key) for key, _dict_value in update.model_dump(exclude_unset=True, mode="json").items()
+    }
 
     print(updatedict)
 
@@ -179,7 +181,7 @@ async def _user_update_membership(
 
     userdict = await db.users.find_one_and_update(
         {"_id": user_id},
-        {"$set": {"membership": updated.model_dump(exclude_unset=True)}},
+        {"$set": {"membership": updated.model_dump(exclude_unset=True, mode="json")}},
         return_document=ReturnDocument.AFTER,
     )
 

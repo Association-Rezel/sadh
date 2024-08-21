@@ -70,7 +70,7 @@ async def register_box_for_new_ftth_adh(
         wan_vlan=[ADH_TP_IPV4_WAN_VLAN, ADH_EXTE_IPV4_WAN_VLAN, ADH_IPV6_WAN_VLAN],
     )
 
-    await db.boxes.insert_one(new_box.model_dump())
+    await db.boxes.insert_one(new_box.model_dump(mode="json"))
 
     return new_box
 
