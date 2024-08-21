@@ -51,7 +51,7 @@ async def register_ont_for_new_ftth_adh(
 
     await db.pms.update_one(
         {"_id": pm.id, "pon_list.olt_interface": pon.olt_interface, "pon_list.olt_id": pon.olt_id},
-        {"$push": {"pon_list.$.ont_list": new_ont.model_dump()}},
+        {"$push": {"pon_list.$.ont_list": new_ont.model_dump(mode="json")}},
     )
 
     ont_infos = ONTInfos(
