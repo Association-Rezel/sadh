@@ -22,16 +22,10 @@ def send_email(
     body: str,
     to: str,
     attachments: list[str] | None = None,
-    bcc: str = "fai@rezel.net",
+    bcc: str = ENV.fai_email_address,
     plain: bool = True,
 ) -> None:
     """Send email."""
-
-    # If this is a dev environment, don't send the email
-    if ENV.deploy_env != "prod":
-        print("Email NOT SENT in non-prod environment")
-        print(f"Email to {to} with subject {subject}:\n{body}")
-        return
 
     try:
         message = MIMEMultipart("mixed")
