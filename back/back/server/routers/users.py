@@ -1,7 +1,5 @@
 """Get or edit users."""
 
-from pprint import pprint
-
 import nextcloud_client.nextcloud_client
 from fastapi import HTTPException
 from fastapi import Response as FastAPIResponse
@@ -10,19 +8,26 @@ from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from back.core.hermes import register_box_for_new_ftth_adh
-from back.core.pon import position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
+from back.core.pon import get_ontinfo_from_box, position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
+from back.core.status_update import StatusUpdate, StatusUpdateInfo, StatusUpdateManager
 from back.messaging.mails import send_email_contract
 from back.messaging.matrix import send_matrix_message
-from back.middlewares.dependencies import get_box_from_user_id, get_user_from_user_id, get_user_me, must_be_sadh_admin
+from back.middlewares.dependencies import (
+    get_box_from_user_id,
+    get_status_update_manager,
+    get_user_from_user_id,
+    get_user_me,
+    must_be_sadh_admin,
+)
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
-from back.mongodb.pon_models import ONT, PM, ONTInfos, RegisterONT
+from back.mongodb.pon_models import PM, ONTInfo, RegisterONT
 from back.mongodb.user_models import (
     Address,
     AppointmentSlot,
     DepositStatus,
     EquipmentStatus,
-    MembershipRequest,
+    FTTHMembershipRequest,
     MembershipStatus,
     MembershipUpdate,
     User,
@@ -49,14 +54,13 @@ class CreateMembership(BaseModel):
     phone_number: str
 
 
-@router.post("/me/membershipRequest", status_code=201, response_model=User)
+@router.post("/me/membershipRequest/ftth", status_code=201, response_model=User)
 async def _me_create_membershipRequest(
-    request: MembershipRequest,
+    request: FTTHMembershipRequest,
     user: User = get_user_me,
     db: AsyncIOMotorDatabase = get_db,
 ):
     """Request a membership."""
-
     if user.membership:
         raise HTTPException(status_code=400, detail="User is already a member")
 
@@ -65,13 +69,14 @@ async def _me_create_membershipRequest(
         {
             "$set": {
                 "phone_number": request.phone_number,
+                "membership.type": "FTTH",
                 "membership.address": request.address.model_dump(mode="json"),
                 "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
                 "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
                 "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
                 "membership.init.payment_method_first_month": request.payment_method_first_month,
                 "membership.init.payment_method_deposit": request.payment_method_deposit,
-            }
+            },
         },
         return_document=ReturnDocument.AFTER,
     )
@@ -166,7 +171,6 @@ async def _user_update_membership(
     user: User = get_user_from_user_id,
 ) -> User:
     """Edit the user's membership."""
-
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
 
@@ -174,8 +178,6 @@ async def _user_update_membership(
     updatedict = {
         key: getattr(update, key) for key, _dict_value in update.model_dump(exclude_unset=True, mode="json").items()
     }
-
-    print(updatedict)
 
     updated = user.membership.model_copy(update=updatedict)
 
@@ -220,50 +222,41 @@ def _user_get_contract(
 async def _user_get_ont(
     db: AsyncIOMotorDatabase = get_db,
     box: Box | None = get_box_from_user_id,
-) -> ONTInfos:
+) -> ONTInfo:
     if not box:
         raise HTTPException(
             status_code=404,
             detail="No box found for this user. The user is likely not linked to the main unet of a box",
         )
 
-    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+    ont_info = await get_ontinfo_from_box(db, box)
 
-    if not pm:  # No PM has this ONT
-        raise HTTPException(status_code=404, detail="No ONT found for this user")
+    if not ont_info:
+        raise HTTPException(
+            status_code=404,
+            detail="No ONT found for this box.",
+        )
 
-    pm = PM.model_validate(pm)
-
-    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
-
-    ont_infos = ONTInfos(
-        serial_number=ont.serial_number,
-        software_version=ont.software_version,
-        box_mac_address=ont.box_mac_address,
-        mec128_position=position_in_pon_to_mec128_string(pm.pon_list[0], ont.position_in_pon),
-        olt_interface=pm.pon_list[0].olt_interface,
-        pm_description=pm.description,
-        position_in_subscriber_panel=ont.position_in_subscriber_panel,
-        pon_rack=pm.pon_list[0].rack,
-        pon_tiroir=pm.pon_list[0].tiroir,
-    )
-
-    return ont_infos
+    return ont_info
 
 
 @router.post("/{user_id}/ont", dependencies=[must_be_sadh_admin])
 async def _user_register_ont(
     register: RegisterONT,
     db: AsyncIOMotorDatabase = get_db,
-) -> ONTInfos:
+) -> ONTInfo:
     try:
-        ont_infos = await register_ont_for_new_ftth_adh(
-            db, register.pm_id, register.serial_number, register.software_version, register.box_mac_address
+        ont_info = await register_ont_for_new_ftth_adh(
+            db,
+            register.pm_id,
+            register.serial_number,
+            register.software_version,
+            register.box_mac_address,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    return ont_infos
+    return ont_info
 
 
 @router.get("/{user_id}/box", dependencies=[must_be_sadh_admin], response_model=Box)
@@ -309,22 +302,49 @@ async def _user_register_box(
     return new_box
 
 
-# TODO Remove probably useless
-# @router.post("/{user_id}/availability", dependencies=[must_be_sadh_admin], response_model=Box)
-# async def _user_create_appointment_slots(
-#     user_id: str,
-#     slots: list[AppointmentSlot],
-#     db: AsyncIOMotorDatabase = get_db,
-# ) -> list[AppointmentSlot]:
-#     """Submit appointment slots."""
-#     user = await db.users.find_one({"_id": user_id})
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
+@router.get("/{user_id}/next-membership-status", dependencies=[must_be_sadh_admin], response_model=StatusUpdateInfo)
+async def _user_get_next_membership_status(
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+    status_update_manager: StatusUpdateManager = get_status_update_manager,
+) -> StatusUpdateInfo:
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
 
-#     user = await db.users.find_one_and_update(
-#         {"_id": user_id},
-#         {"$push": {"availability_slots": slots}},
-#         return_document=ReturnDocument.AFTER,
-#     )
+    possible_updates = status_update_manager.get_possible_updates_from(user.membership.status)
 
-#     return user.availability_slots
+    if not possible_updates:
+        raise HTTPException(status_code=404, detail="No possible status update found")
+
+    return await StatusUpdateInfo.from_status_update(
+        db,
+        user,
+        possible_updates[0],
+    )
+
+
+@router.post("/{user_id}/next-membership-status", dependencies=[must_be_sadh_admin], response_model=User)
+async def _user_update_membership_status(
+    next_status: MembershipStatus,
+    user: User = get_user_from_user_id,
+    db: AsyncIOMotorDatabase = get_db,
+    status_update_manager: StatusUpdateManager = get_status_update_manager,
+) -> User:
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    possible_updates = status_update_manager.get_possible_updates_from(user.membership.status)
+
+    if not any(update.to_status == next_status for update in possible_updates):
+        raise HTTPException(status_code=400, detail="This status update is not possible")
+
+    update = next(update for update in possible_updates if update.to_status == next_status)
+
+    if await update.check_conditions(user, db):
+        raise HTTPException(
+            status_code=400,
+            detail="The following conditions are not met: "
+            + ", ".join(map(lambda c: c.description, update.conditions)),
+        )
+
+    return await update.apply_effects(user, db)

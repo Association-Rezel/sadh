@@ -9,23 +9,41 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from babel.dates import format_datetime
 from fillpdf import fillpdfs
+from jinja2 import Environment, PackageLoader
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from back.core.hermes import get_box_from_user
+from back.core.pon import get_ontinfo_from_box
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
+from back.mongodb.hermes_models import Box, UnetProfile
+from back.mongodb.pon_models import ONT, ONTInfo
+from back.mongodb.user_models import Residence, User
 
 pdf_lock = threading.Lock()
 
+from jinja2 import Environment, PackageLoader, select_autoescape
 
-def send_email(
+jinja2_emails_env = Environment(loader=PackageLoader("back", "templates/emails"), autoescape=select_autoescape())
+
+
+def _send_email(
     subject: str,
     body: str,
     to: str,
     attachments: list[str] | None = None,
-    bcc: str = ENV.fai_email_address,
-    plain: bool = True,
+    bcc: str | None = ENV.fai_email_address,
+    html: bool = False,
 ) -> None:
     """Send email."""
+
+    if ENV.deploy_env == "local":
+        print("DEPLOY_ENV is local")
+        print(f"NOT sending email to {to} with subject: {subject}")
+        print(body)
+        return
 
     try:
         message = MIMEMultipart("mixed")
@@ -34,7 +52,7 @@ def send_email(
         if bcc:
             message["Bcc"] = bcc
         message["Subject"] = subject
-        message.attach(MIMEText(body, "plain" if plain else "html"))
+        message.attach(MIMEText(body, "html" if html else "plain"))
         if attachments:
             for attachment in attachments:
                 with open(attachment, "rb") as file:
@@ -50,6 +68,46 @@ def send_email(
             str(e),
             "```",
         )
+
+
+def send_email_validated(user: User) -> None:
+    _send_email(
+        "Rezel - Demande d'adhésion validée",
+        jinja2_emails_env.get_template("request_validated.html").render(user=user),
+        user.email,
+        html=True,
+    )
+
+
+async def send_mail_appointment_validated(user: User, db: AsyncIOMotorDatabase) -> None:
+    if user.membership is None or user.membership.appointment is None:
+        raise ValueError("User has no membership or appointment")
+
+    box = await get_box_from_user(db, user)  # type: ignore
+
+    if box is None:
+        raise ValueError("User has no box")
+
+    ont = await get_ontinfo_from_box(db, box)
+
+    if ont is None:
+        raise ValueError("User has no ONT")
+
+    _send_email(
+        f"Rezel - Ton rendez-vous du {user.membership.appointment.slot.start.strftime('%d/%m/%Y')} de raccordement à la fibre optique",
+        jinja2_emails_env.get_template("appointment_validated.html").render(
+            user=user,
+            appt_day_of_the_week=format_datetime(user.membership.appointment.slot.start, "EEEE", locale="fr"),
+            appt_date=user.membership.appointment.slot.start.strftime("%d/%m"),
+            appt_time=user.membership.appointment.slot.start.strftime("%H:%M"),
+            position_mec_128=ont.mec128_position,
+            ssid=next(filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)).wifi.ssid,
+            password=next(filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)).wifi.psk,
+            is_aljt=user.membership.address.residence == Residence.ALJT,
+        ),
+        user.email,
+        html=True,
+    )
 
 
 def send_email_contract(to: str, adherent_name: str) -> None:
@@ -80,7 +138,7 @@ def send_email_contract(to: str, adherent_name: str) -> None:
             data_dict,
             flatten=False,
         )
-        send_email(
+        _send_email(
             "Rezel - Ton adhésion FAI",
             """<!DOCTYPE html>
 <html>
@@ -121,7 +179,7 @@ def send_email_contract(to: str, adherent_name: str) -> None:
 """,
             to,
             attachments=[os.path.join("resources/membership", file) for file in os.listdir("resources/membership")],
-            plain=False,
+            html=True,
         )
         pdf_lock.release()
     except Exception as e:

@@ -2,7 +2,8 @@ from typing import Tuple
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
-from back.mongodb.pon_models import ONT, PM, PON, ONTInfos
+from back.mongodb.hermes_models import Box
+from back.mongodb.pon_models import ONT, PM, PON, ONTInfo
 
 
 def get_first_free_port(pm: PM) -> Tuple[PON, int]:
@@ -23,7 +24,7 @@ async def register_ont_for_new_ftth_adh(
     serial_number: str,
     software_version: str,
     box_mac_address: str,
-) -> ONTInfos:
+) -> ONTInfo:
 
     # PM exists
     if not (pm := PM.model_validate(await db.pms.find_one({"_id": pm_id}))):
@@ -54,7 +55,7 @@ async def register_ont_for_new_ftth_adh(
         {"$push": {"pon_list.$.ont_list": new_ont.model_dump(mode="json")}},
     )
 
-    ont_infos = ONTInfos(
+    ont_info = ONTInfo(
         serial_number=serial_number,
         software_version=software_version,
         box_mac_address=box_mac_address,
@@ -65,4 +66,42 @@ async def register_ont_for_new_ftth_adh(
         pon_tiroir=pon.tiroir,
     )
 
-    return ont_infos
+    return ont_info
+
+
+async def get_ont_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONT | None:
+    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+
+    if not pm:  # No PM has this ONT
+        return None
+
+    pm = PM.model_validate(pm)
+
+    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
+
+    return ont
+
+
+async def get_ontinfo_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONTInfo | None:
+    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+
+    if not pm:  # No PM has this ONT
+        return None
+
+    pm = PM.model_validate(pm)
+
+    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
+
+    pon = next(filter(lambda p: ont in p.ont_list, pm.pon_list))
+
+    return ONTInfo(
+        serial_number=ont.serial_number,
+        software_version=ont.software_version,
+        box_mac_address=ont.box_mac_address,
+        mec128_position=position_in_pon_to_mec128_string(pon, ont.position_in_pon),
+        olt_interface=pon.olt_interface,
+        pm_description=pm.description,
+        position_in_subscriber_panel=ont.position_in_subscriber_panel,
+        pon_rack=pon.rack,
+        pon_tiroir=pon.tiroir,
+    )

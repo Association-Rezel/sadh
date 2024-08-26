@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Api } from "../../../utils/Api";
 import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
-import { ONTInfos, PMInfos, RegisterONT } from "../../../utils/types/pon_types";
+import { ONTInfo, PMInfo, RegisterONT } from "../../../utils/types/pon_types";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 
 export default function ONTSection({ user_id }: { user_id: string }) {
@@ -15,8 +15,8 @@ export default function ONTSection({ user_id }: { user_id: string }) {
     });
 
     const [ontStillLoading, setONTStillLoading] = useState<boolean>(true);
-    const [ont, setONT] = useState<ONTInfos | null>(null);
-    const [pms, setPms] = useState<PMInfos[] | null>(null);
+    const [ont, setONT] = useState<ONTInfo | null>(null);
+    const [pms, setPms] = useState<PMInfo[] | null>(null);
 
     const onSubmit: SubmitHandler<RegisterONT> = (register: RegisterONT) => {
         //Check not empty 
@@ -56,7 +56,7 @@ export default function ONTSection({ user_id }: { user_id: string }) {
 
 
     return (
-        <div className="mt-10">
+        <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
                 ONT
             </Typography>

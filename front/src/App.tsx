@@ -51,7 +51,7 @@ function AppRouter() {
 
                 <Route path="appointment" element={<Navigate to="/account/appointment" />} />
 
-                {appState.user && appState.user?.membership?.status != MembershipStatus.REQUEST_PENDING_VALIDATION && appState.user?.membership?.status != MembershipStatus.REJECTED && (
+                {appState.user && appState.user?.membership?.status != MembershipStatus.REQUEST_PENDING_VALIDATION && (
                     <Route path="contract" Component={PageContract} />
                 )}
                 <Route path="*" Component={Page404} />

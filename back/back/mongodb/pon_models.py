@@ -44,7 +44,7 @@ class PM(BaseModel):
 ####
 
 
-class ONTInfos(BaseModel):
+class ONTInfo(BaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
     box_mac_address: str = Field(...)
@@ -56,7 +56,7 @@ class ONTInfos(BaseModel):
     pon_tiroir: int = Field(...)
 
 
-class PMInfos(BaseModel):
+class PMInfo(BaseModel):
     id: str = Field(..., validation_alias=AliasChoices("id", "_id"))
     description: str = Field(...)
 

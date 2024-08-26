@@ -1,13 +1,14 @@
 import { Box } from "./hermes_types";
-import { ONTInfos, PMInfos, RegisterONT } from "./pon_types";
+import { ONTInfo, PMInfo, RegisterONT } from "./pon_types";
 
 export enum MembershipStatus {
-    REQUEST_PENDING_VALIDATION = 1,
-    VALIDATED = 2,
-    REJECTED = 3,
-    ACTIVE = 4,
-    PENDING_INACTIVE = 5,
-    INACTIVE = 6
+    REQUEST_PENDING_VALIDATION = 100,
+    VALIDATED = 200,
+    SENT_CMD_ACCES = 300,
+    APPOINTMENT_VALIDATED = 400,
+    ACTIVE = 500,
+    PENDING_INACTIVE = 600,
+    INACTIVE = 700
 }
 
 export enum EquipmentStatus {
@@ -100,6 +101,14 @@ export function isSameSlot(slot1: AppointmentSlot | null, slot2: AppointmentSlot
     return slot1?.start.getTime() == slot2?.start.getTime() && slot1?.end.getTime() == slot2?.end.getTime();
 }
 
+export interface StatusUpdateInfo {
+    from_status: MembershipStatus;
+    to_status: MembershipStatus;
+    conditions: string[];
+    conditions_not_met: string[];
+    effects: string[];
+}
+
 // Voir https://gitlab.com/rezel/faipp/nix/-/blob/master/nix/main.py
 export interface CommandeAccesInfo {
     nom_adherent: string,
@@ -143,13 +152,15 @@ export interface ApiInterface {
     submitMyMembershipRequest(request: MembershipRequest): Promise<User>;
     fetchUser(user_id: string): Promise<User>;
     updateUser(user_id: string, update: Partial<User>): Promise<User>;
-    fetchPMs(): Promise<PMInfos[]>;
-    fetchONT(user_id: string): Promise<ONTInfos>;
-    registerONT(user_id: string, register: RegisterONT): Promise<ONTInfos>;
+    fetchPMs(): Promise<PMInfo[]>;
+    fetchONT(user_id: string): Promise<ONTInfo>;
+    registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo>;
     updateMembership(membership_id: string, membership: Partial<Membership>): Promise<User>;
     fetchFile(url: string): Promise<Blob>;
     fetchUserBox(user_id: string): Promise<Box>;
     registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
     sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
+    fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo>;
+    updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
 }

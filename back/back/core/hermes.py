@@ -19,6 +19,7 @@ from back.mongodb.hermes_models import (
     WanVlan,
     WifiDetails,
 )
+from back.mongodb.user_models import User
 
 ADH_TP_IPV4_WAN_VLAN = WanVlan(vlan_id=101, ipv4_gateway="137.194.11.254/24", ipv6_gateway="")
 ADH_EXTE_IPV4_WAN_VLAN = WanVlan(vlan_id=102, ipv4_gateway="195.14.28.254/24", ipv6_gateway="")
@@ -30,7 +31,7 @@ async def register_box_for_new_ftth_adh(
     box_type: str,
     mac: str,
     telecom_ip: bool,
-):
+) -> Box:
     if await db.boxes.find_one({"mac": mac}):
         raise ValueError(f"Box with MAC address {mac} already exists")
 
@@ -73,6 +74,13 @@ async def register_box_for_new_ftth_adh(
     await db.boxes.insert_one(new_box.model_dump(mode="json"))
 
     return new_box
+
+
+async def get_box_from_user(db: AsyncIOMotorDatabase, user: User) -> Box | None:
+    if not user.membership or not user.membership.unetid:
+        return None
+
+    return Box.model_validate(await db.boxes.find_one({"unets.unet_id": user.membership.unetid}))
 
 
 def generate_password() -> str:

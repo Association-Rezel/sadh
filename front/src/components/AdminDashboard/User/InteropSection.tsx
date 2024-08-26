@@ -14,7 +14,7 @@ export default function InteropSection({
     const [CRMESDialogOpen, setCRMESDialogOpen] = React.useState(false);
 
     return (
-        <div>
+        <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
                 Interop
             </Typography>

@@ -2,22 +2,25 @@ import uuid
 from uuid import UUID
 
 from fastapi import Depends, Header, HTTPException
+from httpx import get
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
+from back.core.hermes import get_box_from_user
+from back.core.status_update import StatusUpdateManager
 from back.env import ENV
 from back.http_errors import NotFound
-from back.middlewares.zitadel import ValidatorError, ZitadelIntrospectTokenValidator, ZitadelUserInfos
+from back.middlewares.zitadel import ValidatorError, ZitadelIntrospectTokenValidator, ZitadelUserInfo
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
 from back.mongodb.user_models import User
 
 
 @Depends
-def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInfos:
+def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInfo:
     """
     Request introspection token endpoint with the access token and
-    return the token information as a ZitadelUserInfos object.
+    return the token information as a ZitadelUserInfo object.
     """
 
     if authorization is None:
@@ -32,7 +35,7 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
         except KeyError:
             is_admin = False
 
-        return ZitadelUserInfos(
+        return ZitadelUserInfo(
             given_name=introspected["given_name"],
             family_name=introspected["family_name"],
             email=introspected["email"],
@@ -43,7 +46,7 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
 
 
 @Depends
-def must_be_sadh_admin(user: ZitadelUserInfos = introspect_access_token) -> None:
+def must_be_sadh_admin(user: ZitadelUserInfo = introspect_access_token) -> None:
     """If the user is not an admin, raise a 403 error."""
     if not user.admin:
         raise HTTPException(status_code=403, detail="User must be admin")
@@ -51,7 +54,7 @@ def must_be_sadh_admin(user: ZitadelUserInfos = introspect_access_token) -> None
 
 @Depends
 async def get_user_me(
-    userInfos: ZitadelUserInfos = introspect_access_token,
+    userInfo: ZitadelUserInfo = introspect_access_token,
     db: AsyncIOMotorDatabase = get_db,
 ) -> User:
     """
@@ -59,12 +62,12 @@ async def get_user_me(
     If the user does not exist, it is created.
     """
     userdict = await db.users.find_one_and_update(
-        {"email": userInfos.email},
+        {"email": userInfo.email},
         {
             "$set": {
-                "first_name": userInfos.given_name,
-                "last_name": userInfos.family_name,
-                "email": userInfos.email,
+                "first_name": userInfo.given_name,
+                "last_name": userInfo.family_name,
+                "email": userInfo.email,
             },
             "$setOnInsert": {
                 "_id": str(uuid.uuid4()),
@@ -114,7 +117,12 @@ async def get_box(
     user: User,
 ) -> Box | None:
     """Return the user box."""
-    if not user.membership or not user.membership.unetid:
-        return None
+    return await get_box_from_user(db, user)
 
-    return Box.model_validate(await db.boxes.find_one({"unets.unet_id": user.membership.unetid}))
+
+status_update_manager = StatusUpdateManager()
+
+
+@Depends
+async def get_status_update_manager() -> StatusUpdateManager:
+    return status_update_manager
