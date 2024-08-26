@@ -72,7 +72,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     nix_url: str
 
-    fai_email_address: str
+    fai_email_address: str | None
 
     def __init__(self) -> None:
         """Load all variables."""
@@ -113,7 +113,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.nix_url = get_or_raise("NIX_URL")
 
-        self.fai_email_address = get_or_raise("FAI_EMAIL_ADDRESS")
+        self.fai_email_address = get_or_none("FAI_EMAIL_ADDRESS")
 
 
 ENV = Env()

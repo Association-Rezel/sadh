@@ -11,6 +11,7 @@ import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
 import { Button, Typography } from "@mui/material";
 import ContractUpload from "./ContractUpload";
+import StatusUpdateSection from "./StatusUpdateSection";
 
 
 function UserComponent() {
@@ -41,6 +42,12 @@ function UserComponent() {
         });
     }, [user_id]);
 
+    // Reste form when user changes. For example if the tstae is updaed
+    // Via the status update section
+    useEffect(() => {
+        reset(user?.membership);
+    }, [user]);
+
     return (
         <div>
             <UserSection user={user} />
@@ -50,11 +57,10 @@ function UserComponent() {
                 <>
                     <div className="flex gap-x-20 flex-wrap justify-between">
                         <MembershipSection user={user} registerToMembershipUpdateForm={register} formControl={control} />
+                        <StatusUpdateSection user={user} setUser={setUser} />
+                        <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                         <ONTSection user_id={user_id} />
                         <BoxSection user_id={user_id} />
-                    </div>
-                    <div className="flex flex-wrap gap-x-20 justify-between">
-                        <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                         <InteropSection registerToMembershipUpdateForm={register} user={user} />
                         <ContractUpload user_id={user_id} />
                     </div>

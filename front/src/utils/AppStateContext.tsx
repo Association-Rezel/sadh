@@ -19,7 +19,7 @@ const defaultAppState: AppState = {
 
 interface AppStateContextValueWrapper {
     appState: AppState,
-    updateAppState: (newState: Partial<AppState>) => void,
+    updateAppState: (partialUpdate: Partial<AppState>) => void,
     resetAppState: () => void
     syncFromZitadelContext?: () => void
 };

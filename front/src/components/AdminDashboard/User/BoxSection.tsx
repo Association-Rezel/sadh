@@ -48,7 +48,7 @@ export default function BoxSection({
     const [maskedPsk, setMaskedPsk] = useState("**********");
 
     return (
-        <div className="mt-10">
+        <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
                 Box
             </Typography>
@@ -65,6 +65,7 @@ export default function BoxSection({
                         <FormControl>
                             <InputLabel id="boxtype-label">Type de box</InputLabel>
                             <Select
+                                className="bg-white"
                                 labelId="boxtype-label"
                                 id="boxtype-select"
                                 label="Type de box"

@@ -7,12 +7,13 @@ from pydantic import AliasChoices, BaseModel, Field, field_validator
 
 
 class MembershipStatus(int, Enum):
-    REQUEST_PENDING_VALIDATION = 1
-    VALIDATED = 2
-    REJECTED = 3
-    ACTIVE = 4
-    PENDING_INACTIVE = 5
-    INACTIVE = 6
+    REQUEST_PENDING_VALIDATION = 100
+    VALIDATED = 200
+    SENT_CMD_ACCES = 300
+    APPOINTMENT_VALIDATED = 400
+    ACTIVE = 500
+    PENDING_INACTIVE = 600
+    INACTIVE = 700
 
 
 class EquipmentStatus(int, Enum):
@@ -84,7 +85,13 @@ class MembershipInitialization(BaseModel):
     payment_method_deposit: PaymentMethod = Field(...)
 
 
+class MembershipType(str, Enum):
+    FTTH = "FTTH"
+    WIFI = "WIFI"
+
+
 class Membership(BaseModel):
+    type: MembershipType = Field(...)
     status: MembershipStatus = Field(...)
     address: Address = Field(...)
     comment: str = Field("")
@@ -148,7 +155,7 @@ class UserUpdate(BaseModel):
     availability_slots: Optional[set[AppointmentSlot]] = Field(None)
 
 
-class MembershipRequest(BaseModel):
+class FTTHMembershipRequest(BaseModel):
     phone_number: str = Field(...)
     address: Address = Field(...)
     payment_method_first_month: PaymentMethod = Field(...)

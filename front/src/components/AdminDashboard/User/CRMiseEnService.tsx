@@ -9,7 +9,7 @@ import { Api } from '../../../utils/Api';
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { ONTInfos } from '../../../utils/types/pon_types';
+import { ONTInfo } from '../../../utils/types/pon_types';
 
 export interface CRMESDialogProps {
     open: boolean;
@@ -40,7 +40,7 @@ export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
     useEffect(() => {
         if (!user?.membership) return;
 
-        Api.fetchONT(user.id).then((ont: ONTInfos) => {
+        Api.fetchONT(user.id).then((ont: ONTInfo) => {
             setHasONT(ont !== null);
             if (ont === null) return;
 

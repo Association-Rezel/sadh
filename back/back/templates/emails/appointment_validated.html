@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+</head>
+
+<body>
+    Bonjour {{user.first_name}},<br />
+    <br />
+    ⌚ Nous te confirmons que ton rendez-vous pour le raccordement à la fibre a été confirmé par Orange
+    et aura lieu le <strong>{{appt_day_of_the_week}} {{appt_date}}</strong> à partir de <strong>{{appt_time}}</strong>.
+
+    L'intervention durera entre 1 et 2 heures. Le technicien t'appellera quelques minutes avant son arrivée, donc
+    attention à ne pas manquer son appel pour ne pas risquer des pénalités financières.<br />
+    <br />
+    💡 Le technicien se rendra chez toi pour brancher un stylo optique sur ta prise fibre, puis se rendra au point de
+    mutualisation situé proche de la résidence Kley pour connecter la fibre menant à nos équipements
+    à la fibre allant jusqu'à ton logement. Ensuite, il devrait retourner chez toi afin de s'assurer de la continuité
+    optique entre nos équipements et ton logement.<br />
+    <br />
+    ⚠️ Merci de préciser au technicien que la position "porte gauche" au PM est la suivante :<br />
+    <div>
+        <div style="border: 1px solid black; margin: 10px; padding: 10px; display: inline-block;">
+            <strong>
+                Porte gauche<br />
+                Tête 4 (Rezel)<br />
+                Position {{position_mec_128}}
+            </strong>
+        </div>
+    </div>
+
+    {% if is_aljt %}
+    🔑 Pense à demander les clés du local technique fibre de la résidence à l'accueil d'ALJT. Le technicien
+    pourrait avoir besoin de cet accès pour réaliser l'intervention.<br />
+    <br />
+    {% endif %}
+
+    ⚙️ Lorsque le technicien aura finalisé son intervention, tu pourras réaliser les opérations suivantes :
+    <ul>
+        <li>Brancher le petit boîtier noir Nokia (fourni avec la box) à prise optique (boitîer blanc dans ton armoire
+            électrique) à l'aide d'une fibre optique à embouts verts (fournie par le technicien).</li>
+        <li>Connecter le boîtier noir Nokia à la Box Xiaomi sur le port WAN.</li>
+    </ul>
+
+    🛜 La synchronisation avec nos équipements peut prendre une dizaine de minutes au plus, et le réseau Wi-Fi devrait
+    apparaître.<br />
+    <br />
+    Nom du réseau Wi-Fi : <strong>{{ssid}}</strong><br />
+    Mot de passe : <strong>{{password}}</strong><br />
+    <br />
+    ❓ Des questions ? N'hésite pas à nous contacter sur fai@rezel.net ou en passant au local de l'association.<br />
+    <br />
+    A bientôt,<br />
+    Le pôle FAI de Rezel
+</body>
+
+</html>

@@ -1,6 +1,6 @@
-import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest } from "./types/types";
+import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus } from "./types/types";
 import { Config } from "./Config";
-import { ONTInfos, PMInfos, RegisterONT } from "./types/pon_types";
+import { ONTInfo, PMInfo, RegisterONT } from "./types/pon_types";
 import { Box } from "./types/hermes_types";
 
 
@@ -165,7 +165,7 @@ export class RemoteApi implements ApiInterface {
     }
 
     async submitMyMembershipRequest(request: MembershipRequest): Promise<User> {
-        return this.parseUser(await this.myAuthenticatedRequest("/users/me/membershipRequest", request, "POST"));
+        return this.parseUser(await this.myAuthenticatedRequest("/users/me/membershipRequest/ftth", request, "POST"));
     }
 
     async fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]> {
@@ -188,15 +188,15 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.fetchOrDefault("/users/" + user_id, null, true));
     }
 
-    async fetchPMs(): Promise<PMInfos[]> {
+    async fetchPMs(): Promise<PMInfo[]> {
         return await this.fetchOrDefault("/pms", [], true);
     }
 
-    async fetchONT(user_id: string): Promise<ONTInfos> {
+    async fetchONT(user_id: string): Promise<ONTInfo> {
         return await this.fetchOrDefault("/users/" + user_id + "/ont", null, true);
     }
 
-    async registerONT(user_id: string, register: RegisterONT): Promise<ONTInfos> {
+    async registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo> {
         return await this.myAuthenticatedRequest("/users/" + user_id + "/ont", register, "POST");
     }
 
@@ -222,5 +222,13 @@ export class RemoteApi implements ApiInterface {
 
     async sendCRMiseEnService(info: CRMiseEnService): Promise<Response> {
         return await this.myAuthenticatedRequest("/nix/generer_cr_mise_en_service", info, "POST", true);
+    }
+
+    async fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo> {
+        return await this.fetchOrDefault("/users/" + user_id + "/next-membership-status", null, true);
+    }
+
+    async updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User> {
+        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/next-membership-status?next_status=${status}`, "POST"));
     }
 }

@@ -97,7 +97,7 @@ class ZitadelIntrospectTokenValidator(IntrospectTokenValidator):
         return token
 
 
-class ZitadelUserInfos(BaseModel):
+class ZitadelUserInfo(BaseModel):
     given_name: str
     family_name: str
     email: str

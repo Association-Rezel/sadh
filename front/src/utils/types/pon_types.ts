@@ -1,4 +1,4 @@
-export interface ONTInfos {
+export interface ONTInfo {
     serial_number: string;
     software_version: string;
     box_mac_address: string;
@@ -10,7 +10,7 @@ export interface ONTInfos {
     pon_tiroir: number;
 }
 
-export interface PMInfos {
+export interface PMInfo {
     id: string;
     description: string;
 }

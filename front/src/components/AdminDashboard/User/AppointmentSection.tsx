@@ -83,8 +83,8 @@ const onValidateSlot = (slot: AppointmentSlot) => {
 }
 
 return (
-    <div>
-        <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
+    <div className="mt-10 max-w-xs">
+        <Typography variant="h5" align="left" color="text.primary" component="div">
             Rendez-vous
         </Typography>
         <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>

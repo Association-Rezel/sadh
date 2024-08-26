@@ -17,11 +17,11 @@ export default function AppointmentSlotList() {
             {!appState.user.membership.appointment && (
                 <>
                     <Typography variant="body1" align="center">
-                        Votre rendez-vous pour le raccordement à la fibre n'a pas encore été validé. Vous avez indiqué les disponibilités suivantes :
+                        Ton rendez-vous pour le raccordement à la fibre n'a pas encore été validé. Tu as indiqué les disponibilités suivantes :
                     </Typography>
                     {appState.user.availability_slots.map((slot) => <AvailabilitySlot key={slot.start.getTime() + '.' + slot.end.getTime()} slot={slot} />)}
                     <Typography variant="body1" align="center">
-                        Si vous souhaitez modifier vos disponibilités, veuillez envoyer un mail au plus vite à fai@rezel.net
+                        Si tu souhaites modifier tes disponibilités, merci d'envoyer un mail au plus vite à fai@rezel.net
                     </Typography>
                 </>
             )}
@@ -33,7 +33,7 @@ export function ValidatedAppointment({ appointment }: { appointment: Appointment
     return (
         <div className="mt-12 max-w-md">
             <Typography variant="body1" align="center">
-                Votre rendez-vous de raccordement à la fibre aura lieu le <br />
+                Ton rendez-vous de raccordement à la fibre aura lieu le <br />
                 <br />
                 <b>{appointment.slot.start.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}</b>
                 &nbsp;de <b>{appointment.slot.start.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</b>
@@ -41,7 +41,7 @@ export function ValidatedAppointment({ appointment }: { appointment: Appointment
             </Typography>
             <div className="my-5"></div>
             <Typography variant="body1" align="justify">
-                Un technicien se présentera à votre domicile sur ce créneau pour effectuer le raccordement.
+                Un technicien se présentera à ton domicile sur ce créneau pour effectuer le raccordement.
                 Le rendez-vous peut durer jusqu'à 1 heure au delà du créneau d'arrivée du technicien.
             </Typography>
         </div>
