@@ -2,12 +2,19 @@ default:
   image: docker:24.0
 
 stages:
+  - pre_checks
   - build
   - deploy
 
 variables:
   FRONT_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-front:$CI_COMMIT_SHORT_SHA
   BACK_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-back:$CI_COMMIT_SHORT_SHA
+
+linting:
+  stage: pre_checks
+  image: registry.gitlab.com/pipeline-components/black:latest
+  script:
+    - black --check --verbose -- .
 
 # From https://docs.gitlab.com/ee/ci/docker/using_kaniko.html#building-a-docker-image-with-kaniko
 buildfrontend:

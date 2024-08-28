@@ -49,7 +49,9 @@ class ZitadelIntrospectTokenValidator(IntrospectTokenValidator):
             "client_assertion": jwt_token,
             "token": token_string,
         }
-        response = requests.post(ENV.zitadel_introspection_url, headers=headers, data=data)
+        response = requests.post(
+            ENV.zitadel_introspection_url, headers=headers, data=data
+        )
         if response.status_code != 200:
             print(f"Error while introspecting token: {response.text}")
         response.raise_for_status()

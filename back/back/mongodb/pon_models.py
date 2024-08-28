@@ -12,7 +12,7 @@ class ONT(BaseModel):
     position_in_pon: int = Field(...)
     position_in_subscriber_panel: Optional[str] = Field(default=None)
 
-    @field_validator('box_mac_address', mode="before")
+    @field_validator("box_mac_address", mode="before")
     def parse_mac(cls, v):
         if isinstance(v, EUI):
             return v
@@ -20,11 +20,11 @@ class ONT(BaseModel):
         if isinstance(v, str):
             mac_obj = EUI(v)
             if mac_obj is None:
-                raise ValueError('Invalid MAC address')
+                raise ValueError("Invalid MAC address")
             return mac_obj
 
         else:
-            raise ValueError('Invalid MAC address')
+            raise ValueError("Invalid MAC address")
 
     class Config:
         arbitrary_types_allowed = True
@@ -49,7 +49,9 @@ class PON(BaseModel):
 
         for ont in v:
             if ont.position_in_pon > info.data["number_of_ports"]:
-                raise ValueError(f"The position of the ONT {ont.serial_number} is greater than the number of ports")
+                raise ValueError(
+                    f"The position of the ONT {ont.serial_number} is greater than the number of ports"
+                )
 
         return v
 

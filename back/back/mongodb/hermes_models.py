@@ -141,7 +141,7 @@ class Box(BaseModel):
     unets: list[UnetProfile]
     wan_vlan: list[WanVlan]
 
-    @field_validator('mac', mode="before")
+    @field_validator("mac", mode="before")
     def parse_mac(cls, v):
         if isinstance(v, EUI):
             return v
@@ -149,11 +149,11 @@ class Box(BaseModel):
         if isinstance(v, str):
             mac_obj = EUI(v)
             if mac_obj is None:
-                raise ValueError('Invalid MAC address')
+                raise ValueError("Invalid MAC address")
             return mac_obj
 
         else:
-            raise ValueError('Invalid MAC address')
+            raise ValueError("Invalid MAC address")
 
     class Config:
         arbitrary_types_allowed = True

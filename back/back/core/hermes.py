@@ -21,9 +21,15 @@ from back.mongodb.hermes_models import (
 )
 from back.mongodb.user_models import User
 
-ADH_TP_IPV4_WAN_VLAN = WanVlan(vlan_id=101, ipv4_gateway="137.194.11.254/24", ipv6_gateway="")
-ADH_EXTE_IPV4_WAN_VLAN = WanVlan(vlan_id=102, ipv4_gateway="195.14.28.254/24", ipv6_gateway="")
-ADH_IPV6_WAN_VLAN = WanVlan(vlan_id=103, ipv4_gateway="", ipv6_gateway="2a09:6847:ffff::1/64")
+ADH_TP_IPV4_WAN_VLAN = WanVlan(
+    vlan_id=101, ipv4_gateway="137.194.11.254/24", ipv6_gateway=""
+)
+ADH_EXTE_IPV4_WAN_VLAN = WanVlan(
+    vlan_id=102, ipv4_gateway="195.14.28.254/24", ipv6_gateway=""
+)
+ADH_IPV6_WAN_VLAN = WanVlan(
+    vlan_id=103, ipv4_gateway="", ipv6_gateway="2a09:6847:ffff::1/64"
+)
 
 
 async def register_box_for_new_ftth_adh(
@@ -38,9 +44,13 @@ async def register_box_for_new_ftth_adh(
     ipam = MongoIpam(db)
 
     available_ipv4 = await ipam.get_available_ipv4(telecom_ip)
-    ipv6, prefix = ipam.compute_ipv6_and_prefix(IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip)
+    ipv6, prefix = ipam.compute_ipv6_and_prefix(
+        IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip
+    )
 
-    unet_id = ''.join(random.choice(string.ascii_lowercase + string.digits) for _ in range(8))
+    unet_id = "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
 
     new_box = Box(
         type=box_type.lower(),
@@ -55,7 +65,9 @@ async def register_box_for_new_ftth_adh(
                     ipv6_prefix=prefix,
                     lan_ipv4=LanIpv4(address="192.168.1.1/24", vlan=1),
                 ),
-                wifi=WifiDetails(ssid=await generate_unique_ssid(db), psk=generate_password()),
+                wifi=WifiDetails(
+                    ssid=await generate_unique_ssid(db), psk=generate_password()
+                ),
                 dhcp=Dhcp(
                     dns_servers=DnsServers(
                         ipv4=["8.8.8.8", "1.1.1.1"],
@@ -80,7 +92,9 @@ async def get_box_from_user(db: AsyncIOMotorDatabase, user: User) -> Box | None:
     if not user.membership or not user.membership.unetid:
         return None
 
-    return Box.model_validate(await db.boxes.find_one({"unets.unet_id": user.membership.unetid}))
+    return Box.model_validate(
+        await db.boxes.find_one({"unets.unet_id": user.membership.unetid})
+    )
 
 
 def generate_password() -> str:
@@ -88,7 +102,9 @@ def generate_password() -> str:
     word_list = xkcd_password.generate_wordlist(
         wordfile=default_words, min_length=5, max_length=8, valid_chars="[^'\"]"
     )
-    raw_password = xkcd_password.generate_xkcdpassword(word_list, numwords=4, delimiter="_")
+    raw_password = xkcd_password.generate_xkcdpassword(
+        word_list, numwords=4, delimiter="_"
+    )
 
     if raw_password is None:
         raise ValueError("Password generation failed")

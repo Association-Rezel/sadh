@@ -8,7 +8,9 @@ from back.env import ENV
 
 
 def send_matrix_message(*lines: str) -> None:
-    threading.Thread(target=asyncio.run, args=(async_send_matrix_message(*lines),)).start()
+    threading.Thread(
+        target=asyncio.run, args=(async_send_matrix_message(*lines),)
+    ).start()
 
 
 async def async_send_matrix_message(*lines: str) -> None:

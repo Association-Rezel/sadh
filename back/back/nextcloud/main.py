@@ -14,7 +14,9 @@ class NextCloudClient:
 
     def __init__(self) -> None:
         """Nextcloud client."""
-        self.nc = nextcloud_client.Client.from_public_link(ENV.nextcloud_share_url, ENV.nextcloud_share_password)
+        self.nc = nextcloud_client.Client.from_public_link(
+            ENV.nextcloud_share_url, ENV.nextcloud_share_password
+        )
 
     def put_file(self, filename: str) -> None:
         """Put file content."""
