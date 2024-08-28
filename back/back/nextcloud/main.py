@@ -11,6 +11,7 @@ from back.env import ENV
 
 class NextCloudClient:
     """Nextcloud client."""
+
     def __init__(self) -> None:
         """Nextcloud client."""
         self.nc = nextcloud_client.Client.from_public_link(ENV.nextcloud_share_url, ENV.nextcloud_share_password)

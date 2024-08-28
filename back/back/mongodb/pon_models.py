@@ -1,5 +1,6 @@
 from typing import Optional
 
+from netaddr import EUI, mac_unix_expanded
 from pydantic import AliasChoices, BaseModel, Field, field_validator
 from pydantic_core.core_schema import FieldValidationInfo
 
@@ -7,9 +8,29 @@ from pydantic_core.core_schema import FieldValidationInfo
 class ONT(BaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
-    box_mac_address: str = Field(...)
+    box_mac_address: EUI = Field(...)
     position_in_pon: int = Field(...)
     position_in_subscriber_panel: Optional[str] = Field(default=None)
+
+    @field_validator('box_mac_address', mode="before")
+    def parse_mac(cls, v):
+        if isinstance(v, EUI):
+            return v
+
+        if isinstance(v, str):
+            mac_obj = EUI(v)
+            if mac_obj is None:
+                raise ValueError('Invalid MAC address')
+            return mac_obj
+
+        else:
+            raise ValueError('Invalid MAC address')
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {
+            EUI: lambda mac: str(EUI(mac, dialect=mac_unix_expanded)),
+        }
 
 
 class PON(BaseModel):

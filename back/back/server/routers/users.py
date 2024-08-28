@@ -150,7 +150,6 @@ async def _user_update(
     update: UserUpdate,
     db: AsyncIOMotorDatabase = get_db,
 ) -> User:
-
     # mode="json" is used to avoid issues with sets
     # see https://github.com/pydantic/pydantic/issues/8016#issuecomment-1794530831
 
@@ -264,7 +263,6 @@ async def _user_get_box(
     user: User = get_user_from_user_id,
     box: Box | None = get_box_from_user_id,
 ) -> Box:
-
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
 
@@ -285,7 +283,6 @@ async def _user_register_box(
     db: AsyncIOMotorDatabase = get_db,
     user: User = get_user_from_user_id,
 ) -> Box:
-
     if not user.membership or user.membership.unetid:
         raise HTTPException(status_code=400, detail="User has no membership or already has a unetid attached")
 
