@@ -3,7 +3,7 @@ Defines Models for the database
 """
 
 from netaddr import EUI, mac_unix, mac_unix_expanded
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 REGEX_IPV4_CIDR = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
 REGEX_IPV4 = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
@@ -137,14 +137,26 @@ class Box(BaseModel):
 
     type: str  # Type de box (ex: ac2350)
     main_unet_id: str = Field(pattern=REGEX_UNET_ID)
-    mac: str
+    mac: EUI
     unets: list[UnetProfile]
     wan_vlan: list[WanVlan]
 
-    @field_validator('mac')
-    def check_mac(cls, v: str):
-        mac_obj = EUI(v)
-        if mac_obj is None:
+    @field_validator('mac', mode="before")
+    def parse_mac(cls, v):
+        if isinstance(v, EUI):
+            return v
+
+        if isinstance(v, str):
+            mac_obj = EUI(v)
+            if mac_obj is None:
+                raise ValueError('Invalid MAC address')
+            return mac_obj
+
+        else:
             raise ValueError('Invalid MAC address')
-        mac_obj.dialect = mac_unix_expanded
-        return v.format()
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {
+            EUI: lambda mac: str(EUI(mac, dialect=mac_unix_expanded)),
+        }

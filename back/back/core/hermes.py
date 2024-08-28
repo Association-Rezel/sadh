@@ -3,7 +3,7 @@ import string
 from datetime import datetime
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from netaddr import IPAddress
+from netaddr import EUI, IPAddress
 from xkcdpass import xkcd_password
 
 from back.core.ipam import MongoIpam
@@ -45,7 +45,7 @@ async def register_box_for_new_ftth_adh(
     new_box = Box(
         type=box_type.lower(),
         main_unet_id=unet_id,
-        mac=mac,
+        mac=EUI(mac),
         unets=[
             UnetProfile(
                 unet_id=unet_id,

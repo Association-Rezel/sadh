@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from netaddr import EUI, mac_unix_expanded
 
 from back.mongodb.hermes_models import Box
 from back.mongodb.pon_models import ONT, PM, PON, ONTInfo
@@ -25,7 +26,6 @@ async def register_ont_for_new_ftth_adh(
     software_version: str,
     box_mac_address: str,
 ) -> ONTInfo:
-
     # PM exists
     if not (pm := PM.model_validate(await db.pms.find_one({"_id": pm_id}))):
         raise ValueError(f"PM with id {pm_id} does not exist")
@@ -36,22 +36,27 @@ async def register_ont_for_new_ftth_adh(
 
     # Not already an ONT with the same box_mac_address
     if await db.pms.find_one({"pon_list.ont_list.box_mac_address": box_mac_address}):
-        raise ValueError(f"ONT with box MAC address {box_mac_address} already registered")
+        raise ValueError(
+            f"ONT with box MAC address {box_mac_address} already registered"
+        )
 
     if not await db.boxes.find_one({"mac": box_mac_address}):
         raise ValueError("No box with this MAC address found")
 
     pon, position_in_pon = get_first_free_port(pm)
-
     new_ont = ONT(
         serial_number=serial_number,
         software_version=software_version,
-        box_mac_address=box_mac_address,
+        box_mac_address=EUI(box_mac_address),
         position_in_pon=position_in_pon,
     )
 
     await db.pms.update_one(
-        {"_id": pm.id, "pon_list.olt_interface": pon.olt_interface, "pon_list.olt_id": pon.olt_id},
+        {
+            "_id": pm.id,
+            "pon_list.olt_interface": pon.olt_interface,
+            "pon_list.olt_id": pon.olt_id,
+        },
         {"$push": {"pon_list.$.ont_list": new_ont.model_dump(mode="json")}},
     )
 
@@ -77,7 +82,12 @@ async def get_ont_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONT | None:
 
     pm = PM.model_validate(pm)
 
-    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
+    ont = [
+        ont
+        for pon in pm.pon_list
+        for ont in pon.ont_list
+        if ont.box_mac_address == box.mac
+    ][0]
 
     return ont
 
@@ -90,14 +100,19 @@ async def get_ontinfo_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONTInfo | 
 
     pm = PM.model_validate(pm)
 
-    ont = [ont for pon in pm.pon_list for ont in pon.ont_list if ont.box_mac_address == box.mac][0]
+    ont = [
+        ont
+        for pon in pm.pon_list
+        for ont in pon.ont_list
+        if ont.box_mac_address == box.mac
+    ][0]
 
     pon = next(filter(lambda p: ont in p.ont_list, pm.pon_list))
 
     return ONTInfo(
         serial_number=ont.serial_number,
         software_version=ont.software_version,
-        box_mac_address=ont.box_mac_address,
+        box_mac_address=str(EUI(ont.box_mac_address, dialect=mac_unix_expanded)),
         mec128_position=position_in_pon_to_mec128_string(pon, ont.position_in_pon),
         olt_interface=pon.olt_interface,
         pm_description=pm.description,
