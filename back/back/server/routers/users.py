@@ -114,7 +114,13 @@ async def _me_add_availability_slots(
 ) -> User:
     userdict = await db.users.find_one_and_update(
         {"_id": str(user.id)},
-        {"$push": {"availability_slots": {"$each": [slot.model_dump(mode="json") for slot in slots]}}},
+        {
+            "$push": {
+                "availability_slots": {
+                    "$each": [slot.model_dump(mode="json") for slot in slots]
+                }
+            }
+        },
         return_document=ReturnDocument.AFTER,
     )
 
@@ -162,7 +168,9 @@ async def _user_update(
     return User.model_validate(userdict)
 
 
-@router.patch("/{user_id}/membership", dependencies=[must_be_sadh_admin], response_model=User)
+@router.patch(
+    "/{user_id}/membership", dependencies=[must_be_sadh_admin], response_model=User
+)
 async def _user_update_membership(
     user_id: str,
     update: MembershipUpdate,
@@ -175,7 +183,10 @@ async def _user_update_membership(
 
     # Remove all non-set fields from the update
     updatedict = {
-        key: getattr(update, key) for key, _dict_value in update.model_dump(exclude_unset=True, mode="json").items()
+        key: getattr(update, key)
+        for key, _dict_value in update.model_dump(
+            exclude_unset=True, mode="json"
+        ).items()
     }
 
     updated = user.membership.model_copy(update=updatedict)
@@ -290,7 +301,9 @@ async def _user_register_box(
         )
 
     if await db.boxes.find_one({"mac": mac_address}):
-        raise HTTPException(status_code=400, detail="Box with this MAC address already exists")
+        raise HTTPException(
+            status_code=400, detail="Box with this MAC address already exists"
+        )
 
     new_box = await register_box_for_new_ftth_adh(db, box_type, mac_address, telecomian)
 
@@ -315,7 +328,9 @@ async def _user_get_next_membership_status(
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
 
-    possible_updates = status_update_manager.get_possible_updates_from(user.membership.status)
+    possible_updates = status_update_manager.get_possible_updates_from(
+        user.membership.status
+    )
 
     if not possible_updates:
         raise HTTPException(status_code=404, detail="No possible status update found")
@@ -341,12 +356,18 @@ async def _user_update_membership_status(
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
 
-    possible_updates = status_update_manager.get_possible_updates_from(user.membership.status)
+    possible_updates = status_update_manager.get_possible_updates_from(
+        user.membership.status
+    )
 
     if not any(update.to_status == next_status for update in possible_updates):
-        raise HTTPException(status_code=400, detail="This status update is not possible")
+        raise HTTPException(
+            status_code=400, detail="This status update is not possible"
+        )
 
-    update = next(update for update in possible_updates if update.to_status == next_status)
+    update = next(
+        update for update in possible_updates if update.to_status == next_status
+    )
 
     if await update.check_conditions(user, db):
         raise HTTPException(
