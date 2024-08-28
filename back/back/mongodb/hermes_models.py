@@ -144,10 +144,10 @@ class Box(BaseModel):
     @field_validator("mac", mode="before")
     def parse_mac(cls, v):
         if isinstance(v, EUI):
-            return v
+            return EUI(v, dialect=mac_unix_expanded)
 
         if isinstance(v, str):
-            mac_obj = EUI(v)
+            mac_obj = EUI(v, dialect=mac_unix_expanded)
             if mac_obj is None:
                 raise ValueError("Invalid MAC address")
             return mac_obj

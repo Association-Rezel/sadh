@@ -35,12 +35,14 @@ async def register_ont_for_new_ftth_adh(
         raise ValueError(f"ONT with serial number {serial_number} already registered")
 
     # Not already an ONT with the same box_mac_address
-    if await db.pms.find_one({"pon_list.ont_list.box_mac_address": box_mac_address}):
+    if await db.pms.find_one(
+        {"pon_list.ont_list.box_mac_address": str(box_mac_address)}
+    ):
         raise ValueError(
             f"ONT with box MAC address {box_mac_address} already registered"
         )
 
-    if not await db.boxes.find_one({"mac": box_mac_address}):
+    if not await db.boxes.find_one({"mac": str(box_mac_address)}):
         raise ValueError("No box with this MAC address found")
 
     pon, position_in_pon = get_first_free_port(pm)
@@ -75,7 +77,7 @@ async def register_ont_for_new_ftth_adh(
 
 
 async def get_ont_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONT | None:
-    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": str(box.mac)})
 
     if not pm:  # No PM has this ONT
         return None
@@ -93,7 +95,7 @@ async def get_ont_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONT | None:
 
 
 async def get_ontinfo_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONTInfo | None:
-    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": box.mac})
+    pm = await db.pms.find_one({"pon_list.ont_list.box_mac_address": str(box.mac)})
 
     if not pm:  # No PM has this ONT
         return None
