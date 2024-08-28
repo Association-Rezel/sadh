@@ -1,6 +1,5 @@
 """Nextcloud main module."""
 
-
 import os
 import tempfile
 

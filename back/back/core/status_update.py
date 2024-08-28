@@ -138,21 +138,23 @@ class StatusUpdateManager:
             [
                 StatusUpdateCondition(
                     "La caution a été payée",
-                    lambda user, _: user.membership.deposit_status == DepositStatus.PAID
-                    if user.membership
-                    else False,
+                    lambda user, _: (
+                        user.membership.deposit_status == DepositStatus.PAID
+                        if user.membership
+                        else False
+                    ),
                 ),
                 StatusUpdateCondition(
                     "La cotisation pour le premier mois a été payée",
-                    lambda user, _: user.membership.paid_first_month
-                    if user.membership
-                    else False,
+                    lambda user, _: (
+                        user.membership.paid_first_month if user.membership else False
+                    ),
                 ),
                 StatusUpdateCondition(
                     "Le contrat a été signé",
-                    lambda user, _: user.membership.contract_signed
-                    if user.membership
-                    else False,
+                    lambda user, _: (
+                        user.membership.contract_signed if user.membership else False
+                    ),
                 ),
             ],
             [

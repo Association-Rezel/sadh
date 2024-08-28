@@ -1,4 +1,5 @@
 """All routers are imported here."""
+
 from pathlib import Path
 
 for file in Path(__file__).parent.glob("*.py"):
