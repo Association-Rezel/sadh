@@ -36,7 +36,9 @@ class MongoIpam:
 
         # Get the used IPs
         used_ips = await self.__get_all_used_ip_addresses()
-        used_ipv4 = [IPNetwork(unet_profile.network.wan_ipv4.ip) for box in used_ips for unet_profile in box.unets]
+        used_ipv4 = [
+            IPAddress(unet_profile.network.wan_ipv4.ip.split("/")[0]) for box in used_ips for unet_profile in box.unets
+        ]
 
         # Find the first available IP
         for ipv4network in ipv4_nets:
