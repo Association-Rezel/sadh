@@ -26,7 +26,9 @@ pdf_lock = threading.Lock()
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
-jinja2_emails_env = Environment(loader=PackageLoader("back", "templates/emails"), autoescape=select_autoescape())
+jinja2_emails_env = Environment(
+    loader=PackageLoader("back", "templates/emails"), autoescape=select_autoescape()
+)
 
 
 def _send_email(
@@ -56,11 +58,18 @@ def _send_email(
         if attachments:
             for attachment in attachments:
                 with open(attachment, "rb") as file:
-                    part = MIMEApplication(file.read(), _subtype=attachment.split(".")[-1])
-                    part.add_header("Content-Disposition", f"attachment; filename={attachment.split('/')[-1]}")
+                    part = MIMEApplication(
+                        file.read(), _subtype=attachment.split(".")[-1]
+                    )
+                    part.add_header(
+                        "Content-Disposition",
+                        f"attachment; filename={attachment.split('/')[-1]}",
+                    )
                     message.attach(part)
         with smtplib.SMTP("smtp.rezel.net", 25) as server:
-            server.sendmail("fai@rezel.net", [to, bcc] if bcc else to, message.as_string())
+            server.sendmail(
+                "fai@rezel.net", [to, bcc] if bcc else to, message.as_string()
+            )
     except Exception as e:
         send_matrix_message(
             f"❌ Erreur lors de l'envoi du mail à {to}, Sujet : {subject}",
@@ -97,12 +106,18 @@ async def send_mail_appointment_validated(user: User, db: AsyncIOMotorDatabase) 
         f"Rezel - Ton rendez-vous du {user.membership.appointment.slot.start.strftime('%d/%m/%Y')} de raccordement à la fibre optique",
         jinja2_emails_env.get_template("appointment_validated.html").render(
             user=user,
-            appt_day_of_the_week=format_datetime(user.membership.appointment.slot.start, "EEEE", locale="fr"),
+            appt_day_of_the_week=format_datetime(
+                user.membership.appointment.slot.start, "EEEE", locale="fr"
+            ),
             appt_date=user.membership.appointment.slot.start.strftime("%d/%m"),
             appt_time=user.membership.appointment.slot.start.strftime("%H:%M"),
             position_mec_128=ont.mec128_position,
-            ssid=next(filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)).wifi.ssid,
-            password=next(filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)).wifi.psk,
+            ssid=next(
+                filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)
+            ).wifi.ssid,
+            password=next(
+                filter(lambda unet: unet.unet_id == box.main_unet_id, box.unets)
+            ).wifi.psk,
             is_aljt=user.membership.address.residence == Residence.ALJT,
         ),
         user.email,
@@ -178,7 +193,10 @@ def send_email_contract(to: str, adherent_name: str) -> None:
 </html>
 """,
             to,
-            attachments=[os.path.join("resources/membership", file) for file in os.listdir("resources/membership")],
+            attachments=[
+                os.path.join("resources/membership", file)
+                for file in os.listdir("resources/membership")
+            ],
             html=True,
         )
         pdf_lock.release()

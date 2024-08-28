@@ -3,7 +3,9 @@ from datetime import datetime, timedelta
 from back.mongodb.user_models import AppointmentSlot
 
 
-def get_week_appointment_slots(date: datetime, weekOffset: int) -> list[AppointmentSlot]:
+def get_week_appointment_slots(
+    date: datetime, weekOffset: int
+) -> list[AppointmentSlot]:
     """Get all available slots in the week of the given date."""
     # For the moment slots are hardcoded
 

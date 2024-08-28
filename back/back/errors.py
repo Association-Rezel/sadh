@@ -6,7 +6,9 @@ class NetBoxConnectionError(OSError):
 
     def __init__(self) -> None:
         """Raised when the NetBox API is not reachable."""
-        super().__init__("Can't connect to netbox : maybe the API is down or invalid environment configuration.")
+        super().__init__(
+            "Can't connect to netbox : maybe the API is down or invalid environment configuration."
+        )
 
 
 class DifferentIpTypeError(ValueError):

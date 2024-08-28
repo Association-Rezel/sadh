@@ -13,7 +13,9 @@ class Ipv4Network(BaseModel):
 
     vlan: int  # the vlan of the network
     from_telecom: bool  # is the adherent from telecom?
-    network: str = Field(pattern=REGEX_IPV4_CIDR)  # the network address in cidr notation
+    network: str = Field(
+        pattern=REGEX_IPV4_CIDR
+    )  # the network address in cidr notation
 
 
 class Networks(BaseModel):

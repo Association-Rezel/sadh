@@ -37,7 +37,9 @@ class MongoIpam:
         # Get the used IPs
         used_ips = await self.__get_all_used_ip_addresses()
         used_ipv4 = [
-            IPAddress(unet_profile.network.wan_ipv4.ip.split("/")[0]) for box in used_ips for unet_profile in box.unets
+            IPAddress(unet_profile.network.wan_ipv4.ip.split("/")[0])
+            for box in used_ips
+            for unet_profile in box.unets
         ]
 
         # Find the first available IP
@@ -45,11 +47,15 @@ class MongoIpam:
             network = IPNetwork(ipv4network.network)
             for ip in network.iter_hosts():
                 if ip not in used_ipv4:
-                    return WanIpv4(ip=f"{ip}/{network.prefixlen}", vlan=ipv4network.vlan)
+                    return WanIpv4(
+                        ip=f"{ip}/{network.prefixlen}", vlan=ipv4network.vlan
+                    )
 
         raise ValueError("No available IPv4 address found.")
 
-    def compute_ipv6_and_prefix(self, ipv4_addr: IPAddress, from_telecom: bool) -> Tuple[WanIpv6, str]:
+    def compute_ipv6_and_prefix(
+        self, ipv4_addr: IPAddress, from_telecom: bool
+    ) -> Tuple[WanIpv6, str]:
         """Computes the IPv6 prefix from an IPv4 address from telecom.
         Rules at : https://a.notes.rezel.net/Co4oqxHwQPWwVAMkf6AwHw
 
@@ -71,7 +77,9 @@ class MongoIpam:
         (only the fields related to IP addresses are queried)"""
         response = self.db.boxes.find({})
         if response is None:
-            raise ValueError("No IP addresses found in the database. This is highly unusual. Check the database.")
+            raise ValueError(
+                "No IP addresses found in the database. This is highly unusual. Check the database."
+            )
 
         return [Box.model_validate(elt) async for elt in response]
 

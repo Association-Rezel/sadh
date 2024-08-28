@@ -8,8 +8,8 @@ from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from back.core.hermes import register_box_for_new_ftth_adh
-from back.core.pon import get_ontinfo_from_box, position_in_pon_to_mec128_string, register_ont_for_new_ftth_adh
-from back.core.status_update import StatusUpdate, StatusUpdateInfo, StatusUpdateManager
+from back.core.pon import get_ontinfo_from_box, register_ont_for_new_ftth_adh
+from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
 from back.messaging.mails import send_email_contract
 from back.messaging.matrix import send_matrix_message
 from back.middlewares.dependencies import (
@@ -21,7 +21,7 @@ from back.middlewares.dependencies import (
 )
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
-from back.mongodb.pon_models import PM, ONTInfo, RegisterONT
+from back.mongodb.pon_models import ONTInfo, RegisterONT
 from back.mongodb.user_models import (
     Address,
     AppointmentSlot,
@@ -284,7 +284,10 @@ async def _user_register_box(
     user: User = get_user_from_user_id,
 ) -> Box:
     if not user.membership or user.membership.unetid:
-        raise HTTPException(status_code=400, detail="User has no membership or already has a unetid attached")
+        raise HTTPException(
+            status_code=400,
+            detail="User has no membership or already has a unetid attached",
+        )
 
     if await db.boxes.find_one({"mac": mac_address}):
         raise HTTPException(status_code=400, detail="Box with this MAC address already exists")
@@ -299,7 +302,11 @@ async def _user_register_box(
     return new_box
 
 
-@router.get("/{user_id}/next-membership-status", dependencies=[must_be_sadh_admin], response_model=StatusUpdateInfo)
+@router.get(
+    "/{user_id}/next-membership-status",
+    dependencies=[must_be_sadh_admin],
+    response_model=StatusUpdateInfo,
+)
 async def _user_get_next_membership_status(
     db: AsyncIOMotorDatabase = get_db,
     user: User = get_user_from_user_id,
@@ -320,7 +327,11 @@ async def _user_get_next_membership_status(
     )
 
 
-@router.post("/{user_id}/next-membership-status", dependencies=[must_be_sadh_admin], response_model=User)
+@router.post(
+    "/{user_id}/next-membership-status",
+    dependencies=[must_be_sadh_admin],
+    response_model=User,
+)
 async def _user_update_membership_status(
     next_status: MembershipStatus,
     user: User = get_user_from_user_id,

@@ -10,7 +10,11 @@ from back.core.hermes import get_box_from_user
 from back.core.status_update import StatusUpdateManager
 from back.env import ENV
 from back.http_errors import NotFound
-from back.middlewares.zitadel import ValidatorError, ZitadelIntrospectTokenValidator, ZitadelUserInfo
+from back.middlewares.zitadel import (
+    ValidatorError,
+    ZitadelIntrospectTokenValidator,
+    ZitadelUserInfo,
+)
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
 from back.mongodb.user_models import User
@@ -31,7 +35,12 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
         introspected = validator(token, "openid profile email")
 
         try:
-            is_admin = ENV.zitadel_org_id in introspected["urn:zitadel:iam:org:project:roles"][ENV.zitadel_admin_role]
+            is_admin = (
+                ENV.zitadel_org_id
+                in introspected["urn:zitadel:iam:org:project:roles"][
+                    ENV.zitadel_admin_role
+                ]
+            )
         except KeyError:
             is_admin = False
 

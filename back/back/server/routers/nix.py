@@ -30,7 +30,9 @@ async def _reverse_proxy(
         return Response(status_code=504)
 
     if response.status_code == 200:
-        filename = re.findall("filename=\"(.+)\"", response.headers['content-disposition'])[0]
+        filename = re.findall(
+            'filename="(.+)"', response.headers["content-disposition"]
+        )[0]
 
         return JSONResponse(
             content={"filename": filename, "content": response.content.decode()},

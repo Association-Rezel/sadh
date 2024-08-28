@@ -16,7 +16,9 @@ class StatusUpdateEffect:
     effect: Callable[[User, AsyncIOMotorDatabase], Awaitable[User | None] | None]
 
     def __init__(
-        self, description: str, effect: Callable[[User, AsyncIOMotorDatabase], Awaitable[User | None] | None]
+        self,
+        description: str,
+        effect: Callable[[User, AsyncIOMotorDatabase], Awaitable[User | None] | None],
     ) -> None:
         self.description = description
         self.effect = effect
@@ -27,7 +29,9 @@ class StatusUpdateCondition:
     condition: Callable[[User, AsyncIOMotorDatabase], Awaitable[bool] | bool]
 
     def __init__(
-        self, description: str, condition: Callable[[User, AsyncIOMotorDatabase], Awaitable[bool] | bool]
+        self,
+        description: str,
+        condition: Callable[[User, AsyncIOMotorDatabase], Awaitable[bool] | bool],
     ) -> None:
         self.description = description
         self.condition = condition
@@ -46,18 +50,28 @@ class StatusUpdate:
         self.conditions = conditions
         self.effects = effects
 
-    async def check_conditions(self, user: User, db: AsyncIOMotorDatabase) -> list[StatusUpdateCondition]:
+    async def check_conditions(
+        self, user: User, db: AsyncIOMotorDatabase
+    ) -> list[StatusUpdateCondition]:
         """
         Check the conditions for the status update to be possible.
         Returns a list of conditions that failed.
         """
         if user.membership is None:
-            return [StatusUpdateCondition("User has no membership", lambda _, __: False)]
+            return [
+                StatusUpdateCondition("User has no membership", lambda _, __: False)
+            ]
 
         if user.membership.status != self.from_status:
-            return [StatusUpdateCondition("User is not in the correct status", lambda _, __: False)]
+            return [
+                StatusUpdateCondition(
+                    "User is not in the correct status", lambda _, __: False
+                )
+            ]
 
-        called_conditions = [condition.condition(user, db) for condition in self.conditions]
+        called_conditions = [
+            condition.condition(user, db) for condition in self.conditions
+        ]
 
         # Now await the coroutines
         for i, condition in enumerate(called_conditions):
@@ -65,7 +79,11 @@ class StatusUpdate:
                 called_conditions[i] = await condition
 
         # Return the list of conditions that failed
-        return [self.conditions[i] for i, condition in enumerate(called_conditions) if not condition]
+        return [
+            self.conditions[i]
+            for i, condition in enumerate(called_conditions)
+            if not condition
+        ]
 
     async def apply_effects(self, user: User, db: AsyncIOMotorDatabase) -> User:
         """
@@ -94,13 +112,18 @@ class StatusUpdateInfo(BaseModel):
     effects: list[str]
 
     @staticmethod
-    async def from_status_update(db: AsyncIOMotorDatabase, user: User, update: StatusUpdate) -> "StatusUpdateInfo":
+    async def from_status_update(
+        db: AsyncIOMotorDatabase, user: User, update: StatusUpdate
+    ) -> "StatusUpdateInfo":
         return StatusUpdateInfo(
             from_status=update.from_status,
             to_status=update.to_status,
             conditions=[condition.description for condition in update.conditions],
             effects=[effect.description for effect in update.effects],
-            conditions_not_met=[condition.description for condition in await update.check_conditions(user, db)],
+            conditions_not_met=[
+                condition.description
+                for condition in await update.check_conditions(user, db)
+            ],
         )
 
 
@@ -115,21 +138,29 @@ class StatusUpdateManager:
             [
                 StatusUpdateCondition(
                     "La caution a été payée",
-                    lambda user, _: user.membership.deposit_status == DepositStatus.PAID if user.membership else False,
+                    lambda user, _: user.membership.deposit_status == DepositStatus.PAID
+                    if user.membership
+                    else False,
                 ),
                 StatusUpdateCondition(
                     "La cotisation pour le premier mois a été payée",
-                    lambda user, _: user.membership.paid_first_month if user.membership else False,
+                    lambda user, _: user.membership.paid_first_month
+                    if user.membership
+                    else False,
                 ),
                 StatusUpdateCondition(
                     "Le contrat a été signé",
-                    lambda user, _: user.membership.contract_signed if user.membership else False,
+                    lambda user, _: user.membership.contract_signed
+                    if user.membership
+                    else False,
                 ),
             ],
             [
                 StatusUpdateEffect(
                     "Passage de l'adhésion à l'état VALIDATED",
-                    lambda user, db: _update_membership_status(db, user, MembershipStatus.VALIDATED),
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.VALIDATED
+                    ),
                 ),
                 StatusUpdateEffect(
                     " ".join(
@@ -162,13 +193,17 @@ class StatusUpdateManager:
                 ),
                 StatusUpdateCondition(
                     "L'utilisateur a un rendez-vous validé",
-                    lambda user, _: bool(user.membership and user.membership.appointment),
+                    lambda user, _: bool(
+                        user.membership and user.membership.appointment
+                    ),
                 ),
             ],
             [
                 StatusUpdateEffect(
                     "Passage de l'adhésion à l'état SENT_CMD_ACCES",
-                    lambda user, db: _update_membership_status(db, user, MembershipStatus.SENT_CMD_ACCES),
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.SENT_CMD_ACCES
+                    ),
                 ),
                 StatusUpdateEffect(
                     "Le CMD ACCES doit être généré et envoyé MANUELLEMENT. Aucune action automatique n'est prévue.",
@@ -189,7 +224,9 @@ class StatusUpdateManager:
             [
                 StatusUpdateEffect(
                     "Passage de l'adhésion à l'état APPOINTMENT_VALIDATED",
-                    lambda user, db: _update_membership_status(db, user, MembershipStatus.APPOINTMENT_VALIDATED),
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.APPOINTMENT_VALIDATED
+                    ),
                 ),
                 StatusUpdateEffect(
                     " ".join(
@@ -215,7 +252,9 @@ class StatusUpdateManager:
             [
                 StatusUpdateEffect(
                     "Passage de l'adhésion à l'état ACTIVE",
-                    lambda user, db: _update_membership_status(db, user, MembershipStatus.ACTIVE),
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.ACTIVE
+                    ),
                 ),
             ],
         )
@@ -229,7 +268,9 @@ class StatusUpdateManager:
     ):
         self.updates.append(StatusUpdate(from_status, to_status, conditions, effects))
 
-    def get_possible_updates_from(self, from_status: MembershipStatus) -> list[StatusUpdate]:
+    def get_possible_updates_from(
+        self, from_status: MembershipStatus
+    ) -> list[StatusUpdate]:
         return [update for update in self.updates if update.from_status == from_status]
 
 
@@ -244,7 +285,9 @@ async def _check_user_has_ont(user: User, db: AsyncIOMotorDatabase) -> bool:
     return bool(await get_ont_from_box(db, box))
 
 
-async def _update_membership_status(db: AsyncIOMotorDatabase, user: User, status: MembershipStatus) -> User:
+async def _update_membership_status(
+    db: AsyncIOMotorDatabase, user: User, status: MembershipStatus
+) -> User:
     if not user.membership:
         raise ValueError("User has no membership")
 
