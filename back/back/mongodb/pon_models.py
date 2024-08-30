@@ -13,6 +13,7 @@ class ONT(BaseModel):
     position_in_subscriber_panel: Optional[str] = Field(default=None)
 
     @field_validator("box_mac_address", mode="before")
+    @classmethod
     def parse_mac(cls, v):
         if isinstance(v, EUI):
             return EUI(v, dialect=mac_unix_expanded)
@@ -43,6 +44,7 @@ class PON(BaseModel):
     ont_list: list[ONT] = Field(default_factory=list)
 
     @field_validator("ont_list", mode="after")
+    @classmethod
     def check_ont_list(cls, v: list[ONT], info: FieldValidationInfo):
         if len(v) > info.data["number_of_ports"]:
             raise ValueError("The number of ONTs is greater than the number of ports")

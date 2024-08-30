@@ -52,6 +52,7 @@ class AppointmentSlot(BaseModel):
     end: datetime = Field(...)
 
     @field_validator("start", "end", mode="before")
+    @classmethod
     def parse_datetime(cls, v) -> datetime:
         """Parse datetime from iso string or datetime."""
         if isinstance(v, datetime):

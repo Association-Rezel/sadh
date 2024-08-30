@@ -1,4 +1,3 @@
-import json
 import time
 from typing import Dict
 
@@ -50,7 +49,7 @@ class ZitadelIntrospectTokenValidator(IntrospectTokenValidator):
             "token": token_string,
         }
         response = requests.post(
-            ENV.zitadel_introspection_url, headers=headers, data=data
+            ENV.zitadel_introspection_url, headers=headers, data=data, timeout=5
         )
         if response.status_code != 200:
             print(f"Error while introspecting token: {response.text}")
@@ -67,7 +66,7 @@ class ZitadelIntrospectTokenValidator(IntrospectTokenValidator):
                 return True
         return False
 
-    def validate_token(self, token, scopes):
+    def validate_token(self, token, scopes, _=None):
         now = int(time.time())
         if not token:
             raise ValidatorError(

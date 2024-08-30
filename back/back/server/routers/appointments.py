@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from fastapi import HTTPException, Response
 
 from back.core.appointments import get_week_appointment_slots
 from back.mongodb.user_models import AppointmentSlot

@@ -15,7 +15,6 @@ from back.mongodb.hermes_models import (
     UnetFirewall,
     UnetNetwork,
     UnetProfile,
-    WanIpv4,
     WanVlan,
     WifiDetails,
 )
