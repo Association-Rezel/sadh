@@ -3,6 +3,15 @@ import { Config } from "./Config";
 import { ONTInfo, PMInfo, RegisterONT } from "./types/pon_types";
 import { Box } from "./types/hermes_types";
 
+const jsonReplacer = (_key: string, value: any) => {
+    if (value instanceof Set) {
+        return [...value];
+    }
+    if (value instanceof Date) {
+        return value.getTime() / 1000;
+    }
+    return value;
+}
 
 export class RemoteApi implements ApiInterface {
     token: string;
@@ -54,7 +63,7 @@ export class RemoteApi implements ApiInterface {
                 'Authorization': 'Bearer ' + this.token,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(body, (_key, value) => (value instanceof Set ? [...value] : value)),
+            body: JSON.stringify(body, jsonReplacer),
         };
 
         const response = await fetch(Config.API_URL + url, config);
@@ -133,8 +142,8 @@ export class RemoteApi implements ApiInterface {
 
     parseAppointmentSlot(data: any): AppointmentSlot {
         if (data !== null) {
-            data.start = new Date(Date.parse(data.start));
-            data.end = new Date(Date.parse(data.end));
+            data.start = new Date(data.start * 1000);
+            data.end = new Date(data.end * 1000);
         }
 
         return data;
