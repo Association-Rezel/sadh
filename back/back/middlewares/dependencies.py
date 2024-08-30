@@ -1,15 +1,12 @@
 import uuid
-from uuid import UUID
 
 from fastapi import Depends, Header, HTTPException
-from httpx import get
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
 from back.core.hermes import get_box_from_user
 from back.core.status_update import StatusUpdateManager
 from back.env import ENV
-from back.http_errors import NotFound
 from back.middlewares.zitadel import (
     ValidatorError,
     ZitadelIntrospectTokenValidator,
@@ -51,7 +48,7 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
             admin=is_admin,
         )
     except ValidatorError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.error)
+        raise HTTPException(status_code=e.status_code, detail=e.error) from e
 
 
 @Depends

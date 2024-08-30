@@ -1,6 +1,8 @@
 """Get or edit users."""
 
 import nextcloud_client.nextcloud_client
+
+
 from fastapi import HTTPException
 from fastapi import Response as FastAPIResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -98,8 +100,8 @@ def _me_get_contract(
 ) -> FastAPIResponse:
     try:
         tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.id}.pdf")
-    except nextcloud_client.nextcloud_client.HTTPResponseError:
-        raise HTTPException(status_code=404, detail="User not found")
+    except nextcloud_client.nextcloud_client.HTTPResponseError as exc:
+        raise HTTPException(status_code=404, detail="User not found") from exc
     with open(tmp_filename, "rb") as f:
         contract = f.read()
     tmp_dir.cleanup()
@@ -206,8 +208,8 @@ def _user_get_contract(
 ) -> FastAPIResponse:
     try:
         tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.id}.pdf")
-    except nextcloud_client.nextcloud_client.HTTPResponseError:
-        raise HTTPException(status_code=404, detail="User not found")
+    except nextcloud_client.nextcloud_client.HTTPResponseError as exc:
+        raise HTTPException(status_code=404, detail="User not found") from exc
     with open(tmp_filename, "rb") as f:
         contract = f.read()
     tmp_dir.cleanup()
@@ -264,7 +266,7 @@ async def _user_register_ont(
             register.box_mac_address,
         )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     return ont_info
 

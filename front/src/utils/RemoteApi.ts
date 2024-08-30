@@ -10,6 +10,14 @@ const jsonReplacer = (_key: string, value: any) => {
     if (value instanceof Date) {
         return value.getTime() / 1000;
     }
+    
+    // Recursive on each property of the object
+    if (typeof value === 'object') {
+        for (const key in value) {
+            value[key] = jsonReplacer(key, value[key]);
+        }
+    }
+
     return value;
 }
 

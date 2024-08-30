@@ -2,8 +2,8 @@
 Defines Models for the database
 """
 
-from netaddr import EUI, mac_unix, mac_unix_expanded
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from netaddr import EUI, mac_unix_expanded
+from pydantic import BaseModel, Field, field_validator
 
 REGEX_IPV4_CIDR = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
 REGEX_IPV4 = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
@@ -142,6 +142,7 @@ class Box(BaseModel):
     wan_vlan: list[WanVlan]
 
     @field_validator("mac", mode="before")
+    @classmethod
     def parse_mac(cls, v):
         if isinstance(v, EUI):
             return EUI(v, dialect=mac_unix_expanded)

@@ -11,20 +11,17 @@ from email.mime.text import MIMEText
 
 from babel.dates import format_datetime
 from fillpdf import fillpdfs
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, select_autoescape
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.core.hermes import get_box_from_user
 from back.core.pon import get_ontinfo_from_box
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.hermes_models import Box, UnetProfile
-from back.mongodb.pon_models import ONT, ONTInfo
 from back.mongodb.user_models import Residence, User
 
 pdf_lock = threading.Lock()
 
-from jinja2 import Environment, PackageLoader, select_autoescape
 
 jinja2_emails_env = Environment(
     loader=PackageLoader("back", "templates/emails"), autoescape=select_autoescape()
