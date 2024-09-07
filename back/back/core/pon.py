@@ -3,6 +3,7 @@ from typing import Tuple
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from netaddr import EUI, mac_unix_expanded
 
+from back.core.charon import register_ont_in_olt
 from back.mongodb.hermes_models import Box
 from back.mongodb.pon_models import ONT, PM, PON, ONTInfo
 
@@ -61,6 +62,8 @@ async def register_ont_for_new_ftth_adh(
         },
         {"$push": {"pon_list.$.ont_list": new_ont.model_dump(mode="json")}},
     )
+
+    register_ont_in_olt(serial_number)
 
     ont_info = ONTInfo(
         serial_number=serial_number,
