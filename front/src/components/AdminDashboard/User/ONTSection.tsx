@@ -3,8 +3,25 @@ import { Api } from "../../../utils/Api";
 import { Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import { ONTInfo, PMInfo, RegisterONT } from "../../../utils/types/pon_types";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import TrashIcon from '@mui/icons-material/Delete';
+import { Box } from "../../../utils/types/hermes_types";
 
-export default function ONTSection({ user_id }: { user_id: string }) {
+export default function ONTSection(
+    {
+        user_id,
+        ont,
+        setONT,
+        box,
+        ontLoading,
+        setONTLoading,
+    }: {
+        user_id: string,
+        ont: ONTInfo | null,
+        setONT: (ont: ONTInfo | null) => void,
+        box: Box | null,
+        ontLoading: boolean,
+        setONTLoading: (loading: boolean) => void,
+    }) {
     const { register, handleSubmit, getValues, reset, control } = useForm<RegisterONT>({
         defaultValues: {
             serial_number: "",
@@ -14,8 +31,6 @@ export default function ONTSection({ user_id }: { user_id: string }) {
         }
     });
 
-    const [ontStillLoading, setONTStillLoading] = useState<boolean>(true);
-    const [ont, setONT] = useState<ONTInfo | null>(null);
     const [pms, setPms] = useState<PMInfo[] | null>(null);
 
     const onSubmit: SubmitHandler<RegisterONT> = (register: RegisterONT) => {
@@ -29,30 +44,40 @@ export default function ONTSection({ user_id }: { user_id: string }) {
             alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
             return;
         }
-        setONTStillLoading(true);
+        setONTLoading(true);
         Api.registerONT(user_id, register).then(ont => {
             setONT(ont);
-            setONTStillLoading(false);
         }).catch(e => {
             alert("Erreur lors de l'assignation de l'ONT : " + e);
-            setONTStillLoading(false);
+        }).finally(() => {
+            setONTLoading(false);
         });
     }
 
-
-    useEffect(() => {
-        Api.fetchONT(user_id).then(ont => {
-            setONT(ont);
-            setONTStillLoading(false);
+    const onDelete = () => {
+        setONTLoading(true);
+        Api.deleteONT(user_id).then(() => {
+            setONT(null);
+        }).catch(e => {
+            alert("Erreur lors de la suppression de l'ONT : " + e);
+        }).finally(() => {
+            setONTLoading(false);
         });
-    }, [user_id]);
+    }
 
     useEffect(() => {
         Api.fetchPMs().then(pms => {
             setPms(pms);
-            console.log(pms);
         });
     }, []);
+
+    // Prefill Box mac address if box is set
+    useEffect(() => {
+        if (getValues("box_mac_address")) return;
+        if (box) {
+            reset({ box_mac_address: box.mac });
+        }
+    }, [box]);
 
 
     return (
@@ -61,9 +86,9 @@ export default function ONTSection({ user_id }: { user_id: string }) {
                 ONT
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                {ontStillLoading && <p>Chargement...</p>}
+                {ontLoading && <p>Chargement...</p>}
 
-                {!ontStillLoading && !ont && (
+                {!ontLoading && !ont && (
                     <div className="inline-flex flex-col gap-y-3 flex-wrap">
                         <TextField name="box_mac_address"
                             className="bg-white"
@@ -111,13 +136,14 @@ export default function ONTSection({ user_id }: { user_id: string }) {
                     </div>
                 )}
 
-                {!ontStillLoading && ont && (
+                {!ontLoading && ont && (
                     <>
                         <strong>Numéro de série</strong> : {ont.serial_number}<br />
                         <strong>Position au PM</strong> : {ont.mec128_position}<br />
                         <strong>PON Interface</strong> : {ont.olt_interface}<br />
                         <strong>PM</strong> : {ont.pm_description}<br />
                         <strong>Position porte droite</strong> : {ont.position_in_subscriber_panel}<br />
+                        <Button color="error" onClick={onDelete} startIcon={<TrashIcon />}>Supprimer l'ONT</Button>
                     </>
                 )}
             </Typography>

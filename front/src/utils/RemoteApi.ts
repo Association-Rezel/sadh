@@ -248,4 +248,12 @@ export class RemoteApi implements ApiInterface {
     async updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User> {
         return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/next-membership-status?next_status=${status}`, "POST"));
     }
+
+    async deleteONT(user_id: string): Promise<ONTInfo> {
+        return await this.myAuthenticatedRequest("/users/" + user_id + "/ont", null, "DELETE");
+    }
+
+    async deleteBox(user_id: string): Promise<Box> {
+        return await this.myAuthenticatedRequest("/users/" + user_id + "/box", null, "DELETE");
+    }
 }

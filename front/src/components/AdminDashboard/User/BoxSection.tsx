@@ -3,14 +3,25 @@ import { Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, 
 import { Api } from "../../../utils/Api";
 import { Warning } from "@mui/icons-material";
 import { Box } from "../../../utils/types/hermes_types";
+import { ONTInfo } from "../../../utils/types/pon_types";
+import TrashIcon from '@mui/icons-material/Delete';
 
-export default function BoxSection({
-    user_id }: {
-        user_id: string
+export default function BoxSection(
+    {
+        user_id,
+        ont,
+        setBox,
+        box,
+        boxLoading,
+        setBoxLoading,
+    }: {
+        user_id: string,
+        ont: ONTInfo | null,
+        setBox: (box: Box | null) => void,
+        box: Box | null,
+        boxLoading: boolean,
+        setBoxLoading: (loading: boolean) => void,
     }) {
-
-    const [box, setBox] = useState<Box>();
-    const [boxStillLoading, setBoxStillLoading] = useState<boolean>(true);
     const [boxType, setBoxType] = useState<string>("");
     const [macAddress, setMacAddress] = useState<string>("");
     const [isTelecomian, setIsTelecomian] = useState<boolean>(false);
@@ -28,20 +39,39 @@ export default function BoxSection({
             alert("Adresse MAC invalide");
             return;
         }
-        setBoxStillLoading(true);
+        setBoxLoading(true);
         Api.registerUserBox(user_id, boxType, macAddress, isTelecomian).then(box => {
             setBox(box);
-            setBoxStillLoading(false);
+            setBoxLoading(false);
         }).catch(e => {
             alert("Erreur lors de l'assignation de la box : " + e);
-            setBoxStillLoading(false);
+            setBoxLoading(false);
+        });
+    }
+
+    const onDelete = () => {
+        if (box.unets.length > 1) {
+            alert("Vous ne pouvez pas supprimer la box tant que d'autres unets que le principal sont associés à cette box.");
+            return;
+        } else if (ont) {
+            alert("Vous ne pouvez pas supprimer la box tant qu'un ONT est associé à cette box.");
+            return;
+        }
+
+        setBoxLoading(true);
+        Api.deleteBox(user_id).then(() => {
+            setBox(null);
+        }).catch(e => {
+            alert("Erreur lors de la suppression de la box : " + e);
+        }).finally(() => {
+            setBoxLoading(false);
         });
     }
 
     useEffect(() => {
         Api.fetchUserBox(user_id).then(box => {
             setBox(box);
-            setBoxStillLoading(false);
+            setBoxLoading(false);
         });
     }, [user_id]);
 
@@ -53,9 +83,9 @@ export default function BoxSection({
                 Box
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                {(boxStillLoading) && <p>Chargement...</p>}
+                {(boxLoading) && <p>Chargement...</p>}
 
-                {!boxStillLoading && !box && (
+                {!boxLoading && !box && (
                     <Stack direction={"column"}
                         spacing={2}>
                         <FormControlLabel control={<Checkbox checked={isTelecomian} />}
@@ -87,7 +117,7 @@ export default function BoxSection({
                     </Stack>
                 )}
 
-                {!boxStillLoading && box && (
+                {!boxLoading && box && (
                     <>
                         <strong>MAC</strong> : {box.mac}<br />
                         <strong>IPv4 WAN</strong> : {main_unet.network.wan_ipv4.ip}<br />
@@ -95,6 +125,7 @@ export default function BoxSection({
                         <strong>SSID</strong> : {main_unet.wifi.ssid}<br />
                         <strong>PSK</strong> : {maskedPsk}<br />
                         <Button onClick={() => setMaskedPsk(main_unet.wifi.psk)}>Afficher PSK</Button>
+                        <Button color="error" onClick={onDelete} startIcon={<TrashIcon />}>Supprimer la box</Button>
                     </>
                 )}
             </Typography>

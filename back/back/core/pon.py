@@ -63,8 +63,6 @@ async def register_ont_for_new_ftth_adh(
         {"$push": {"pon_list.$.ont_list": new_ont.model_dump(mode="json")}},
     )
 
-    register_ont_in_olt(serial_number)
-
     ont_info = ONTInfo(
         serial_number=serial_number,
         software_version=software_version,
