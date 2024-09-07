@@ -9,6 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from pymongo import ReturnDocument
 
+from back.core.charon import register_ont_in_olt, unregister_ont_in_olt
 from back.core.hermes import register_box_for_new_ftth_adh
 from back.core.pon import get_ontinfo_from_box, register_ont_for_new_ftth_adh
 from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
@@ -269,6 +270,37 @@ async def _user_register_ont(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
 
+    register_ont_in_olt(register.serial_number)
+
+    return ont_info
+
+
+@router.delete("/{user_id}/ont", dependencies=[must_be_sadh_admin])
+async def _user_delete_ont(
+    db: AsyncIOMotorDatabase = get_db,
+    box: Box | None = get_box_from_user_id,
+) -> ONTInfo:
+    if not box:
+        raise HTTPException(
+            status_code=404,
+            detail="No box found for this user. The user is likely not linked to the main unet of a box",
+        )
+
+    ont_info = await get_ontinfo_from_box(db, box)
+
+    if not ont_info:
+        raise HTTPException(
+            status_code=404,
+            detail="No ONT found for this box.",
+        )
+
+    await db.pms.update_one(
+        {"pon_list.ont_list.serial_number": ont_info.serial_number},
+        {"$pull": {"pon_list.$.ont_list": {"serial_number": ont_info.serial_number}}},
+    )
+
+    unregister_ont_in_olt(ont_info.serial_number)
+
     return ont_info
 
 
@@ -316,6 +348,35 @@ async def _user_register_box(
     )
 
     return new_box
+
+
+@router.delete("/{user_id}/box", dependencies=[must_be_sadh_admin], response_model=Box)
+async def _user_delete_box(
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+    box: Box | None = get_box_from_user_id,
+) -> Box:
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    if len(box.unets) > 1:
+        raise HTTPException(
+            status_code=400, detail="There must be only the main unet left"
+        )
+
+    if await get_ontinfo_from_box(db, box):
+        raise HTTPException(
+            status_code=400, detail="This box still has an ONT attached"
+        )
+
+    await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {"$unset": {"membership.unetid": ""}},
+    )
+
+    await db.boxes.delete_one({"mac": str(box.mac)})
+
+    return box
 
 
 @router.get(

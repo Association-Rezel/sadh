@@ -12,11 +12,18 @@ import InteropSection from "./InteropSection";
 import { Button, Typography } from "@mui/material";
 import ContractUpload from "./ContractUpload";
 import StatusUpdateSection from "./StatusUpdateSection";
+import { Box } from "../../../utils/types/hermes_types";
+import { ONTInfo } from "../../../utils/types/pon_types";
 
 
 function UserComponent() {
     const { user_id } = useParams<string>();
     const [user, setUser] = useState<User>(null);
+    const [box, setBox] = useState<Box | null>(null);
+    const [boxLoading, setBoxLoading] = useState<boolean>(true);
+    const [ont, setONT] = useState<ONTInfo | null>(null);
+    const [ontLoading, setONTLoading] = useState<boolean>(true);
+
     const { register, handleSubmit, reset, formState, control } = useForm({
         defaultValues: user?.membership
     });
@@ -40,6 +47,15 @@ function UserComponent() {
             setUser(user);
             reset(user.membership);
         });
+
+        Api.fetchUserBox(user_id)
+        .then(box => setBox(box))
+        .finally(() => setBoxLoading(false));
+
+        Api.fetchONT(user_id)
+        .then(ont => setONT(ont))
+        .finally(() => setONTLoading(false));
+
     }, [user_id]);
 
     // Reste form when user changes. For example if the tstae is updaed
@@ -59,8 +75,8 @@ function UserComponent() {
                         <MembershipSection user={user} registerToMembershipUpdateForm={register} formControl={control} />
                         <StatusUpdateSection user={user} setUser={setUser} />
                         <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
-                        <ONTSection user_id={user_id} />
-                        <BoxSection user_id={user_id} />
+                        <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
+                        <BoxSection user_id={user_id} box={box} setBox={setBox} ont={ont} boxLoading={boxLoading} setBoxLoading={setBoxLoading} />
                         <InteropSection registerToMembershipUpdateForm={register} user={user} />
                         <ContractUpload user_id={user_id} />
                     </div>

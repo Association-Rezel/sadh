@@ -163,4 +163,6 @@ export interface ApiInterface {
     sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
     fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo>;
     updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
+    deleteONT(user_id: string): Promise<ONTInfo>;
+    deleteBox(user_id: string): Promise<Box>;
 }
