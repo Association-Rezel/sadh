@@ -68,7 +68,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
     db_name: str
 
     charon_url: str
-    charon_token: str
 
     nix_url: str
 
@@ -106,7 +105,6 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.matrix_room = get_or_raise("MATRIX_ROOM")
 
         self.charon_url = get_or_raise("CHARON_URL")
-        self.charon_token = get_or_raise("CHARON_TOKEN")
 
         self.nextcloud_share_url = get_or_raise("NEXTCLOUD_SHARE_URL")
         self.nextcloud_share_password = get_or_raise("NEXTCLOUD_SHARE_PASSWORD")
