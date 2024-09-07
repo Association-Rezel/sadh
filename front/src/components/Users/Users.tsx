@@ -8,10 +8,25 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import FormGroup from '@mui/material/FormGroup';
 import { ResidencesFilter, StatusFilter, UserFilter, filterUsers } from "../../filters/UserFilters";
+import { TextField } from "@mui/material";
+
+function searchTextRecusively(user: User, searchText: string): boolean {
+    if (!user) {
+        return false;
+    }
+
+    return Object.keys(user).some((key) => {
+        if (typeof user[key] === "object") {
+            return searchTextRecusively(user[key], searchText);
+        }
+        return user[key].toString().toLowerCase().includes(searchText.toLowerCase());
+    });
+}
+
 
 function Users() {
     const [users, setUsers] = useState<User[]>([]);
-    const [filters, setFilters] = useState<UserFilter[]>([]);
+    const [searchText, setSearchText] = useState<string>("");
 
     useEffect(() => {
         Api.fetchUsers().then((users: User[]) => {
@@ -19,56 +34,24 @@ function Users() {
         });
     }, []);
 
-    const handleResidenceChange = (residenceName: string) => {
-        let newFilters = filters.filter((filter) => !(filter instanceof ResidencesFilter));
-        let residence = Residence[residenceName];
-        if (residence !== undefined) {
-            newFilters.push(new ResidencesFilter(residence));
+    const searchFilter: UserFilter = {
+        filter(user: User): boolean {
+            return searchTextRecusively(user, searchText);
         }
-        setFilters(newFilters);
-    };
-
-    const handleStatusChange = (statusName: string) => {
-        let newFilters = filters.filter((filter) => !(filter instanceof StatusFilter));
-        let status = MembershipStatus[statusName];
-        if (status !== undefined) {
-            newFilters.push(new StatusFilter(status));
-        }
-        setFilters(newFilters);
     };
 
     return (
         <div className="card">
             <h2>Users</h2>
-            <FormGroup>
-                <FormControl>
-                    <InputLabel id="select-status-label">Statut</InputLabel>
-                    <Select
-                        labelId="select-status-label"
-                        id="select-status"
-                        label="Statut"
-                        onChange={(e: any) => handleStatusChange(e.target.value)}
-                        defaultValue=""
-                    >
-                        <MenuItem value="">Désélectionner</MenuItem>
-                        {Object.values(MembershipStatus).filter(item => isNaN(Number(item))).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
-                    </Select>
-                </FormControl>
-                <FormControl>
-                    <InputLabel id="select-residence-label">Résidence</InputLabel>
-                    <Select
-                        labelId="select-residence-label"
-                        id="select-residence"
-                        label="Résidence"
-                        onChange={(e: any) => handleResidenceChange(e.target.value)}
-                        defaultValue=""
-                    >
-                        <MenuItem value="">Désélectionner</MenuItem>
-                        {Object.values(Residence).map((key) => <MenuItem value={key} key={key}>{Residence[key]}</MenuItem>)}
-                    </Select>
-                </FormControl>
-            </FormGroup>
-            <TableUsers users={filterUsers(users, filters)} rowsPerPageDefault={100} rowsPerPageOptions={[100, 500, 1000, { label: "All", value: -1 }]} />
+            <TextField
+                label="UNET ID, first name, last name, email, VIAxx, ref interne"
+                variant="outlined"
+                onChange={(event) => setSearchText(event.target.value)}
+                value={searchText}
+                fullWidth
+                sx={{ marginBottom: 2 }}
+            />
+            <TableUsers users={filterUsers(users, Array.of(searchFilter))} rowsPerPageDefault={100} rowsPerPageOptions={[100, 500, 1000, { label: "All", value: -1 }]} />
         </div>
     );
 };
