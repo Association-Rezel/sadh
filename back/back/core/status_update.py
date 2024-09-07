@@ -199,6 +199,12 @@ class StatusUpdateManager:
                         user.membership and user.membership.appointment
                     ),
                 ),
+                StatusUpdateCondition(
+                    "Le CMD_ACCES a été envoyé (manuellement)",
+                    lambda user, _: bool(
+                        user.membership and user.membership.cmd_acces_sent
+                    ),
+                ),
             ],
             [
                 StatusUpdateEffect(
@@ -206,10 +212,6 @@ class StatusUpdateManager:
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.SENT_CMD_ACCES
                     ),
-                ),
-                StatusUpdateEffect(
-                    "Le CMD ACCES doit être généré et envoyé MANUELLEMENT. Aucune action automatique n'est prévue.",
-                    lambda user, db: None,
                 ),
             ],
         )
@@ -221,6 +223,12 @@ class StatusUpdateManager:
                 StatusUpdateCondition(
                     "⚠️ Vérifier MANUELLEMENT que le CrCMD a été reçu",
                     lambda user, _: True,
+                ),
+                StatusUpdateCondition(
+                    "Ref prestation Orange renseignée (VIAxxxx)",
+                    lambda user, _: bool(
+                        user.membership and user.membership.ref_prestation
+                    ),
                 ),
             ],
             [
