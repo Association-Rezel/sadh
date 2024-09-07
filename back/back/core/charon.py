@@ -6,7 +6,7 @@ from back.messaging.matrix import send_matrix_message
 
 def register_ont_in_olt(ont_serial: str) -> None:
     """Register an ONT in the OLT."""
-    if ENV.deploy_env is not "prod":
+    if ENV.deploy_env != "prod":
         print(f"ENV IS NOT PROD - Registering ONT {ont_serial} in OLT")
         return
 
@@ -24,7 +24,7 @@ def register_ont_in_olt(ont_serial: str) -> None:
 
 def unregister_ont_in_olt(ont_serial: str) -> None:
     """Unregister an ONT in the OLT."""
-    if ENV.deploy_env is not "prod":
+    if ENV.deploy_env != "prod":
         print(f"ENV IS NOT PROD - Unregistering ONT {ont_serial} in OLT")
         return
 
