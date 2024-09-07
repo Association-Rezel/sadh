@@ -1,8 +1,8 @@
 """Get or edit users."""
 
+from datetime import datetime
+
 import nextcloud_client.nextcloud_client
-
-
 from fastapi import HTTPException
 from fastapi import Response as FastAPIResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -72,6 +72,7 @@ async def _me_create_membershipRequest(
             "$set": {
                 "phone_number": request.phone_number,
                 "membership.type": "FTTH",
+                "membership.ref_prestation": f"{request.address.residence.name}-{request.address.appartement_id}-{datetime.today().strftime('%Y%m%d')}-1",
                 "membership.address": request.address.model_dump(mode="json"),
                 "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
                 "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
