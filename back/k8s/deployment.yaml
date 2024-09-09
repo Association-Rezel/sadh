@@ -28,6 +28,7 @@ spec:
           {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
             MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
             MATRIX_PASSWORD="{{ .Data.data.matrix_password }}"
+            DOCUMENSO_TOKEN="{{ .Data.data.documenso_api_token }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa

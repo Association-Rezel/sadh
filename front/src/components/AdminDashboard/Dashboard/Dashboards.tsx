@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TableUsers } from "../../Users/TableUsers";
-import { MembershipStatus, User } from "../../../utils/types/types";
+import { MembershipStatus, MembershipType, User } from "../../../utils/types/types";
 import { StatusFilter, filterUsers, UserFilter } from "../../../filters/UserFilters";
 import { Api } from "../../../utils/Api";
 import { Typography } from "@mui/material";
@@ -37,6 +37,7 @@ export default function Dashboards() {
     const crMesToSendFilter: UserFilter = {
         filter(user: User): boolean {
             return user.membership?.status === MembershipStatus.ACTIVE
+                && user.membership?.type === MembershipType.FTTH
                 && !user.membership?.cr_mes_sent;
         }
     };

@@ -12,9 +12,9 @@ import CalendarComponent from "./components/Calendar/Calendar";
 import { AppState, AppStateContext, AppStateWrapper } from "./utils/AppStateContext";
 import { useContext } from "react";
 import UserComponent from "./components/AdminDashboard/User/User";
-import { MembershipStatus } from "./utils/types/types";
+import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
-import { LoginPage, RegisterPage } from "./pages/auth/LoginPage";
+import LoginPage from "./pages/auth/LoginPage";
 import { ZitadelContextWrapper } from "./utils/ZitadelContext";
 import LoginCallback from "./pages/auth/LoginCallback";
 import LogoutPage from "./pages/auth/LogoutPage";
@@ -36,7 +36,8 @@ function AppRouter() {
                 <Route path="login" Component={LoginPage} />
                 <Route path="logout" Component={LogoutPage} />
                 <Route path="loginCallback" Component={LoginCallback} />
-                <Route path="adherer" Component={appState.user ? BecomeMember : RegisterPage} />
+                <Route path="adherer/*" Component={appState.user ? BecomeMember : LoginPage} />
+                <Route path="signup" Component={LoginPage} />
 
                 {accountRoute({ appState })}
 
@@ -76,7 +77,8 @@ function accountRoute({ appState }: { appState: AppState }) {
         return <Route path="account" element={<Navigate to="/login" />} />
     }
 
-    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)) {
+    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)
+        && appState.user?.membership?.type === MembershipType.FTTH) {
         return (
             <Route path="account" element={<AccountDashboard />}>
                 <Route path="appointment" Component={PageAppointment} />

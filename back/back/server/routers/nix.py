@@ -5,7 +5,7 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 
 from back.env import ENV
-from back.middlewares.dependencies import must_be_sadh_admin
+from back.server.dependencies import must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("nix")

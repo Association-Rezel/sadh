@@ -2,41 +2,42 @@
 
 from datetime import datetime
 
-import nextcloud_client.nextcloud_client
 from fastapi import HTTPException
-from fastapi import Response as FastAPIResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from back.core.charon import register_ont_in_olt, unregister_ont_in_olt
-from back.core.hermes import register_box_for_new_ftth_adh
+from back.core.documenso import (
+    create_signable_document_from_draft,
+    delete_document,
+    generate_contract_draft_for_user,
+    prefill_address_in_draft,
+)
+from back.core.hermes import register_box_for_new_ftth_adh, register_unet_on_box
 from back.core.pon import get_ontinfo_from_box, register_ont_for_new_ftth_adh
 from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
-from back.messaging.mails import send_email_contract
 from back.messaging.matrix import send_matrix_message
-from back.middlewares.dependencies import (
+from back.mongodb.db import get_db
+from back.mongodb.hermes_models import Box
+from back.mongodb.pon_models import ONTInfo, RegisterONT
+from back.mongodb.user_models import (
+    AppointmentSlot,
+    DepositStatus,
+    EquipmentStatus,
+    MembershipRequest,
+    MembershipStatus,
+    MembershipType,
+    MembershipUpdate,
+    User,
+    UserUpdate,
+)
+from back.server.dependencies import (
     get_box_from_user_id,
     get_status_update_manager,
     get_user_from_user_id,
     get_user_me,
     must_be_sadh_admin,
 )
-from back.mongodb.db import get_db
-from back.mongodb.hermes_models import Box
-from back.mongodb.pon_models import ONTInfo, RegisterONT
-from back.mongodb.user_models import (
-    Address,
-    AppointmentSlot,
-    DepositStatus,
-    EquipmentStatus,
-    FTTHMembershipRequest,
-    MembershipStatus,
-    MembershipUpdate,
-    User,
-    UserUpdate,
-)
-from back.nextcloud import NEXTCLOUD
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("users")
@@ -45,69 +46,81 @@ router = ROUTEURS.new("users")
 @router.get("/me", response_model=User)
 def _me(
     user: User = get_user_me,
-):
+) -> User:
     """Get the current user's identity."""
-    if user.membership:
-        user.membership.redact_for_non_admin()
+    user.redact_for_non_admin()
     return user
 
 
-class CreateMembership(BaseModel):
-    address: Address
-    phone_number: str
-
-
-@router.post("/me/membershipRequest/ftth", status_code=201, response_model=User)
-async def _me_create_membershipRequest(
-    request: FTTHMembershipRequest,
+@router.post("/me/membershipRequest", status_code=201, response_model=User)
+async def _me_create_membership_request(
+    request: MembershipRequest,
     user: User = get_user_me,
     db: AsyncIOMotorDatabase = get_db,
-):
+) -> User:
     """Request a membership."""
     if user.membership:
         raise HTTPException(status_code=400, detail="User is already a member")
 
-    userdict = await db.users.find_one_and_update(
-        {"_id": str(user.id)},
-        {
-            "$set": {
-                "phone_number": request.phone_number,
-                "membership.type": "FTTH",
-                "membership.ref_prestation": f"{request.address.residence.name}-{request.address.appartement_id}-{datetime.today().strftime('%Y%m%d')}-1",
-                "membership.address": request.address.model_dump(mode="json"),
-                "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
-                "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
-                "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
-                "membership.init.payment_method_first_month": request.payment_method_first_month,
-                "membership.init.payment_method_deposit": request.payment_method_deposit,
+    document_id = generate_contract_draft_for_user(user, request.type)
+    prefill_address_in_draft(document_id, request.address)
+    links = create_signable_document_from_draft(user, document_id)
+
+    if request.type is MembershipType.FTTH:
+        userdict = await db.users.find_one_and_update(
+            {"_id": str(user.id)},
+            {
+                "$set": {
+                    "phone_number": request.phone_number,
+                    "membership.type": request.type,
+                    "membership.ref_commande": f"{request.address.residence.name}-{request.address.appartement_id}-{datetime.today().strftime('%Y%m%d')}-1",
+                    "membership.address": request.address.model_dump(mode="json"),
+                    "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
+                    "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
+                    "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
+                    "membership.init.payment_method_first_month": request.payment_method_first_month,
+                    "membership.init.payment_method_deposit": request.payment_method_deposit,
+                    "membership.documenso_contract_id": document_id,
+                    "membership.documenso_adherent_url": links[0],
+                    "membership.documenso_president_url": links[1],
+                },
             },
-        },
-        return_document=ReturnDocument.AFTER,
-    )
+            return_document=ReturnDocument.AFTER,
+        )
+
+    elif request.type is MembershipType.WIFI:
+        userdict = await db.users.find_one_and_update(
+            {"_id": str(user.id)},
+            {
+                "$set": {
+                    "membership.type": request.type,
+                    "membership.address": request.address.model_dump(mode="json"),
+                    "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
+                    "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
+                    "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
+                    "membership.init.ssid": request.ssid,
+                    "membership.init.payment_method_first_month": request.payment_method_first_month,
+                    "membership.documenso_contract_id": document_id,
+                    "membership.documenso_adherent_url": links[0],
+                    "membership.documenso_president_url": links[1],
+                },
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+
+    else:
+        raise HTTPException(status_code=400, detail="Invalid membership type")
 
     user = User.model_validate(userdict)
 
     send_matrix_message(
-        "<h4>🆕 Demande d'adhésion</h4>",
+        f"<h4>🆕 Demande d'adhésion - {request.type.name}</h4>",
         f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
+        f"🔗 https://fai.rezel.net/users/f{user.id}",
     )
 
-    send_email_contract(user.email, user.first_name + " " + user.last_name)
+    user.redact_for_non_admin()
     return user
-
-
-@router.get("/me/contract")
-def _me_get_contract(
-    user: User = get_user_me,
-) -> FastAPIResponse:
-    try:
-        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.id}.pdf")
-    except nextcloud_client.nextcloud_client.HTTPResponseError as exc:
-        raise HTTPException(status_code=404, detail="User not found") from exc
-    with open(tmp_filename, "rb") as f:
-        contract = f.read()
-    tmp_dir.cleanup()
-    return FastAPIResponse(content=contract, media_type="application/pdf")
 
 
 @router.post("/me/availability", response_model=User)
@@ -133,7 +146,10 @@ async def _me_add_availability_slots(
         f"{user.first_name} {user.last_name} a ajouté des créneaux de disponibilité",
     )
 
-    return User.model_validate(userdict)
+    user = User.model_validate(userdict)
+    user.redact_for_non_admin()
+
+    return user
 
 
 ### ADMIN
@@ -202,34 +218,6 @@ async def _user_update_membership(
     )
 
     return User.model_validate(userdict)
-
-
-@router.get("/{user_id}/contract", dependencies=[must_be_sadh_admin])
-def _user_get_contract(
-    user: User = get_user_from_user_id,
-) -> FastAPIResponse:
-    try:
-        tmp_filename, tmp_dir = NEXTCLOUD.get_file(f"{user.id}.pdf")
-    except nextcloud_client.nextcloud_client.HTTPResponseError as exc:
-        raise HTTPException(status_code=404, detail="User not found") from exc
-    with open(tmp_filename, "rb") as f:
-        contract = f.read()
-    tmp_dir.cleanup()
-    return FastAPIResponse(content=contract, media_type="application/pdf")
-
-
-# @router.post("/{user_id}/contract", dependencies=[must_be_sadh_admin])
-# async def _user_upload_contract(
-#     file: UploadFile,
-#     user: User = get_user_from_sub,
-# ):
-#     temp_dir = tempfile.TemporaryDirectory()
-#     tmp_filename = os.path.join(temp_dir.name, f"{user.sub}.pdf")
-#     with open(tmp_filename, "wb") as f:
-#         f.write(file.file.read())
-#     NEXTCLOUD.put_file(tmp_filename)
-#     send_email_signed_contract(user.email, tmp_filename)
-#     temp_dir.cleanup()
 
 
 @router.get("/{user_id}/ont", dependencies=[must_be_sadh_admin])
@@ -379,6 +367,71 @@ async def _user_delete_box(
     return box
 
 
+@router.post("/{user_id}/unet", dependencies=[must_be_sadh_admin], response_model=Box)
+async def _user_register_unet(
+    telecomian: bool,
+    mac_address: str,
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+) -> Box:
+    if not user.membership or user.membership.unetid:
+        raise HTTPException(
+            status_code=400,
+            detail="User has no membership or already has a unetid attached",
+        )
+
+    box_dict = await db.boxes.find_one({"mac": str(mac_address)})
+    if not box_dict:
+        raise HTTPException(status_code=400, detail="Box with this MAC does not exist")
+
+    box = Box.model_validate(box_dict)
+
+    unet_profile = await register_unet_on_box(db, box, telecomian)
+
+    await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {"$set": {"membership.unetid": unet_profile.unet_id}},
+    )
+
+    return box
+
+
+@router.delete("/{user_id}/unet", dependencies=[must_be_sadh_admin], response_model=Box)
+async def _user_delete_unet(
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+    box: Box | None = get_box_from_user_id,
+) -> Box:
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    if not user.membership or not user.membership.unetid:
+        raise HTTPException(
+            status_code=400,
+            detail="User has no unetid attached",
+        )
+
+    if user.membership.unetid == box.main_unet_id:
+        raise HTTPException(
+            status_code=400, detail="Cannot delete the main unet of a box"
+        )
+
+    box = Box.model_validate(
+        await db.boxes.find_one_and_update(
+            {"mac": str(box.mac)},
+            {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
+            return_document=ReturnDocument.AFTER,
+        )
+    )
+
+    await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {"$unset": {"membership.unetid": ""}},
+    )
+
+    return box
+
+
 @router.get(
     "/{user_id}/next-membership-status",
     dependencies=[must_be_sadh_admin],
@@ -393,7 +446,7 @@ async def _user_get_next_membership_status(
         raise HTTPException(status_code=400, detail="User has no membership")
 
     possible_updates = status_update_manager.get_possible_updates_from(
-        user.membership.status
+        user.membership.type, user.membership.status
     )
 
     if not possible_updates:
@@ -421,7 +474,7 @@ async def _user_update_membership_status(
         raise HTTPException(status_code=400, detail="User has no membership")
 
     possible_updates = status_update_manager.get_possible_updates_from(
-        user.membership.status
+        user.membership.type, user.membership.status
     )
 
     if not any(update.to_status == next_status for update in possible_updates):
@@ -441,3 +494,64 @@ async def _user_update_membership_status(
         )
 
     return await update.apply_effects(user, db)
+
+
+@router.post(
+    "/{user_id}/generate_new_contract",
+    dependencies=[must_be_sadh_admin],
+    response_model=User,
+)
+async def _user_generate_new_contract(
+    user: User = get_user_from_user_id,
+    db: AsyncIOMotorDatabase = get_db,
+) -> User:
+    """
+    Generate a new contract for the user.
+    If the user already has a contract, it will be deleted.
+    """
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if user.membership.documenso_contract_id:
+        delete_document(user.membership.documenso_contract_id)
+
+    try:
+        document_id = generate_contract_draft_for_user(user, user.membership.type)
+        prefill_address_in_draft(document_id, user.membership.address)
+        links = create_signable_document_from_draft(user, document_id)
+    except ValueError as e:
+        # If we can't generate a new contract, we should at least delete the old one
+        # from the database
+        await db.users.update_one(
+            {"_id": str(user.id)},
+            {
+                "$set": {
+                    "membership.contract_signed": False,
+                    "membership.documenso_contract_id": None,
+                    "membership.documenso_adherent_url": None,
+                    "membership.documenso_president_url": None,
+                }
+            },
+        )
+        raise HTTPException(status_code=500, detail=str(e)) from e
+
+    userdict = await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {
+            "$set": {
+                "membership.contract_signed": False,
+                "membership.documenso_contract_id": document_id,
+                "membership.documenso_adherent_url": links[0],
+                "membership.documenso_president_url": links[1],
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+
+    send_matrix_message(
+        "<h4>🆕 Nouveau contrat généré manuellement</h4>",
+        f"👤 {user.first_name} {user.last_name}",
+        f"🔗 https://fai.rezel.net/users/f{user.id}",
+    )
+
+    return User.model_validate(userdict)

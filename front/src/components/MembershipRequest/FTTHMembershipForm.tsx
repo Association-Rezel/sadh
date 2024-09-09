@@ -1,7 +1,7 @@
-import { Button, FormControlLabel, Typography, Checkbox, FormControl, InputLabel, Select, MenuItem, TextField, Radio, RadioGroup, FormLabel, FormHelperText } from "@mui/material";
-import { PaymentMethod, Residence, User } from "../../utils/types/types";
+import { Button, FormControlLabel, Typography, Checkbox, FormControl, InputLabel, Select, MenuItem, TextField, Radio, RadioGroup, FormLabel, FormHelperText, CircularProgress } from "@mui/material";
+import { MembershipType, PaymentMethod, Residence, User } from "../../utils/types/types";
 import { Api } from "../../utils/Api";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useFormState } from "react-hook-form";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { useContext, useEffect } from "react";
@@ -12,17 +12,15 @@ type FormValues = {
     appartement_id: string;
     phone_number: string;
     paymentMethodFirstMonth: string;
-    firstMonthPaymentConfirmed?: boolean;
     paymentMethodDeposit: string;
-    depositPaymentConfirmed?: boolean;
 };
 
-export default function MembershipForm() {
+export default function FTTHMembershipForm() {
     const {
         register,
         handleSubmit,
         control,
-        formState: { errors },
+        formState,
         watch,
         reset,
     } = useForm<FormValues>({
@@ -46,34 +44,32 @@ export default function MembershipForm() {
 
     }, [appState.user]);
 
-
-    const onSubmitMembership = (event: FormValues) => {
-        Api.submitMyMembershipRequest({
-            address: {
-                residence: Residence[event.residence],
-                appartement_id: event.appartement_id,
-            },
-            phone_number: event.phone_number,
-            payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
-            payment_method_deposit: PaymentMethod[event.paymentMethodDeposit],
-        }).then((user: User) => {
+    const onSubmitMembership = async (event: FormValues) => {
+        try {
+            const user = await Api.submitMyMembershipRequest({
+                type: MembershipType.FTTH,
+                address: {
+                    residence: Residence[event.residence],
+                    appartement_id: event.appartement_id,
+                },
+                phone_number: event.phone_number,
+                payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
+                payment_method_deposit: PaymentMethod[event.paymentMethodDeposit],
+            });
             updateAppState({ user: { ...user } });
-        }).catch((error) => {
+        } catch (error) {
             alert(
                 "Erreur lors de la demande d'adhésion. Veuillez réessayer ultérieurement. Message d'erreur : " +
                 error.message +
                 "\nSi le problème persiste, veuillez contacter contact@rezel.net"
             );
-        });
+        }
     };
 
     return (
         <div>
             <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                Adhérer à Rezel
-            </Typography>
-            <Typography variant="h5" align="center" color="text.secondary" component="p">
-                Pour effectuer une demande d'adhésion, veuillez renseigner les informations ci-dessous.
+                Adhérer à Rezel (Fibre)
             </Typography>
             <form className="container mt-16" onSubmit={handleSubmit(onSubmitMembership)}>
                 <div className="flex flex-col items-start">
@@ -127,6 +123,7 @@ export default function MembershipForm() {
                     <div className="mt-16 mb-8">
                         <Typography variant="h5" color="text.primary" align="left">
                             Premier mois d'adhésion : <strong>20€</strong>
+                            <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 20€/mois)</Typography>
                         </Typography>
                         <Typography variant="body2" color="text.secondary" align="left">
                             Le premier mois d'adhésion est à régler dès maintenant.<br />
@@ -147,11 +144,11 @@ export default function MembershipForm() {
                                         value={value}
                                         onChange={onChange}
                                     >
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
                                         <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
                                     </RadioGroup>
                                 )} />
-                            <FormHelperText error> {errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
+                            <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
                     </div>
 
@@ -176,20 +173,24 @@ export default function MembershipForm() {
                                         name="paymentMethodDeposit"
                                         value={value}
                                         onChange={onChange}
-                                    >
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
-                                        <FormControlLabel value={PaymentMethod.CHEQUE} control={<Radio />} label="Par chèque au local de l'association" />
+                                        >
                                         <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
+                                        <FormControlLabel value={PaymentMethod.CHEQUE} control={<Radio />} label="Par chèque au local de l'association" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
                                     </RadioGroup>
                                 )} />
-                            <FormHelperText error> {errors.paymentMethodDeposit && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
+                            <FormHelperText error> {formState.errors.paymentMethodDeposit && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
                     </div>
 
                     <div className="mt-16">
-                        <Button variant="contained" type="submit">
-                            Je souhaite adhérer à Rezel
-                        </Button>
+                        {formState.isSubmitting ?
+                            <CircularProgress />
+                            :
+                            <Button variant="contained" type="submit">
+                                Je souhaite adhérer à Rezel
+                            </Button>
+                        }
                     </div>
                 </div>
             </form>
