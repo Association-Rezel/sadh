@@ -116,7 +116,7 @@ async def _me_create_membership_request(
     send_matrix_message(
         f"<h4>🆕 Demande d'adhésion - {request.type.name}</h4>",
         f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
-        f"🔗 https://fai.rezel.net/users/f{user.id}",
+        f"🔗 https://fai.rezel.net/admin/users/f{user.id}",
     )
 
     user.redact_for_non_admin()
@@ -551,7 +551,7 @@ async def _user_generate_new_contract(
     send_matrix_message(
         "<h4>🆕 Nouveau contrat généré manuellement</h4>",
         f"👤 {user.first_name} {user.last_name}",
-        f"🔗 https://fai.rezel.net/users/f{user.id}",
+        f"🔗 https://fai.rezel.net/admin/users/f{user.id}",
     )
 
     return User.model_validate(userdict)
