@@ -155,7 +155,7 @@ function ContractSignatureInfo({ user }: { user: User }) {
         return (
             <div className="flex flex-col gap-4 items-start">
                 <Typography variant="body1" color="text.secondary" component="p" align="left">
-                    Un mail t'as été envoyé avec le contrat de fourniture de service pré-rempli. <br />
+                    Un mail t'a été envoyé avec le contrat de fourniture de service pré-rempli. <br />
                     Merci de le signer et de le renvoyer à <a href="mailto:fai@rezel.net">fai@rezel.net</a>.
                 </Typography>
             </div>
