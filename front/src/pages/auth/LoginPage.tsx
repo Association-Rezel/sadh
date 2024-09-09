@@ -1,28 +1,40 @@
 import { useContext, useEffect } from "react";
 import { ZitadelContext } from "../../utils/ZitadelContext";
+import { Button, Typography } from "@mui/material";
+import logoRezel from "../../ressources/img/cotcot.svg"
 
 export enum LoginPageMode {
     DEFAULT,
     REGISTER
 }
 
-export function LoginPageComponent({loginMode = LoginPageMode.DEFAULT}: {loginMode: LoginPageMode}) {
+export default function LoginPage() {
     let zitadelAuth = useContext(ZitadelContext);
 
-    useEffect(() => {
-        if(loginMode == LoginPageMode.REGISTER) {
-            zitadelAuth.userManager.signinRedirect({ prompt: "create" });
-        } else {
-            zitadelAuth.userManager.signinRedirect();
-        }
-    });
-
     return (
-        <p>
-            Vous allez être redirigé vers le service de connexion...
-        </p>
+        <div className="flex flex-col items-center justify-center h-screen gap-10">
+            <img src={logoRezel} alt="logo" style={{ height: 100 }} />
+            <Typography className="max-w-xl" variant="h4" align="center" color="text.primary" component="div">
+                Créez un compte pour continuer
+            </Typography>
+            <div className="flex flex-col items-center gap-4 w-96">
+                <Button
+                    variant="contained"
+                    className="bg-blue-500 text-white py-2 px-4 rounded"
+                    onClick={() => zitadelAuth.userManager.signinRedirect({ prompt: "create" })}
+                    fullWidth
+                >
+                    Créer un compte
+                </Button>
+                <Button
+                    variant="outlined"
+                    className="bg-blue-500 text-white py-2 px-4 rounded"
+                    onClick={() => zitadelAuth.userManager.signinRedirect()}
+                    fullWidth
+                >
+                    Se connecter
+                </Button>
+            </div>
+        </div>
     );
 }
-
-export const LoginPage = () => <LoginPageComponent loginMode={LoginPageMode.DEFAULT} />;
-export const RegisterPage = () => <LoginPageComponent loginMode={LoginPageMode.REGISTER} />;

@@ -1,16 +1,14 @@
 """Email module."""
 
-import datetime
-import os
-import re
 import smtplib
 import threading
+from datetime import datetime, timedelta
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import pytz
 from babel.dates import format_datetime
-from fillpdf import fillpdfs
 from jinja2 import Environment, PackageLoader, select_autoescape
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -76,10 +74,51 @@ def _send_email(
         )
 
 
-def send_email_validated(user: User) -> None:
+def send_email_validated_ftth(user: User) -> None:
     _send_email(
         "Rezel - Demande d'adhésion validée",
-        jinja2_emails_env.get_template("request_validated.html").render(user=user),
+        jinja2_emails_env.get_template("request_validated_ftth.html").render(user=user),
+        user.email,
+        html=True,
+    )
+
+
+async def send_email_validated_wifi(user: User, db: AsyncIOMotorDatabase) -> None:
+    box = await get_box_from_user(db, user)  # type: ignore
+
+    if box is None:
+        raise ValueError("User has no box")
+
+    if not user.membership:
+        raise ValueError("User has no membership")
+
+    if not user.membership.unetid or not any(
+        unet.unet_id == user.membership.unetid for unet in box.unets
+    ):
+        raise ValueError("User has no unetid or unetid is not in box")
+
+    user_unetid = user.membership.unetid
+    adh_unet = next(filter(lambda unet: unet.unet_id == user_unetid, box.unets))
+
+    PARIS_TZ = tz = pytz.timezone("Europe/Paris")
+    date_wifi: datetime
+    if datetime.now(tz=PARIS_TZ).hour < 5:
+        date_wifi = datetime.now(tz=PARIS_TZ).replace(
+            hour=5, minute=0, second=0, microsecond=0
+        )
+    else:
+        date_wifi = datetime.now(tz=PARIS_TZ).replace(
+            hour=5, minute=0, second=0, microsecond=0
+        ) + timedelta(days=1)
+
+    _send_email(
+        "Rezel - Demande d'adhésion validée",
+        jinja2_emails_env.get_template("request_validated_wifi.html").render(
+            user=user,
+            date_wifi=date_wifi.strftime("%d/%m"),
+            ssid=adh_unet.wifi.ssid,
+            password=adh_unet.wifi.psk,
+        ),
         user.email,
         html=True,
     )
@@ -122,85 +161,28 @@ async def send_mail_appointment_validated(user: User, db: AsyncIOMotorDatabase) 
     )
 
 
-def send_email_contract(to: str, adherent_name: str) -> None:
-    """Send email contract."""
+async def send_mail_new_adherent_on_box(user: User, db: AsyncIOMotorDatabase) -> None:
+    if user.membership is None:
+        raise ValueError("User has no membership")
 
-    pdf_lock.acquire()
-    try:
-        data_dict = {}
-        for k in fillpdfs.get_form_fields(
-            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
-            sort=False,
-            page_number=None,
-        ):
-            fieldName = re.sub(r"\\[0-9]{3}", "", k)
-            if fieldName == "dateRezel":
-                data_dict[k] = datetime.date.today().strftime("%d/%m/%Y")
-            elif fieldName == "placeRezel":
-                data_dict[k] = "Palaiseau"
-            elif fieldName == "nameRezel":
-                data_dict[k] = "Antonin Blot"
-            elif fieldName == "fonctionRezel":
-                data_dict[k] = "Président"
-            elif fieldName == "adherentName":
-                data_dict[k] = adherent_name
-        fillpdfs.write_fillable_pdf(
-            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
-            "resources/membership/Contrat_de_fourniture_de_service_-_Acces_a_Internet.pdf",
-            data_dict,
-            flatten=False,
-        )
-        _send_email(
-            "Rezel - Ton adhésion FAI",
-            """<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  </head>
-  <body>
-    <p>Bonjour,<br>
-      <br>
-      Tu as effectué une demande d'adhésion FAI à Rezel via le site
-      <a href="https://fai.rezel.net">fai.rezel.net</a>.<br>
-      <br>
-      Afin de compléter le processus d'adhésion, il ne te reste plus
-      qu'à :<br>
-    </p>
-    <ul>
-      <li>nous retourner le <b>contrat de fourniture de service</b>
-        complété (pages 2 et 7) et signé,</li>
-      <li>t'acquitter du <b>premier mois de cotisation (20€)</b>, et</li>
-      <li>nous verser <b>la caution de 50€</b> qui te sera réstituée à la fin de l'adhésion.</li>
-    </ul>
-    <p>Les <b>paiements de la cotisation et de la caution</b> peuvent se faire au choix :<br>
-    </p>
-    <ul>
-      <li>En liquide aux locaux de l'association (Salle 0A316 à Télécom
-        Paris au 19 Place Marguerite Perey). Pour s'assurer de la
-        présence d'un membre aux locaux, merci de nous informer de la date
-        et l'heure de ton passage.</li>
-      <li>Par virement bancaire au RIB que tu trouveras ci-joint.
-        ATTENTION : Tu dois impérativement mentionner ton nom et
-        prénom dans le libellé du virement.</li>
-    </ul>
-    <p>A bientôt,<br>
-      Le pôle FAI de Rezel<br>
-    </p>
-  </body>
-</html>
-""",
-            to,
-            attachments=[
-                os.path.join("resources/membership", file)
-                for file in os.listdir("resources/membership")
-            ],
-            html=True,
-        )
-        pdf_lock.release()
-    except Exception as e:
-        send_matrix_message(
-            f"❌ Erreur lors de la génération du contrat pour {adherent_name}",
-            "```",
-            str(e),
-            "```",
-        )
+    box = await get_box_from_user(db, user)  # type: ignore
+
+    if box is None:
+        raise ValueError("User has no box")
+
+    main_unet_user = await db.users.find_one({"membership.unetid": box.main_unet_id})
+
+    if main_unet_user is None:
+        raise ValueError("Main unet user not found. Is it an orphan box ?")
+
+    main_unet_user = User.model_validate(main_unet_user)
+
+    _send_email(
+        "Rezel - Nouvel adhérent sur le lien fibre",
+        jinja2_emails_env.get_template("new_adherent_on_box.html").render(
+            user=main_unet_user,
+            box=box,
+        ),
+        main_unet_user.email,
+        html=True,
+    )

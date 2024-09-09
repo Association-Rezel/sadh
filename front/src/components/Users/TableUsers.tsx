@@ -16,6 +16,7 @@ import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
 import { DepositStatus, MembershipStatus, User } from "../../utils/types/types";
 import { Link } from "react-router-dom";
+import MembershipTypeChip from "../utils/Utils";
 
 interface TablePaginationActionsProps {
     count: number;
@@ -107,16 +108,19 @@ export function TableUsers({ users,
                                         {user.first_name} {user.last_name}
                                     </Link>
                                 </TableCell>
-                                <TableCell style={{ width: 160 }} align="right">
+                                <TableCell align="right">
+                                    <MembershipTypeChip type={user.membership?.type} />
+                                </TableCell>
+                                <TableCell align="right">
                                     {MembershipStatus[user.membership?.status]}
                                 </TableCell>
-                                <TableCell style={{ width: 160 }} align="right">
+                                <TableCell align="right">
                                     {user.membership?.deposit_status == DepositStatus.PAID ? <p className="text-green-700">Caution</p> : <p className="text-red-700">Caution</p>}
                                 </TableCell>
-                                <TableCell style={{ width: 160 }} align="right">
+                                <TableCell align="right">
                                     {user.membership?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
                                 </TableCell>
-                                <TableCell style={{ width: 160 }} align="right">
+                                <TableCell align="right">
                                     {user.membership?.contract_signed ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}
                                 </TableCell>
                             </TableRow>
@@ -146,12 +150,12 @@ export function TableUsers({ users,
                                 ActionsComponent={TablePaginationActions}
                                 sx={{
                                     ".MuiTablePagination-displayedRows": {
-                                      color: "gray"
+                                        color: "gray"
                                     },
                                     ".MuiTablePagination-selectLabel": {
-                                      color: "gray"
+                                        color: "gray"
                                     }
-                                  }}
+                                }}
                             />
                         </TableRow>
                     </TableFooter>

@@ -1,18 +1,33 @@
 import { useContext } from "react";
-import { DepositStatus, MembershipStatus, PaymentMethod, User } from "../../utils/types/types";
+import { DepositStatus, MembershipStatus, MembershipType, PaymentMethod, User } from "../../utils/types/types";
 import { AppStateContext } from "../../utils/AppStateContext";
-import { Button, Typography } from "@mui/material";
+import { Alert, Button, Typography } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PendingIcon from '@mui/icons-material/Pending';
 import DownloadIcon from '@mui/icons-material/Download';
+import { Config } from "../../utils/Config";
+import { Launch } from "@mui/icons-material";
 
-export default function PendingMembershipValidation(): JSX.Element {
+export default function PendingMembershipValidation({ user }: { user: User }): JSX.Element {
+    if (user.membership.type === MembershipType.FTTH) {
+        return <FTTHPendingMembershipValidation />;
+    }
+    else if (user.membership.type === MembershipType.WIFI) {
+        return <WifiPendingMembershipValidation />;
+    } else {
+        return <Alert severity="error">
+            Type d'adhésion inconnu
+        </Alert>
+    }
+}
+
+export function FTTHPendingMembershipValidation(): JSX.Element {
     let { appState } = useContext(AppStateContext);
 
     return (
         <>
             <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                Demande d'adhésion
+                Demande d'adhésion Fibre
             </Typography>
             <div className="flex flex-col gap-8">
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
@@ -21,7 +36,7 @@ export default function PendingMembershipValidation(): JSX.Element {
                         Contrat de fourniture de service
                     </span>
                 </Typography>
-                <ContractSignatureInfo signed={appState.user.membership.contract_signed} />
+                <ContractSignatureInfo user={appState.user} />
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     {appState.user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
@@ -50,7 +65,60 @@ export default function PendingMembershipValidation(): JSX.Element {
                     <br />
                     <br />
                     Si tu as la moindre question, n'hésites pas à paser au local de l'association,
-                    ou bien à envoyer un mail à fai@rezel.net
+                    ou bien à envoyer un mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a>
+                </Typography>
+            </div>
+        </>
+    );
+}
+
+export function WifiPendingMembershipValidation(): JSX.Element {
+    let { appState } = useContext(AppStateContext);
+
+    return (
+        <>
+            <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
+                Demande d'adhésion Wi-Fi
+            </Typography>
+            <div className="flex flex-col gap-8">
+                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                    {appState.user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    <span className="ml-2">
+                        Contrat de fourniture de service
+                    </span>
+                </Typography>
+                <ContractSignatureInfo user={appState.user} />
+                <div className="flex flex-col gap-4 items-start">
+                    <Typography variant="body1" color="text.secondary" component="p" align="left">
+                        En adhérant à rezel, tu t'engages à respecter le règlement intérieur de l'association.
+                    </Typography>
+                    <div className="flex flex-row gap-4">
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                            Réglement Intérieur
+                        </Button>
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                            Statuts de l'association
+                        </Button>
+                    </div>
+                </div>
+                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                    {appState.user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    <span className="ml-2">
+                        Première cotisation 10€ (puis 10€/mois)
+                    </span>
+                </Typography>
+                <PaymentInfo type={PaymentType.MEMBERSHIP} method={appState.user.membership.init.payment_method_first_month} paid={appState.user.membership.paid_first_month} />
+                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                    Et ensuite ?
+                </Typography>
+                <Typography variant="body1" color="text.secondary" component="p" align="justify">
+                    Nous t'enverrons un mail dès que les paiements auront été vérifiés. Ensuite,
+                    tu recevras un mail te confirmant qu'un nouveau réseau Wi-Fi a été crée pour toi,
+                    et nous te demanderons de régler ta cotisation de 10€ tous les mois à partir de ce moment.
+                    <br />
+                    <br />
+                    Si tu as la moindre question, n'hésites pas à paser au local de l'association,
+                    ou bien à envoyer un mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a>
                 </Typography>
             </div>
         </>
@@ -62,20 +130,33 @@ enum PaymentType {
     MEMBERSHIP = "membership"
 }
 
-function ContractSignatureInfo({ signed }: { signed: boolean }) {
-    if (signed)
+function ContractSignatureInfo({ user }: { user: User }) {
+    if (user.membership.contract_signed)
         return (
             <Typography variant="body1" color="text.secondary" component="p" align="left">
                 Contrat signé reçu ! Tu recevras par mail une copie du contrat signé par le président de l'association.
             </Typography>
         );
-
+    else if (user.membership.documenso_adherent_url)
+        return (
+            <div className="flex flex-col gap-4 items-start">
+                <Button
+                    target={user.membership.documenso_adherent_url}
+                    href={user.membership.documenso_adherent_url}
+                    variant="contained"
+                    color="success"
+                    startIcon={<Launch />}
+                >
+                    Signer le contrat en ligne
+                </Button>
+            </div>
+        );
     else
         return (
             <div className="flex flex-col gap-4 items-start">
                 <Typography variant="body1" color="text.secondary" component="p" align="left">
                     Un mail t'as été envoyé avec le contrat de fourniture de service pré-rempli. <br />
-                    Merci de le signer et de le renvoyer à fai@rezel.net.
+                    Merci de le signer et de le renvoyer à <a href="mailto:fai@rezel.net">fai@rezel.net</a>.
                 </Typography>
             </div>
         );
@@ -110,7 +191,6 @@ function PaymentInfo({ type, method, paid }: { type: PaymentType, method: Paymen
                 <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
                     Télécharger le RIB de Rezel
                 </Button>
-
             </div>
         );
 

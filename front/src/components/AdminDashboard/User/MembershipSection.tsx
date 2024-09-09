@@ -1,20 +1,77 @@
-import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus } from "../../../utils/types/types";
-import { TextField, Button, IconButton, MenuItem, Select, Typography, Alert, Icon, DialogTitle, DialogContent, Dialog, DialogContentText, DialogActions } from "@mui/material";
+import {
+    TextField,
+    Button,
+    IconButton,
+    MenuItem,
+    Typography,
+    Alert,
+    Icon,
+    DialogTitle,
+    DialogContent,
+    Dialog,
+    DialogContentText,
+    DialogActions,
+    Chip,
+    CircularProgress,
+} from "@mui/material";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
 import EditIcon from '@mui/icons-material/Edit';
+import { Api } from "../../../utils/Api";
+import RefreshIcon from '@mui/icons-material/Refresh';
+import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus, MembershipType } from "../../../utils/types/types";
+import ConfirmableButton from "../../utils/ConfirmableButton"; // Import the new component
+import MembershipTypeChip from "../../utils/Utils";
 
+interface MembershipSectionProps {
+    setUser: (user: User) => void;
+    user: User;
+    registerToMembershipUpdateForm: any;
+    formControl: any;
+}
 
-export default function MembershipSection({ user, registerToMembershipUpdateForm, formControl }: { user: User, registerToMembershipUpdateForm: any, formControl: any }) {
+export default function MembershipSection({
+    setUser,
+    user,
+    registerToMembershipUpdateForm,
+    formControl,
+}: MembershipSectionProps) {
     if (!user) return (<>Chargement...</>);
 
     const [manualStatusUpdate, setManualStatusUpdate] = useState<boolean>(false);
     const [openDialogWarningManualStatusUpdate, setOpenDialogWarningManualStatusUpdate] = useState<boolean>(false);
+    const [openDialogWarningRecreateContract, setOpenDialogWarningRecreateContract] = useState<boolean>(false);
+    const [recreateContractLoading, setRecreateContractLoading] = useState<boolean>(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
+
+    const onRecreateContract = () => {
+        setRecreateContractLoading(true);
+        Api.generateNewContract(user.id).then(() => {
+            alert("Contrat recréé avec succès");
+            window.location.reload();
+        }).catch((e) => {
+            alert("Erreur lors de la recréation du contrat");
+        }).finally(() => {
+            setRecreateContractLoading(false);
+        });
+    };
+
+    const onRefreshContract = () => {
+        setRefreshing(true);
+        Api.refreshContract(user.id).then((user) => {
+            setUser(user);
+        }).catch((e) => {
+            alert("Erreur lors du rafraichissement du contrat");
+        }).finally(() => {
+            setRefreshing(false);
+        });
+    }
+
 
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
-                Adhésion FTTH
+                Adhésion <MembershipTypeChip type={user.membership.type} />
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <div className="flex flex-col gap-3 justify-items-start">
@@ -31,31 +88,85 @@ export default function MembershipSection({ user, registerToMembershipUpdateForm
                             <IconButton onClick={() => manualStatusUpdate ? setManualStatusUpdate(false) : setOpenDialogWarningManualStatusUpdate(true)}><EditIcon /></IconButton>
                             <WarningManualStatusUpdateDialog open={openDialogWarningManualStatusUpdate} onConfirm={() => { setManualStatusUpdate(true) }} onClose={() => setOpenDialogWarningManualStatusUpdate(false)} />
                         </div>
-                        <strong>Statut de la caution</strong>
-                        <div className="col-span-2">
-                            <StatusSelect
-                                formControl={formControl}
-                                name="deposit_status"
-                                enumClass={DepositStatus}
-                            />
-                        </div>
-                        <strong>Statut des équipements</strong>
-                        <div className="col-span-2">
-                            <StatusSelect
-                                formControl={formControl}
-                                name="equipment_status"
-                                enumClass={EquipmentStatus}
-                            />
-                        </div>
+                        {user.membership.type === MembershipType.FTTH && (
+                            <>
+                                <strong>Statut de la caution</strong>
+                                <div className="col-span-2">
+                                    <StatusSelect
+                                        formControl={formControl}
+                                        name="deposit_status"
+                                        enumClass={DepositStatus}
+                                    />
+                                </div>
+                                <strong>Statut des équipements</strong>
+                                <div className="col-span-2">
+                                    <StatusSelect
+                                        formControl={formControl}
+                                        name="equipment_status"
+                                        enumClass={EquipmentStatus}
+                                    />
+                                </div>
+                            </>
+                        )}
                     </div>
                     <div className="flex items-center">
                         <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("paid_first_month")} />
                         <strong className="pl-2">Premier mois payé</strong>
                     </div>
-                    <div className="flex items-center">
-                        <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("contract_signed")} />
-                        <strong className="pl-2">Contrat signé</strong>
-                    </div>
+                    {!user.membership.documenso_contract_id && (
+                        <>
+                            <Alert severity="warning">
+                                Aucun contrat documenso, mais vous pouvez en créer un !
+                            </Alert>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                onClick={onRecreateContract}
+                            >
+                                Créer un contrat pour {user.first_name}
+                            </Button>
+                            <div className="flex items-center">
+                                <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("contract_signed")} />
+                                <strong className="pl-2">Contrat signé (Déprécié, préferer documenso)</strong>
+                            </div>
+                        </>
+                    )}
+                    {user.membership.documenso_contract_id && (
+                        <>
+                            <div className="flex items-center gap-2">
+                                <strong>Contrat signé : </strong>
+                                {user.membership.contract_signed && <Chip label="Oui" color="success" />}
+                                {!user.membership.contract_signed && <Chip label="Non" color="error" />}
+                                <IconButton onClick={onRefreshContract}><RefreshIcon /></IconButton>
+                                {refreshing && <CircularProgress />}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <strong>ID du contrat documenso : </strong>{user.membership.documenso_contract_id}
+                            </div>
+                            <div className="flex items-center">
+                                <ConfirmableButton
+                                    variant="outlined"
+                                    confirmationText="La recréation du contrat documenso va générer un nouveau contrat
+                                        pour l'adhérent. Le contrat actuel sera supprimé et un nouveau contrat sera créé.
+                                        ⚠️ Cette action est irréversible."
+                                    onConfirm={onRecreateContract}
+                                >
+                                    Regénérer contrat ⚠️
+                                </ConfirmableButton>
+                            </div>
+                            <div className="flex items-center">
+                                <Button size="small" variant="outlined" color="error" href={user.membership.documenso_adherent_url} target="_blank" rel="noreferrer">
+                                    Lien adhérent ⚠️
+                                </Button>
+                            </div>
+                            <div className="flex items-center">
+                                <Button size="small" variant="contained" color="success" href={user.membership.documenso_president_url} target="_blank" rel="noreferrer">
+                                    Lien contrat président
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                    {recreateContractLoading && <><Alert severity="info">Recréation du contrat en cours...</Alert><CircularProgress /></>}
                 </div >
             </Typography>
         </div>
@@ -105,4 +216,4 @@ function WarningManualStatusUpdateDialog({ open, onConfirm, onClose }: { open: b
             </DialogActions>
         </Dialog>
     )
-}
+}  

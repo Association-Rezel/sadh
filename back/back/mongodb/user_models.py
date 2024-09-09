@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import UUID
 
 import pytz
-from pydantic import AliasChoices, BaseModel, Field, field_validator
+from pydantic import AliasChoices, BaseModel, Field, ValidationInfo, field_validator
 
 
 class MembershipStatus(int, Enum):
@@ -90,7 +90,8 @@ class PaymentMethod(str, Enum):
 
 class MembershipInitialization(BaseModel):
     payment_method_first_month: PaymentMethod = Field(...)
-    payment_method_deposit: PaymentMethod = Field(...)
+    payment_method_deposit: Optional[PaymentMethod] = Field(None)
+    ssid: Optional[str] = Field(None)
 
 
 class MembershipType(str, Enum):
@@ -115,6 +116,9 @@ class Membership(BaseModel):
     appointment: Optional[Appointment] = Field(None)
     init: Optional[MembershipInitialization] = Field(None)
     unetid: Optional[str] = Field(None)
+    documenso_contract_id: Optional[int] = Field(None)
+    documenso_adherent_url: Optional[str] = Field(None)
+    documenso_president_url: Optional[str] = Field(None)
 
     def redact_for_non_admin(self):
         self.comment = ""
@@ -124,6 +128,8 @@ class Membership(BaseModel):
         self.cmd_acces_sent = False
         self.cr_mes_sent = False
         self.unetid = None
+        self.documenso_contract_id = None
+        self.documenso_president_url = None
 
 
 class User(BaseModel):
@@ -134,6 +140,10 @@ class User(BaseModel):
     last_name: str = Field(...)
     membership: Optional[Membership] = Field(None)
     availability_slots: set[AppointmentSlot] = Field([])
+
+    def redact_for_non_admin(self):
+        if self.membership and isinstance(self.membership, Membership):
+            self.membership.redact_for_non_admin()
 
 
 ####
@@ -163,8 +173,26 @@ class UserUpdate(BaseModel):
     availability_slots: Optional[set[AppointmentSlot]] = Field(None)
 
 
-class FTTHMembershipRequest(BaseModel):
-    phone_number: str = Field(...)
+class MembershipRequest(BaseModel):
+    type: MembershipType = Field(...)
+    ssid: Optional[str] = Field(None)
+    phone_number: Optional[str] = Field(None)
     address: Address = Field(...)
     payment_method_first_month: PaymentMethod = Field(...)
-    payment_method_deposit: PaymentMethod = Field(...)
+    payment_method_deposit: Optional[str] = Field(None)
+
+    @field_validator("phone_number", "payment_method_deposit", mode="before")
+    @classmethod
+    def _validate_ftth(cls, v: str | None, info: ValidationInfo):
+        if info.data["type"] == MembershipType.FTTH and v is None:
+            raise ValueError(f"{info.field_name} is required for FTTH membership")
+
+        return v
+
+    @field_validator("ssid", mode="before")
+    @classmethod
+    def _validate_wifi(cls, v: str | None, info: ValidationInfo):
+        if info.data["type"] == MembershipType.WIFI and v is None:
+            raise ValueError(f"{info.field_name} is required for WIFI membership")
+
+        return v

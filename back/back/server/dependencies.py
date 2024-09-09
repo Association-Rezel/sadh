@@ -6,12 +6,12 @@ from pymongo import ReturnDocument
 
 from back.core.hermes import get_box_from_user
 from back.core.status_update import StatusUpdateManager
-from back.env import ENV
-from back.middlewares.zitadel import (
+from back.core.zitadel import (
     ValidatorError,
     ZitadelIntrospectTokenValidator,
     ZitadelUserInfo,
 )
+from back.env import ENV
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
 from back.mongodb.user_models import User

@@ -57,13 +57,20 @@ export enum PaymentMethod {
     ESPECE = "ESPECE"
 }
 
+export enum MembershipType {
+    FTTH = "FTTH",
+    WIFI = "WIFI"
+}
+
 export interface MembershipInitialization {
     payment_method_first_month: PaymentMethod;
-    payment_method_deposit: PaymentMethod;
+    payment_method_deposit?: PaymentMethod;
+    ssid?: string;
 }
 
 export interface Membership {
     status: MembershipStatus;
+    type: MembershipType;
     address: Address;
     comment: string;
     erdv_id?: string;
@@ -78,6 +85,9 @@ export interface Membership {
     appointment?: Appointment;
     init?: MembershipInitialization;
     unetid?: string;
+    documenso_contract_id?: number;
+    documenso_adherent_url?: string;
+    documenso_president_url?: string;
 }
 
 export interface User {
@@ -91,10 +101,12 @@ export interface User {
 }
 
 export interface MembershipRequest {
+    type: MembershipType;
     address: Address;
-    phone_number: string;
+    ssid?: string;
+    phone_number?: string;
     payment_method_first_month: PaymentMethod;
-    payment_method_deposit: PaymentMethod;
+    payment_method_deposit?: PaymentMethod;
 }
 
 export function isSameSlot(slot1: AppointmentSlot | null, slot2: AppointmentSlot | null) {
@@ -163,6 +175,12 @@ export interface ApiInterface {
     sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
     fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo>;
     updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
+    fetchAllSSIDs(): Promise<string[]>;
+    fetchBoxBySSID(ssid: string): Promise<Box>;
+    createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box>;
+    generateNewContract(user_id: string): Promise<void>;
+    refreshContract(user_id: string): Promise<User>;
     deleteONT(user_id: string): Promise<ONTInfo>;
     deleteBox(user_id: string): Promise<Box>;
+    deleteUnet(user_id: string): Promise<Box>;
 }

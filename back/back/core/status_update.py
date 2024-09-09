@@ -7,8 +7,19 @@ from pymongo import ReturnDocument
 
 from back.core.hermes import get_box_from_user
 from back.core.pon import get_ont_from_box
-from back.messaging.mails import send_email_validated, send_mail_appointment_validated
-from back.mongodb.user_models import DepositStatus, MembershipStatus, User
+from back.messaging.mails import (
+    send_email_validated_ftth,
+    send_email_validated_wifi,
+    send_mail_appointment_validated,
+    send_mail_new_adherent_on_box,
+)
+from back.messaging.matrix import send_matrix_message
+from back.mongodb.user_models import (
+    DepositStatus,
+    MembershipStatus,
+    MembershipType,
+    User,
+)
 
 
 class StatusUpdateEffect:
@@ -40,11 +51,13 @@ class StatusUpdateCondition:
 class StatusUpdate:
     def __init__(
         self,
+        membership_type: MembershipType,
         from_status: MembershipStatus,
         to_status: MembershipStatus,
         conditions: list[StatusUpdateCondition],
         effects: list[StatusUpdateEffect],
     ) -> None:
+        self.membership_type = membership_type
         self.from_status = from_status
         self.to_status = to_status
         self.conditions = conditions
@@ -69,21 +82,28 @@ class StatusUpdate:
                 )
             ]
 
-        called_conditions = [
-            condition.condition(user, db) for condition in self.conditions
-        ]
+        not_met = []
 
-        # Now await the coroutines
-        for i, condition in enumerate(called_conditions):
-            if asyncio.iscoroutine(condition):
-                called_conditions[i] = await condition
+        for condition in self.conditions:
+            try:
+                result = condition.condition(user, db)
+                # If this is a coroutine, await it
+                if asyncio.iscoroutine(result):
+                    result = await result
+
+                if not result:
+                    not_met.append(condition)
+
+            except Exception as e:
+                send_matrix_message(
+                    f"❌ Erreur lors de la vérification des conditions pour {user.email}",
+                    f"Condition : {condition.description}",
+                    f"Erreur : {e}",
+                )
+                raise e
 
         # Return the list of conditions that failed
-        return [
-            self.conditions[i]
-            for i, condition in enumerate(called_conditions)
-            if not condition
-        ]
+        return not_met
 
     async def apply_effects(self, user: User, db: AsyncIOMotorDatabase) -> User:
         """
@@ -91,15 +111,34 @@ class StatusUpdate:
 
         Returns the updated user after the effects have been applied.
         """
+        run_effects = []
         for effect in self.effects:
-            result = effect.effect(user, db)
-            # If this is a coroutine, await it
-            if asyncio.iscoroutine(result):
-                result = await result
+            try:
+                result = effect.effect(user, db)
+                # If this is a coroutine, await it
+                if asyncio.iscoroutine(result):
+                    result = await result
 
-            # If the effect updated the user, update the user object
-            if isinstance(result, User):
-                user = result
+                # If the effect updated the user, update the user object
+                if isinstance(result, User):
+                    user = result
+
+                run_effects.append(effect)
+            except Exception as e:
+                send_matrix_message(
+                    f"❌ Erreur lors de l'application de l'effet pour {user.email}",
+                    f"Effet : {effect.description}",
+                    "Les effets suivants ont été appliqués :",
+                    *[f"  ✔️ {effect.description}" for effect in run_effects],
+                    "Les effets suivants n'ont PAS été appliqués :",
+                    *[
+                        f"  ❌ {effect.description}"
+                        for effect in self.effects
+                        if effect not in run_effects
+                    ],
+                    f"Erreur : {e}",
+                )
+                raise e
 
         return user
 
@@ -132,7 +171,12 @@ class StatusUpdateManager:
 
     def __init__(self) -> None:
         self.updates = []
+
+        ###############################################
+        # FTTH
+
         self.register_update(
+            MembershipType.FTTH,
             MembershipStatus.REQUEST_PENDING_VALIDATION,
             MembershipStatus.VALIDATED,
             [
@@ -172,12 +216,13 @@ class StatusUpdateManager:
                             "équipements",
                         ]
                     ),
-                    lambda user, _: send_email_validated(user),
+                    lambda user, _: send_email_validated_ftth(user),
                 ),
             ],
         )
 
         self.register_update(
+            MembershipType.FTTH,
             MembershipStatus.VALIDATED,
             MembershipStatus.SENT_CMD_ACCES,
             [
@@ -217,6 +262,7 @@ class StatusUpdateManager:
         )
 
         self.register_update(
+            MembershipType.FTTH,
             MembershipStatus.SENT_CMD_ACCES,
             MembershipStatus.APPOINTMENT_VALIDATED,
             [
@@ -251,6 +297,7 @@ class StatusUpdateManager:
         )
 
         self.register_update(
+            MembershipType.FTTH,
             MembershipStatus.APPOINTMENT_VALIDATED,
             MembershipStatus.ACTIVE,
             [
@@ -269,19 +316,89 @@ class StatusUpdateManager:
             ],
         )
 
+        ###############################################
+        # WIFI
+
+        self.register_update(
+            MembershipType.WIFI,
+            MembershipStatus.REQUEST_PENDING_VALIDATION,
+            MembershipStatus.ACTIVE,
+            [
+                StatusUpdateCondition(
+                    "La cotisation pour le premier mois a été payée",
+                    lambda user, _: (
+                        user.membership.paid_first_month if user.membership else False
+                    ),
+                ),
+                StatusUpdateCondition(
+                    "Le contrat a été signé",
+                    lambda user, _: (
+                        user.membership.contract_signed if user.membership else False
+                    ),
+                ),
+                StatusUpdateCondition(
+                    "L'utilisateur a un unet assigné",
+                    lambda user, _: bool(user.membership and user.membership.unetid),
+                ),
+            ],
+            [
+                StatusUpdateEffect(
+                    "Passage de l'adhésion à l'état ACTIVE",
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.ACTIVE
+                    ),
+                ),
+                StatusUpdateEffect(
+                    " ".join(
+                        [
+                            "Envoi d'un email au PROPRIETAIRE de la box",
+                            "pour l'informer qu'un autre Wi-Fi a été configuré pour un",
+                            "nouvel adhérent, et lui indiquant de ne plus éteindre la box.",
+                        ]
+                    ),
+                    send_mail_new_adherent_on_box,
+                ),
+                StatusUpdateEffect(
+                    " ".join(
+                        [
+                            "Envoi d'un email à l'adhérent pour lui indiquer",
+                            "le SSID et le mot de passe du nouveau Wi-Fi.",
+                        ]
+                    ),
+                    send_email_validated_wifi,
+                ),
+            ],
+        )
+
     def register_update(
         self,
+        membership_type: MembershipType,
         from_status: MembershipStatus,
         to_status: MembershipStatus,
         conditions: list[StatusUpdateCondition],
         effects: list[StatusUpdateEffect],
     ):
-        self.updates.append(StatusUpdate(from_status, to_status, conditions, effects))
+        self.updates.append(
+            StatusUpdate(
+                membership_type,
+                from_status,
+                to_status,
+                conditions,
+                effects,
+            )
+        )
 
     def get_possible_updates_from(
-        self, from_status: MembershipStatus
+        self,
+        membership_type: MembershipType,
+        from_status: MembershipStatus,
     ) -> list[StatusUpdate]:
-        return [update for update in self.updates if update.from_status == from_status]
+        return [
+            update
+            for update in self.updates
+            if update.from_status == from_status
+            and membership_type in update.membership_type
+        ]
 
 
 async def _check_user_has_box(user: User, db: AsyncIOMotorDatabase) -> bool:

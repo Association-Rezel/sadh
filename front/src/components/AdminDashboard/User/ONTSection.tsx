@@ -5,6 +5,7 @@ import { ONTInfo, PMInfo, RegisterONT } from "../../../utils/types/pon_types";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import TrashIcon from '@mui/icons-material/Delete';
 import { Box } from "../../../utils/types/hermes_types";
+import ConfirmableButton from "../../utils/ConfirmableButton";
 
 export default function ONTSection(
     {
@@ -143,7 +144,17 @@ export default function ONTSection(
                         <strong>PON Interface</strong> : {ont.olt_interface}<br />
                         <strong>PM</strong> : {ont.pm_description}<br />
                         <strong>Position porte droite</strong> : {ont.position_in_subscriber_panel}<br />
-                        <Button color="error" onClick={onDelete} startIcon={<TrashIcon />}>Supprimer l'ONT</Button>
+                        <ConfirmableButton
+                            variant="text"
+                            buttonColor="error"
+                            onConfirm={onDelete}
+                            startIcon={<TrashIcon />}
+                            confirmationText="Le déprovisionning de l'ONT est une action irreversible.
+                                    Si vous souhaitez réutiliser ses informations, pensez à les notez au préalable.
+                                    (numéro de série, position au PM, etc...)"
+                        >
+                            Supprimer l'ONT
+                        </ConfirmableButton>
                     </>
                 )}
             </Typography>

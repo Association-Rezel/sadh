@@ -182,7 +182,7 @@ export class RemoteApi implements ApiInterface {
     }
 
     async submitMyMembershipRequest(request: MembershipRequest): Promise<User> {
-        return this.parseUser(await this.myAuthenticatedRequest("/users/me/membershipRequest/ftth", request, "POST"));
+        return this.parseUser(await this.myAuthenticatedRequest("/users/me/membershipRequest", request, "POST"));
     }
 
     async fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]> {
@@ -249,11 +249,35 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/next-membership-status?next_status=${status}`, "POST"));
     }
 
+    async fetchAllSSIDs(): Promise<string[]> {
+        return await this.myFetcher("/net/ssids", true);
+    }
+
+    async fetchBoxBySSID(ssid: string): Promise<Box> {
+        return await this.fetchOrDefault("/boxs/by_ssid/" + ssid, null, true);
+    }
+
+    async createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box> {
+        return await this.myAuthenticatedRequest(`/users/${id}/unet?mac_address=${macAddress}&telecomian=${isTelecomian}`, null, "POST");
+    }
+
+    async generateNewContract(user_id: string): Promise<void> {
+        await this.myAuthenticatedRequest(`/users/${user_id}/generate_new_contract`, null, "POST");
+    }
+
+    async refreshContract(user_id: string): Promise<User> {
+        return this.parseUser(await this.myAuthenticatedRequest(`/documenso/refresh/${user_id}`, null, "POST"));
+    }
+
     async deleteONT(user_id: string): Promise<ONTInfo> {
         return await this.myAuthenticatedRequest("/users/" + user_id + "/ont", null, "DELETE");
     }
 
     async deleteBox(user_id: string): Promise<Box> {
         return await this.myAuthenticatedRequest("/users/" + user_id + "/box", null, "DELETE");
+    }
+
+    async deleteUnet(user_id: string): Promise<Box> {
+        return await this.myAuthenticatedRequest("/users/" + user_id + "/unet", null, "DELETE");
     }
 }

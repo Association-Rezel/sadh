@@ -59,9 +59,7 @@ export function AppStateWrapper({ children }: { children: any }) {
 
     // Sync the Zitadel auth state with the app state
     useEffect(() => {
-
         syncFromZitadelContext();
-
     }, [zitadelAuth.userManager]);
 
     const contextValue: AppStateContextValueWrapper = {

@@ -73,6 +73,11 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     fai_email_address: str | None
 
+    documenso_url: str
+    documenso_token: str
+    documenso_template_contract_ftth_id: int
+    documenso_template_contract_wifi_id: int
+
     def __init__(self) -> None:
         """Load all variables."""
 
@@ -106,12 +111,22 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.charon_url = get_or_raise("CHARON_URL")
 
-        self.nextcloud_share_url = get_or_raise("NEXTCLOUD_SHARE_URL")
-        self.nextcloud_share_password = get_or_raise("NEXTCLOUD_SHARE_PASSWORD")
-
         self.nix_url = get_or_raise("NIX_URL")
 
         self.fai_email_address = get_or_none("FAI_EMAIL_ADDRESS")
+
+        self.documenso_url = get_or_raise("DOCUMENSO_URL")
+
+        if self.documenso_url[-1] == "/":
+            self.documenso_url = self.documenso_url[:-1]
+
+        self.documenso_token = get_or_raise("DOCUMENSO_TOKEN")
+        self.documenso_template_contract_ftth_id = int(
+            get_or_raise("DOCUMENSO_TEMPLATE_CONTRACT_FTTH_ID")
+        )
+        self.documenso_template_contract_wifi_id = int(
+            get_or_raise("DOCUMENSO_TEMPLATE_CONTRACT_WIFI_ID")
+        )
 
 
 ENV = Env()

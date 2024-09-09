@@ -2,10 +2,10 @@ import { useParams } from "react-router-dom";
 import MembershipSection from "./MembershipSection";
 import UserSection from "./UserSection";
 import ONTSection from "./ONTSection";
-import BoxSection from "./BoxSection";
+import UnetSection from "./UnetSection";
 import { useEffect, useState } from "react";
 import { Api } from "../../../utils/Api";
-import { Membership, User } from "../../../utils/types/types";
+import { Membership, MembershipType, User } from "../../../utils/types/types";
 import { SubmitHandler, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
@@ -72,13 +72,16 @@ function UserComponent() {
             {user && user?.membership && (
                 <>
                     <div className="flex gap-x-20 flex-wrap justify-between">
-                        <MembershipSection user={user} registerToMembershipUpdateForm={register} formControl={control} />
+                        <MembershipSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} formControl={control} />
                         <StatusUpdateSection user={user} setUser={setUser} />
-                        <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
-                        <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
-                        <BoxSection user_id={user_id} box={box} setBox={setBox} ont={ont} boxLoading={boxLoading} setBoxLoading={setBoxLoading} />
-                        <InteropSection registerToMembershipUpdateForm={register} user={user} />
-                        <ContractUpload user_id={user_id} />
+                        <UnetSection user={user} box={box} setBox={setBox} ont={ont} boxLoading={boxLoading} setBoxLoading={setBoxLoading} />
+                        {user.membership.type === MembershipType.FTTH && (
+                            <>
+                                <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
+                                <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
+                                <InteropSection registerToMembershipUpdateForm={register} user={user} />
+                            </>
+                        )}
                     </div>
                     <div className="mt-10">
                         <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">

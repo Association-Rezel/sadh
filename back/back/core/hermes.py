@@ -31,6 +31,15 @@ ADH_IPV6_WAN_VLAN = WanVlan(
 )
 
 
+async def _generate_unique_unet_id(db: AsyncIOMotorDatabase) -> str:
+    unet_id = "".join(
+        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
+    )
+    if await db.boxes.find_one({"main_unet_id": unet_id}):
+        return await _generate_unique_unet_id(db)
+    return unet_id
+
+
 async def register_box_for_new_ftth_adh(
     db: AsyncIOMotorDatabase,
     box_type: str,
@@ -47,9 +56,7 @@ async def register_box_for_new_ftth_adh(
         IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip
     )
 
-    unet_id = "".join(
-        random.choice(string.ascii_lowercase + string.digits) for _ in range(8)
-    )
+    unet_id = await _generate_unique_unet_id(db)
 
     new_box = Box(
         type=box_type.lower(),
@@ -85,6 +92,60 @@ async def register_box_for_new_ftth_adh(
     await db.boxes.insert_one(new_box.model_dump(mode="json"))
 
     return new_box
+
+
+async def get_box_by_ssid(db: AsyncIOMotorDatabase, ssid: str) -> Box | None:
+    box_dict = await db.boxes.find_one({"unets.wifi.ssid": ssid})
+    if box_dict is None:
+        return None
+
+    return Box.model_validate(box_dict)
+
+
+async def register_unet_on_box(
+    db: AsyncIOMotorDatabase,
+    box: Box,
+    telecom_ip: bool,
+) -> UnetProfile:
+    ipam = MongoIpam(db)
+
+    available_ipv4 = await ipam.get_available_ipv4(telecom_ip)
+    ipv6, prefix = ipam.compute_ipv6_and_prefix(
+        IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip
+    )
+
+    unet_id = await _generate_unique_unet_id(db)
+
+    new_profile = UnetProfile(
+        unet_id=unet_id,
+        network=UnetNetwork(
+            wan_ipv4=available_ipv4,
+            wan_ipv6=ipv6,
+            ipv6_prefix=prefix,
+            lan_ipv4=LanIpv4(
+                address=f"192.168.{len(box.unets) + 1}.1/24",
+                vlan=len(box.unets) + 1,
+            ),
+        ),
+        wifi=WifiDetails(ssid=await generate_unique_ssid(db), psk=generate_password()),
+        dhcp=Dhcp(
+            dns_servers=DnsServers(
+                ipv4=["8.8.8.8", "1.1.1.1"],
+                ipv6=["2001:4860:4860::8888", "2606:4700:4700::1111"],
+            )
+        ),
+        firewall=UnetFirewall(
+            ipv4_port_forwarding=[],
+            ipv6_port_opening=[],
+        ),
+    )
+
+    await db.boxes.update_one(
+        {"mac": str(box.mac)},
+        {"$push": {"unets": new_profile.model_dump(mode="json")}},
+    )
+
+    return new_profile
 
 
 async def get_box_from_user(db: AsyncIOMotorDatabase, user: User) -> Box | None:
