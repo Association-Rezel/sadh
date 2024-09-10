@@ -89,5 +89,4 @@ class PMInfo(BaseModel):
 class RegisterONT(BaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
-    box_mac_address: str = Field(...)
     pm_id: str = Field(...)

@@ -18,6 +18,5 @@ export interface PMInfo {
 export interface RegisterONT {
     serial_number: string;
     software_version: string;
-    box_mac_address: string;
     pm_id: string;
 }

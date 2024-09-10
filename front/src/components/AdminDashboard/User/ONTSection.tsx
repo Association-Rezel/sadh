@@ -27,7 +27,6 @@ export default function ONTSection(
         defaultValues: {
             serial_number: "",
             software_version: "3FE45655AOCK88",
-            box_mac_address: "",
             pm_id: ""
         }
     });
@@ -35,6 +34,10 @@ export default function ONTSection(
     const [pms, setPms] = useState<PMInfo[] | null>(null);
 
     const onSubmit: SubmitHandler<RegisterONT> = (register: RegisterONT) => {
+        if (!box) {
+            alert("Veuillez d'abord assigner une box");
+            return;
+        }
         //Check not empty 
         if (!register.serial_number || !register.software_version) {
             alert("Veuillez remplir tous les champs");
@@ -72,15 +75,6 @@ export default function ONTSection(
         });
     }, []);
 
-    // Prefill Box mac address if box is set
-    useEffect(() => {
-        if (getValues("box_mac_address")) return;
-        if (box) {
-            reset({ box_mac_address: box.mac });
-        }
-    }, [box]);
-
-
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
@@ -91,13 +85,6 @@ export default function ONTSection(
 
                 {!ontLoading && !ont && (
                     <div className="inline-flex flex-col gap-y-3 flex-wrap">
-                        <TextField name="box_mac_address"
-                            className="bg-white"
-                            required
-                            label="Adresse MAC de la box"
-                            {...register("box_mac_address")}
-                        />
-
                         <TextField name="serial_number"
                             className="bg-white"
                             required
