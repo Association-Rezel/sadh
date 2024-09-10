@@ -246,14 +246,20 @@ async def _user_get_ont(
 async def _user_register_ont(
     register: RegisterONT,
     db: AsyncIOMotorDatabase = get_db,
+    box: Box | None = get_box_from_user_id,
 ) -> ONTInfo:
+    if not box:
+        raise HTTPException(
+            status_code=404,
+            detail="No box found for this user. Please register a box before registering an ONT.",
+        )
     try:
         ont_info = await register_ont_for_new_ftth_adh(
             db,
             register.pm_id,
             register.serial_number,
             register.software_version,
-            register.box_mac_address,
+            box,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e

@@ -3,7 +3,6 @@ from typing import Tuple
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from netaddr import EUI, mac_unix_expanded
 
-from back.core.charon import register_ont_in_olt
 from back.mongodb.hermes_models import Box
 from back.mongodb.pon_models import ONT, PM, PON, ONTInfo
 
@@ -25,7 +24,7 @@ async def register_ont_for_new_ftth_adh(
     pm_id: str,
     serial_number: str,
     software_version: str,
-    box_mac_address: str,
+    box: Box,
 ) -> ONTInfo:
     # PM exists
     if not (pm := PM.model_validate(await db.pms.find_one({"_id": pm_id}))):
@@ -36,21 +35,16 @@ async def register_ont_for_new_ftth_adh(
         raise ValueError(f"ONT with serial number {serial_number} already registered")
 
     # Not already an ONT with the same box_mac_address
-    if await db.pms.find_one(
-        {"pon_list.ont_list.box_mac_address": str(box_mac_address)}
-    ):
+    if await db.pms.find_one({"pon_list.ont_list.box_mac_address": str(box.mac)}):
         raise ValueError(
-            f"ONT with box MAC address {box_mac_address} already registered"
+            f"There is already an ONT registered for this box {str(box.mac)}"
         )
-
-    if not await db.boxes.find_one({"mac": str(box_mac_address)}):
-        raise ValueError("No box with this MAC address found")
 
     pon, position_in_pon = get_first_free_port(pm)
     new_ont = ONT(
         serial_number=serial_number,
         software_version=software_version,
-        box_mac_address=EUI(box_mac_address),
+        box_mac_address=box.mac,
         position_in_pon=position_in_pon,
     )
 
@@ -66,7 +60,7 @@ async def register_ont_for_new_ftth_adh(
     ont_info = ONTInfo(
         serial_number=serial_number,
         software_version=software_version,
-        box_mac_address=box_mac_address,
+        box_mac_address=str(box.mac),
         mec128_position=position_in_pon_to_mec128_string(pon, position_in_pon),
         olt_interface=pon.olt_interface,
         pm_description=pm.description,
