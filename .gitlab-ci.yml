@@ -33,7 +33,7 @@ buildfrontend:
         - front/**/*
       variables:
         DEPLOY_ENV: "dev"
-    - when: manual # Defaults to not run (e.g. merge requests pipelines)
+    - when: never # Do not run if not needed (no changes in back)
   image:
     name: gcr.io/kaniko-project/executor:v1.23.0-debug
     entrypoint: [""]
@@ -57,7 +57,7 @@ buildbackend:
         - back/**/*
       variables:
         DEPLOY_ENV: "dev"
-    - when: manual # Defaults to not run (e.g. merge requests pipelines)
+    - when: never # Do not run if not needed (no changes in back)
   image:
     name: gcr.io/kaniko-project/executor:v1.23.0-debug
     entrypoint: [""]
@@ -81,7 +81,7 @@ deploybackend:
       variables:
         DEPLOY_ENV: "dev"
         DEPLOY_NAMESPACE: "dev"
-    - when: manual # Defaults to not run (e.g. merge requests pipelines)
+    - when: manual
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']
@@ -112,7 +112,7 @@ deployfrontend:
       variables:
         DEPLOY_ENV: "dev"
         DEPLOY_NAMESPACE: "dev"
-    - when: manual # Defaults to not run (e.g. merge requests pipelines)
+    - when: manual
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']

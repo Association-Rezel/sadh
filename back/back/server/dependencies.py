@@ -2,6 +2,7 @@ import uuid
 
 from fastapi import Depends, Header, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from netaddr import EUI, mac_unix_expanded
 from pymongo import ReturnDocument
 
 from back.core.hermes import get_box_from_user
@@ -124,6 +125,29 @@ async def get_box(
 ) -> Box | None:
     """Return the user box."""
     return await get_box_from_user(db, user)
+
+
+@Depends
+async def parse_mac_str(mac_str: str) -> EUI:
+    try:
+        return EUI(mac_str, dialect=mac_unix_expanded)
+    except Exception as ex:
+        raise HTTPException(status_code=400, detail="Invalid MAC address") from ex
+
+
+@Depends
+async def get_box_from_mac_str(
+    mac: EUI = parse_mac_str,
+    db: AsyncIOMotorDatabase = get_db,
+) -> Box:
+    """Return the box with the given MAC address."""
+
+    box_dict = await db.boxes.find_one({"mac": str(mac)})
+
+    if box_dict is None:
+        raise HTTPException(status_code=404, detail="Box not found")
+
+    return Box.model_validate(box_dict)
 
 
 status_update_manager = StatusUpdateManager()

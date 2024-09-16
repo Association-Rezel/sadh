@@ -10,7 +10,6 @@ import { SubmitHandler, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
 import { Button, Typography } from "@mui/material";
-import ContractUpload from "./ContractUpload";
 import StatusUpdateSection from "./StatusUpdateSection";
 import { Box } from "../../../utils/types/hermes_types";
 import { ONTInfo } from "../../../utils/types/pon_types";
@@ -48,15 +47,18 @@ function UserComponent() {
             reset(user.membership);
         });
 
+        setBoxLoading(true);
         Api.fetchUserBox(user_id)
         .then(box => setBox(box))
         .finally(() => setBoxLoading(false));
+    }, [user_id]);
 
+    useEffect(() => {
+        setONTLoading(true);
         Api.fetchONT(user_id)
         .then(ont => setONT(ont))
         .finally(() => setONTLoading(false));
-
-    }, [user_id]);
+    }, [user_id, box]);
 
     // Reste form when user changes. For example if the tstae is updaed
     // Via the status update section

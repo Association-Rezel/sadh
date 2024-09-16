@@ -154,8 +154,6 @@ export interface CRMiseEnService {
 export interface ApiInterface {
     refreshToken(): void;
     token: string;
-    fetchFile(url: string): Promise<Blob>;
-    uploadFile(url: string, data: FormData): Promise<void>;
     refreshToken(): void;
     fetchUsers(): Promise<User[]>;
     fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]>;
@@ -168,7 +166,6 @@ export interface ApiInterface {
     fetchONT(user_id: string): Promise<ONTInfo>;
     registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo>;
     updateMembership(membership_id: string, membership: Partial<Membership>): Promise<User>;
-    fetchFile(url: string): Promise<Blob>;
     fetchUserBox(user_id: string): Promise<Box>;
     registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
@@ -180,7 +177,9 @@ export interface ApiInterface {
     createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box>;
     generateNewContract(user_id: string): Promise<void>;
     refreshContract(user_id: string): Promise<User>;
-    deleteONT(user_id: string): Promise<ONTInfo>;
-    deleteBox(user_id: string): Promise<Box>;
+    deleteONT(serial_number: string): Promise<ONTInfo>;
+    deleteBox(mac_address: string): Promise<Box>;
     deleteUnet(user_id: string): Promise<Box>;
+    updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box>;
+    forceOntRegistration(serial_number: string): Promise<ONTInfo>;
 }

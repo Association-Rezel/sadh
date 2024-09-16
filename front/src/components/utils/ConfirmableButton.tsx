@@ -3,7 +3,7 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogAc
 
 interface ConfirmableButtonProps {
   children: React.ReactNode;
-  confirmationText: string;
+  confirmationText?: string | React.ReactNode;
   onConfirm: () => void;
   dialogTitle?: string;
   buttonColor?: "primary" | "secondary" | "error" | "warning" | "info" | "success";

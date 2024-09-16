@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 
 from netaddr import EUI, mac_unix_expanded
@@ -90,3 +91,15 @@ class RegisterONT(BaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
     pm_id: str = Field(...)
+    position_pm: Optional[str] = Field(None)
+
+    @field_validator("position_pm", mode="before")
+    @classmethod
+    def parse_position_pm(cls, v):
+        if not v:
+            return None
+
+        if not re.match(r"[A-Z][1-8]", v):
+            raise ValueError("Invalid position position PM (should match /[A-Z][1-8]/)")
+
+        return v
