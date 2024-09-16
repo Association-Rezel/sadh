@@ -19,4 +19,5 @@ export interface RegisterONT {
     serial_number: string;
     software_version: string;
     pm_id: string;
+    position_pm?: string;
 }

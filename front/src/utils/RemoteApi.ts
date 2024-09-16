@@ -58,7 +58,8 @@ export class RemoteApi implements ApiInterface {
         }
 
         if (!response.ok) {
-            throw new Error("Error while fetching " + url + " : " + response.statusText);
+            const details = await response.text();
+            throw new Error("HTTP" + response.statusText + " : " + details);
         }
         return await response.json();
     }
@@ -86,57 +87,12 @@ export class RemoteApi implements ApiInterface {
         }
 
         if (!response.ok) {
-            throw new Error("Error while fetching " + url + " : " + response.statusText);
+            const details = await response.text();
+            throw new Error("HTTP " + response.statusText + " : " + details);
         }
         return await response.json();
     }
-
-    async uploadFile(url: string, data: FormData, isRetry: boolean = false) {
-        let config: RequestInit = {
-            method: "POST",
-            credentials: 'include',
-            headers: {
-                'Authorization': 'Bearer ' + this.token,
-            },
-            body: data,
-        };
-
-        const response = await fetch(Config.API_URL + url, config);
-
-        if (response.status === 401 && !isRetry) {
-            await this.refreshToken();
-            return this.uploadFile(url, data, true);
-        }
-
-        if (!response.ok) {
-            throw new Error("Error while fetching " + url + " : " + response.statusText);
-        }
-        return await response.json();
-    }
-
-    async fetchFile(url: string, isRetry: boolean = false): Promise<Blob> {
-        const config: RequestInit = {
-            method: "GET",
-            credentials: 'include',
-            headers: {
-                'Authorization': 'Bearer ' + this.token,
-                'Content-Type': 'application/json'
-            },
-        };
-
-        const response = await fetch(Config.API_URL + url, config);
-
-        if (response.status === 401 && !isRetry) {
-            await this.refreshToken();
-            return this.fetchFile(url, true);
-        }
-
-        if (!response.ok) {
-            throw new Error("Error while fetching " + url + " : " + response.statusText);
-        }
-        return await response.blob();
-    }
-
+    
     async fetchOrDefault<T>(url: string, defaultValue: T, auth: boolean = false): Promise<T> {
         /*
         En cas d'erreur, la valeur par défaut est renvoyée.
@@ -269,15 +225,23 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.myAuthenticatedRequest(`/documenso/refresh/${user_id}`, null, "POST"));
     }
 
-    async deleteONT(user_id: string): Promise<ONTInfo> {
-        return await this.myAuthenticatedRequest("/users/" + user_id + "/ont", null, "DELETE");
+    async deleteONT(serial_number: string): Promise<ONTInfo> {
+        return await this.myAuthenticatedRequest("/devices/ont/" + serial_number, null, "DELETE");
     }
 
-    async deleteBox(user_id: string): Promise<Box> {
-        return await this.myAuthenticatedRequest("/users/" + user_id + "/box", null, "DELETE");
+    async deleteBox(mac_address: string): Promise<Box> {
+        return await this.myAuthenticatedRequest("/devices/box/" + mac_address, null, "DELETE");
     }
 
     async deleteUnet(user_id: string): Promise<Box> {
         return await this.myAuthenticatedRequest("/users/" + user_id + "/unet", null, "DELETE");
+    }
+
+    async updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box> {
+        return await this.myAuthenticatedRequest(`/devices/box/${mac_address}/mac/${new_mac_address}`, null, "PATCH");
+    }
+
+    async forceOntRegistration(serial_number: string): Promise<ONTInfo> {
+        return await this.myAuthenticatedRequest(`/devices/ont/${serial_number}/register_in_olt`, null, "POST");
     }
 }

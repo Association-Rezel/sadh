@@ -27,7 +27,8 @@ export default function ONTSection(
         defaultValues: {
             serial_number: "",
             software_version: "3FE45655AOCK88",
-            pm_id: ""
+            pm_id: "",
+            position_pm: "",
         }
     });
 
@@ -48,6 +49,12 @@ export default function ONTSection(
             alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
             return;
         }
+        // Check PM not null
+        if (!register.pm_id) {
+            alert("Veuillez choisir un PM");
+            return;
+        }
+
         setONTLoading(true);
         Api.registerONT(user_id, register).then(ont => {
             setONT(ont);
@@ -60,10 +67,19 @@ export default function ONTSection(
 
     const onDelete = () => {
         setONTLoading(true);
-        Api.deleteONT(user_id).then(() => {
+        Api.deleteONT(ont.serial_number).then(() => {
             setONT(null);
         }).catch(e => {
             alert("Erreur lors de la suppression de l'ONT : " + e);
+        }).finally(() => {
+            setONTLoading(false);
+        });
+    }
+
+    const onForceRegisterInOLT = () => {
+        setONTLoading(true);
+        Api.forceOntRegistration(ont.serial_number).catch(e => {
+            alert("Erreur lors du registering dans l'OLT : " + e);
         }).finally(() => {
             setONTLoading(false);
         });
@@ -85,11 +101,29 @@ export default function ONTSection(
 
                 {!ontLoading && !ont && (
                     <div className="inline-flex flex-col gap-y-3 flex-wrap">
-                        <TextField name="serial_number"
-                            className="bg-white"
-                            required
-                            label="Numéro de série de l'ONT"
-                            {...register("serial_number")}
+                        <Controller
+                            name="serial_number"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    className="bg-white"
+                                    required
+                                    label="Numéro de série de l'ONT"
+                                    {...field}
+                                />
+                            )}
+                        />
+
+                        <Controller
+                            name="position_pm"
+                            control={control}
+                            render={({ field }) => (
+                                <TextField
+                                    className="bg-white"
+                                    label="Forcer une position PM"
+                                    {...field}
+                                />
+                            )}
                         />
 
                         <Controller
@@ -142,6 +176,7 @@ export default function ONTSection(
                         >
                             Supprimer l'ONT
                         </ConfirmableButton>
+                        <Button variant="text" size="small" onClick={onForceRegisterInOLT}>Forcer ré-enregistrement OLT</Button>
                     </>
                 )}
             </Typography>

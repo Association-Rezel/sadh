@@ -1,12 +1,13 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Chip, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Chip, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, set, useForm } from "react-hook-form";
 import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
+import EditIcon from '@mui/icons-material/Edit';
 
 type FormValues = {
     boxType?: string;
@@ -43,6 +44,11 @@ export default function UnetSection({
     });
 
     const [maskedPsk, setMaskedPsk] = useState("**********");
+    const [editingMac, setEditingMac] = useState(false);
+    const [newMac, setNewMac] = useState("");
+    if (box && newMac === "") {
+        setNewMac(box.mac);
+    }
 
     const main_unet = box?.unets.filter(u => u.unet_id === box.main_unet_id)[0];
     let myUnetProfile: UnetProfile | null = null;
@@ -93,7 +99,7 @@ export default function UnetSection({
         }
 
         setBoxLoading(true);
-        Api.deleteBox(user.id).then(() => {
+        Api.deleteBox(box.mac).then(() => {
             setBox(null);
         }).catch(e => {
             alert("Erreur lors de la suppression de la box : " + e);
@@ -118,9 +124,20 @@ export default function UnetSection({
         });
     }
 
-    const onFormError = (error: any) => {
-        console.log(error);
-        console.log("err");
+    const onUpdateMac = () => {
+        if (!newMac.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
+            alert("Adresse MAC invalide");
+            return;
+        }
+        setBoxLoading(true);
+        Api.updateBoxMacAddress(box.mac, newMac).then((box) => {
+            setBox(box);
+        }).catch(e => {
+            alert("Erreur lors de la modification de la MAC : " + e);
+        }).finally(() => {
+            setBoxLoading(false);
+            setEditingMac(false);
+        });
     }
 
     useEffect(() => {
@@ -150,7 +167,7 @@ export default function UnetSection({
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 {(boxLoading) && <p>Chargement...</p>}
-                <form onSubmit={handleSubmit(onSubmit, onFormError)}>
+                <form onSubmit={handleSubmit(onSubmit)}>
                     {!boxLoading && !box && (
                         <Stack direction={"column"}
                             spacing={2}>
@@ -214,7 +231,29 @@ export default function UnetSection({
                             <Typography variant="h6" align="left" component="div" >
                                 Box
                             </Typography>
-                            <strong>MAC</strong> : {box.mac}<br />
+                            <strong>MAC</strong> :
+                            {editingMac ?
+                                <TextField
+                                    value={newMac}
+                                    onChange={(e) => setNewMac(e.target.value)}
+                                /> : box.mac
+                            }
+                            {isMainUnet && <IconButton onClick={() => setEditingMac(!editingMac)}><EditIcon /></IconButton>}
+                            {editingMac && <ConfirmableButton
+                                variant="contained"
+                                buttonColor="error"
+                                onConfirm={onUpdateMac}
+                                confirmationText={<p>La MAC de la box sera modifée en base de donnée,
+                                et l'ONT associé sera mis à jour avec la nouvelle MAC.<br />
+                                <br />
+                                Les boxs ne seront pas redémarrées ni reconfigurées ! Ce
+                                changement ne sera effectif <strong>qu'en base de données</strong>. Par exemple,
+                                il est conseillé de redémarrer les boxs avec les deux adresses MAC afin
+                                de ne pas avoir de duplication d'adresse.</p>}
+                            >
+                                Valider nouvelle mac
+                            </ConfirmableButton>}
+                            <br />
                             <strong>Type</strong> : {box.type}<br />
                             <strong>Unet principal</strong> : {main_unet.unet_id}<br />
                         </div>
@@ -232,7 +271,7 @@ export default function UnetSection({
                             <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>Afficher PSK</Button>
                         </div>
                         <div>
-                        {isMainUnet &&
+                            {isMainUnet &&
                                 <ConfirmableButton
                                     disabled={box.unets.length > 1 || ont !== null}
                                     variant="text"

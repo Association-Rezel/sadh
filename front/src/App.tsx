@@ -1,6 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { PageAdmin } from "./pages/admin/PageAdmin";
-import { PageContract } from "./pages/contract/PageContract";
 import Index from "./pages/index";
 import BecomeMember from "./components/MembershipRequest/BecomeMember";
 import "./App.css";
@@ -51,10 +50,7 @@ function AppRouter() {
                 )}
 
                 <Route path="appointment" element={<Navigate to="/account/appointment" />} />
-
-                {appState.user && appState.user?.membership?.status != MembershipStatus.REQUEST_PENDING_VALIDATION && (
-                    <Route path="contract" Component={PageContract} />
-                )}
+                
                 <Route path="*" Component={Page404} />
             </Route>
         </Routes>
