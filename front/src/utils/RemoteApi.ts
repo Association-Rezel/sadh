@@ -210,7 +210,7 @@ export class RemoteApi implements ApiInterface {
     }
 
     async fetchBoxBySSID(ssid: string): Promise<Box> {
-        return await this.fetchOrDefault("/boxs/by_ssid/" + ssid, null, true);
+        return await this.fetchOrDefault("/devices/box/by_ssid/" + ssid, null, true);
     }
 
     async createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box> {
