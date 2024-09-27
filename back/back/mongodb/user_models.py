@@ -140,6 +140,7 @@ class User(BaseModel):
     last_name: str = Field(...)
     membership: Optional[Membership] = Field(None)
     availability_slots: set[AppointmentSlot] = Field([])
+    dolibarr_id: Optional[int] = Field(None)
 
     def redact_for_non_admin(self):
         if self.membership and isinstance(self.membership, Membership):

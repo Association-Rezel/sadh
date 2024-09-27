@@ -78,6 +78,10 @@ class Env:  # pylint: disable=too-many-instance-attributes
     documenso_template_contract_ftth_id: int
     documenso_template_contract_wifi_id: int
 
+    # Dolibarr
+    dolibarr_api_token: str
+    dolibarr_base_url: str
+
     def __init__(self) -> None:
         """Load all variables."""
 
@@ -127,6 +131,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.documenso_template_contract_wifi_id = int(
             get_or_raise("DOCUMENSO_TEMPLATE_CONTRACT_WIFI_ID")
         )
+
+        self.dolibarr_api_token = get_or_raise("DOLIBARR_API_TOKEN")
+        self.dolibarr_base_url = get_or_raise("DOLIBARR_BASE_URL")
 
 
 ENV = Env()

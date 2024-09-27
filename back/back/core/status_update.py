@@ -20,6 +20,7 @@ from back.mongodb.user_models import (
     MembershipType,
     User,
 )
+from back.core.dolibarr import create_user
 
 
 class StatusUpdateEffect:
@@ -218,6 +219,10 @@ class StatusUpdateManager:
                     ),
                     lambda user, _: send_email_validated_ftth(user),
                 ),
+                StatusUpdateEffect(
+                    "Ajout de l'adhérent dans dolibarr",
+                    lambda user, db: create_user(user, db),
+                ),
             ],
         )
 
@@ -366,6 +371,10 @@ class StatusUpdateManager:
                         ]
                     ),
                     send_email_validated_wifi,
+                ),
+                StatusUpdateEffect(
+                    "Ajout de l'adhérent dans dolibarr",
+                    lambda user, db: create_user(user, db),
                 ),
             ],
         )
