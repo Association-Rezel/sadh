@@ -42,6 +42,15 @@ export default function Dashboards() {
         }
     };
 
+    // Users with an appointment earlier but not active
+    const toTransferToActiveFilter: UserFilter = {
+        filter(user: User): boolean {
+            return user.membership?.status === MembershipStatus.SENT_CMD_ACCES
+                && user.membership?.appointment !== null
+                && user.membership.appointment.slot.end < new Date();
+        }
+    };
+
     // Users with an appointment and no CMD_ACCES sent (i.e we must send a CMD_ACCES asap)
     const cmdAccesToSendFilter: UserFilter = {
         filter(user: User): boolean {
@@ -82,6 +91,12 @@ export default function Dashboards() {
                     Utilisateurs en attente de validation
                 </Typography>
                 <TableUsers users={filterUsers(users, [pendingMembershipsFilter])} />
+            </div>
+            <div>
+                <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
+                    A passer en ACTIVE
+                </Typography>
+                <TableUsers users={filterUsers(users, [toTransferToActiveFilter])} />
             </div>
         </div>
     );
