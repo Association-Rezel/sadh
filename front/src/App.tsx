@@ -18,6 +18,7 @@ import { ZitadelContextWrapper } from "./utils/ZitadelContext";
 import LoginCallback from "./pages/auth/LoginCallback";
 import LogoutPage from "./pages/auth/LogoutPage";
 import { CircularProgress } from "@mui/material";
+import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 
 function AppRouter() {
     const { appState } = useContext(AppStateContext);
@@ -46,6 +47,7 @@ function AppRouter() {
                         <Route path="calendar" Component={CalendarComponent} />
                         <Route path="users" Component={Users} />
                         <Route path="users/:user_id" Component={UserComponent} />
+                        <Route path="olt-debug" Component={OLTDebug} />
                     </Route>
                 )}
 

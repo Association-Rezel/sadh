@@ -26,6 +26,7 @@ import HeaderDashboard from "../Dashboard/HeaderDashboard";
 import Drawer from "../Dashboard/Drawer";
 import { ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
+import DebugIcon from "@mui/icons-material/BugReport";
 
 function AdminDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -76,6 +77,15 @@ function AdminDashboard() {
                                 <CalendarIcon />
                             </ListItemIcon>
                             <ListItemText primary="Calendrier" />
+                        </ListItemButton>
+                    </Link>
+
+                    <Link to={"olt-debug"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <DebugIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="OLT Debug" />
                         </ListItemButton>
                     </Link>
                 </List>
