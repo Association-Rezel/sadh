@@ -244,4 +244,8 @@ export class RemoteApi implements ApiInterface {
     async forceOntRegistration(serial_number: string): Promise<ONTInfo> {
         return await this.myAuthenticatedRequest(`/devices/ont/${serial_number}/register_in_olt`, null, "POST");
     }
+
+    async fetchAllONTSummary(): Promise<string> {
+        return await this.fetchOrDefault("/net/get-all-ont-summary", "Cannot fetch", true);
+    }
 }

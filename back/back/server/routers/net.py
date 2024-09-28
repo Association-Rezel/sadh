@@ -1,8 +1,11 @@
 from typing import List
 
+import requests
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from back.env import ENV
 from back.mongodb.db import get_db
+from back.server.dependencies import must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("net")
@@ -26,3 +29,20 @@ async def _list_ssids(
             ]
         ).to_list(None)
     )[0]["ssids"]
+
+
+@router.get(
+    "/get-all-ont-summary", response_model=str, dependencies=[must_be_sadh_admin]
+)
+def get_all_ont_summary():
+    """Get all ONT summary from Charon"""
+
+    r = requests.get(
+        f"{ENV.charon_url}/get-all-ont-summary/olt1",
+        timeout=5,
+    )
+
+    if r.status_code != 200:
+        return f"Charon Error {r.status_code} : {r.text}"
+
+    return r.text

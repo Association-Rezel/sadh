@@ -182,4 +182,5 @@ export interface ApiInterface {
     deleteUnet(user_id: string): Promise<Box>;
     updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box>;
     forceOntRegistration(serial_number: string): Promise<ONTInfo>;
+    fetchAllONTSummary(): Promise<string>;
 }
