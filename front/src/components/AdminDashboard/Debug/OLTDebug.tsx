@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { Api } from "../../../utils/Api";
 
 interface RowData {
@@ -17,6 +17,7 @@ interface RowData {
 
 export default function OLTDebug() {
     const [debugInfo, setDebugInfo] = useState<string>(null);
+    const [loading, setLoading] = useState<boolean>(false);
 
     let tableData: RowData[] = [];
 
@@ -80,12 +81,18 @@ export default function OLTDebug() {
         }
     }
 
+    const onClick = () => {
+        setLoading(true);
+        Api.fetchAllONTSummary().then(setDebugInfo).catch(alert).finally(() => setLoading(false));
+    };
+
     return (
         <div className="flex flex-col gap-y-10 items-center">
             <h1>OLT Debug</h1>
-            <Button variant="contained" onClick={() => Api.fetchAllONTSummary().then(setDebugInfo).catch(alert)}>
+            <Button variant="contained" onClick={onClick} disabled={loading}>
                 Fetch all ONT summary
             </Button>
+            {loading && <CircularProgress />}
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
