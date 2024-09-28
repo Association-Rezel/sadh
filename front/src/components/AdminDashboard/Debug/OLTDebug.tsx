@@ -2,24 +2,11 @@ import { useState } from "react";
 import { Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import { Api } from "../../../utils/Api";
 
-interface RowData {
-    pon: string;
-    ont: string;
-    sernum: string;
-    adminStatus: string;
-    operStatus: string;
-    oltRxSig: string;
-    ontOlt: string;
-    desc1: string;
-    desc2: string;
-    hostname: string;
-}
-
 export default function OLTDebug() {
     const [debugInfo, setDebugInfo] = useState<string>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    let tableData: RowData[] = [];
+    let tableData: object[] = [];
 
     if (debugInfo) {
         const lines = debugInfo.split('\\r\\n');
@@ -41,7 +28,6 @@ export default function OLTDebug() {
                 return h2;
             });
 
-            const rows: RowData[] = [];
             for (let i = startIndex; i < endIndex; i++) {
                 const values = lines[i]
                     .split(' ')
@@ -57,10 +43,8 @@ export default function OLTDebug() {
                     }
                 });
 
-                rows.push(row as RowData);
+                tableData.push(row);
             }
-
-            tableData = rows;
         }
     }
 
