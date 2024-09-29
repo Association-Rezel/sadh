@@ -142,14 +142,6 @@ export default function UnetSection({
 
     useEffect(() => {
         if (!user) return;
-        Api.fetchUserBox(user.id).then(box => {
-            setBox(box);
-            setBoxLoading(false);
-        });
-    }, [user?.id]);
-
-    useEffect(() => {
-        if (!user) return;
         if (user.membership.type === MembershipType.WIFI) {
             Api.fetchBoxBySSID(user.membership.init.ssid).then(box => {
                 reset({

@@ -56,7 +56,7 @@ class AppointmentSlot(BaseModel):
     def parse_datetime(cls, v) -> datetime:
         """Parse datetime from iso string or datetime."""
         if isinstance(v, datetime):
-            return v
+            return v.astimezone(pytz.timezone("Europe/Paris"))
         if isinstance(v, float) or isinstance(v, int):
             # We use Europe/Paris timezone so that when it is formatted to string
             # (e.g. in emails or matrix messages) it is displayed in the correct timezone
