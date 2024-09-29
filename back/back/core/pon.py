@@ -154,6 +154,8 @@ async def get_ontinfo_from_box(db: AsyncIOMotorDatabase, box: Box) -> ONTInfo | 
         position_in_subscriber_panel=ont.position_in_subscriber_panel,
         pon_rack=pon.rack,
         pon_tiroir=pon.tiroir,
+        operational_data=ont.operational_data,
+        configured_in_olt=ont.configured_in_olt,
     )
 
 
@@ -206,4 +208,6 @@ async def get_ontinfo_from_serial_number(
         position_in_subscriber_panel=ont.position_in_subscriber_panel,
         pon_rack=pon.rack,
         pon_tiroir=pon.tiroir,
+        operational_data=ont.operational_data,
+        configured_in_olt=ont.configured_in_olt,
     )

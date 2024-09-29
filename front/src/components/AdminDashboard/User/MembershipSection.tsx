@@ -135,7 +135,7 @@ export default function MembershipSection({
                         <>
                             <div className="flex items-center gap-2">
                                 <strong>Contrat signé : </strong>
-                                {user.membership.contract_signed && <Chip label="Oui" color="success" />}
+                                {user.membership.contract_signed && <Chip variant="outlined" label="Oui" color="success" />}
                                 {!user.membership.contract_signed && <Chip label="Non" color="error" />}
                                 <IconButton onClick={onRefreshContract}><RefreshIcon /></IconButton>
                                 {refreshing && <CircularProgress />}

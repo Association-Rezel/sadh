@@ -58,7 +58,7 @@ function UserComponent() {
         Api.fetchONT(user_id)
         .then(ont => setONT(ont))
         .finally(() => setONTLoading(false));
-    }, [user_id, box]);
+    }, [box]);
 
     // Reste form when user changes. For example if the tstae is updaed
     // Via the status update section

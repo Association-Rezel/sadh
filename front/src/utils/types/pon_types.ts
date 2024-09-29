@@ -1,3 +1,14 @@
+export interface OperationalData {
+    path: string;
+    admin_status: boolean;
+    operational_status: boolean;
+    dbm_level: string;
+    estimation_distance: string;
+    last_operational_up: number;
+    last_fetched: number;
+    fetched_on_last_batch: boolean;
+}
+
 export interface ONTInfo {
     serial_number: string;
     software_version: string;
@@ -8,6 +19,8 @@ export interface ONTInfo {
     position_in_subscriber_panel: string;
     pon_rack: number;
     pon_tiroir: number;
+    operational_data?: OperationalData;
+    configured_in_olt?: boolean;
 }
 
 export interface PMInfo {
