@@ -39,7 +39,7 @@ def get_all_ont_summary():
 
     r = requests.get(
         f"{ENV.charon_url}/get-all-ont-summary/olt1",
-        timeout=5,
+        timeout=10,
     )
 
     if r.status_code != 200:
