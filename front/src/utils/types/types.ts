@@ -98,6 +98,7 @@ export interface User {
     last_name: string;
     membership?: Membership;
     availability_slots: AppointmentSlot[];
+    prev_memberships: Membership[];
 }
 
 export interface MembershipRequest {
@@ -166,6 +167,7 @@ export interface ApiInterface {
     fetchONT(user_id: string): Promise<ONTInfo>;
     registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo>;
     updateMembership(membership_id: string, membership: Partial<Membership>): Promise<User>;
+    deleteMembership(user_id: string): Promise<User>;
     fetchUserBox(user_id: string): Promise<Box>;
     registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;

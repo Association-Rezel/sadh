@@ -14,7 +14,11 @@ from back.core.documenso import (
     prefill_address_in_draft,
 )
 from back.core.hermes import register_box_for_new_ftth_adh, register_unet_on_box
-from back.core.pon import get_ontinfo_from_box, register_ont_for_new_ftth_adh
+from back.core.pon import (
+    get_ont_from_box,
+    get_ontinfo_from_box,
+    register_ont_for_new_ftth_adh,
+)
 from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
@@ -214,6 +218,42 @@ async def _user_update_membership(
     userdict = await db.users.find_one_and_update(
         {"_id": user_id},
         {"$set": {"membership": updated.model_dump(exclude_unset=True, mode="json")}},
+        return_document=ReturnDocument.AFTER,
+    )
+
+    return User.model_validate(userdict)
+
+
+@router.delete(
+    "/{user_id}/membership", dependencies=[must_be_sadh_admin], response_model=User
+)
+async def _user_delete_membership(
+    user_id: str,
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+    box: Box | None = get_box_from_user_id,
+) -> User:
+    """Delete the user's membership."""
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if box or user.membership.unetid:
+        raise HTTPException(
+            status_code=400, detail="User is still linked to a box or unet"
+        )
+
+    if box and await get_ont_from_box(db, box):
+        raise HTTPException(status_code=400, detail="User is still linked to an ONT")
+
+    # Actually just move the membership to prev_memberships so we keep
+    # Orange references and stuff. Let's archive instead of pure deletion.
+    user.membership.deleted_date = datetime.now()
+    userdict = await db.users.find_one_and_update(
+        {"_id": user_id},
+        {
+            "$push": {"prev_memberships": user.membership.model_dump(mode="json")},
+            "$unset": {"membership": ""},
+        },
         return_document=ReturnDocument.AFTER,
     )
 

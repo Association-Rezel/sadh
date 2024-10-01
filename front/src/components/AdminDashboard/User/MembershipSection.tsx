@@ -22,6 +22,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus, MembershipType } from "../../../utils/types/types";
 import ConfirmableButton from "../../utils/ConfirmableButton"; // Import the new component
 import MembershipTypeChip from "../../utils/Utils";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 interface MembershipSectionProps {
     setUser: (user: User) => void;
@@ -40,7 +41,6 @@ export default function MembershipSection({
 
     const [manualStatusUpdate, setManualStatusUpdate] = useState<boolean>(false);
     const [openDialogWarningManualStatusUpdate, setOpenDialogWarningManualStatusUpdate] = useState<boolean>(false);
-    const [openDialogWarningRecreateContract, setOpenDialogWarningRecreateContract] = useState<boolean>(false);
     const [recreateContractLoading, setRecreateContractLoading] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -71,7 +71,25 @@ export default function MembershipSection({
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
-                Adhésion <MembershipTypeChip type={user.membership.type} />
+                Adhésion <MembershipTypeChip type={user.membership.type} /> 
+                <ConfirmableButton
+                    variant="text"
+                    confirmationText="La suppression de l'adhésion va supprimer toutes
+                    les données associées à l'adhésion de l'adhérent. Les processus en
+                    cours auprès d'Orange ne sont PAS gérés. Vérifiez que l'annulation
+                    de l'adhésion à ce stade n'expose pas Rezel à des pénalités auprès
+                    d'Orange, et à effecuter les actions nécessaires (ANNUL_ACCES ou autre)."
+                    onConfirm={() => {
+                        Api.deleteMembership(user.id).then(() => {
+                            alert("Adhésion supprimée avec succès");
+                            window.location.reload();
+                        }).catch((e) => {
+                            alert(e);
+                        });
+                    }}
+                >
+                    <DeleteIcon />
+                </ConfirmableButton>
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <div className="flex flex-col gap-3 justify-items-start">
