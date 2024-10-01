@@ -178,8 +178,7 @@ async def get_users_on_box(db: AsyncIOMotorDatabase, box: Box) -> list[User]:
         for user in await db.users.find(
             {
                 "membership.unetid": {
-                    "$in",
-                    frozenset([unet.unet_id for unet in box.unets]),
+                    "$in": [unet.unet_id for unet in box.unets],
                 }
             }
         ).to_list(length=None)

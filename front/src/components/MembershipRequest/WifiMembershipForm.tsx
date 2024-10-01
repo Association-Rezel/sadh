@@ -23,6 +23,7 @@ export default function WifiMembershipForm() {
         formState,
         watch,
         reset,
+        getValues,
     } = useForm<FormValues>({
         defaultValues: {
             ssid: "",
@@ -60,7 +61,7 @@ export default function WifiMembershipForm() {
         try {
             const user = await Api.submitMyMembershipRequest({
                 type: MembershipType.WIFI,
-                ssid: event.ssid,
+                ssid: allSSIDs.find((ssid) => ssid.toLowerCase() === "rezel-" + event.ssid.toLowerCase()), // To get correct case
                 address: {
                     residence: Residence[event.residence],
                     appartement_id: event.appartement_id,
@@ -89,7 +90,7 @@ export default function WifiMembershipForm() {
                             Wi-Fi Rezel le plus proche
                         </Typography>
                         <Typography variant="body2" color="text.secondary" align="left">
-                            Merci d'indiquer le réseau Wi-Fi Rezel-xxx que tu reçoies le mieux de chez toi.<br />
+                            Merci d'indiquer le réseau Wi-Fi Rezel-xxx que tu reçois le mieux de chez toi.<br />
                             Nous créerons ensuite un nouveau Wi-Fi complètement séparé sur le même équipement physique.<br />
                             Tu auras ton propre réseau et ta propre adresse IP publique complètement séparés du réseau que
                             tu indiques ci-dessous.
@@ -100,93 +101,99 @@ export default function WifiMembershipForm() {
                     }
                     {errorSSIDs && <Alert severity="error">Erreur lors du chargement des réseaux Wi-Fi, veuillez contacer fai@rezel.net</Alert>}
                     {!loadingSSIDs && !errorSSIDs && (
-                        <div className="w-72">
-                            <Controller
-                                control={control}
-                                name={"ssid"}
-                                render={({ field: { onChange, value, ref } }) => (
-                                    <TextField
-                                        fullWidth
-                                        select
-                                        variant="standard"
-                                        inputRef={ref}
-                                        value={value}
-                                        onChange={onChange}>
-                                        {allSSIDs.map((ssid) => <MenuItem value={ssid} key={ssid}>{ssid}</MenuItem>)}
-                                    </TextField>
-                                )}
-                            />
-                        </div>
-                    )}
-                    <div className={!watch("ssid") ? "hidden" : ""}>
-                        <div className="mt-8 mb-12" >
-                            <Typography variant="h5" color="text.primary" align="left">
-                                Informations personelles
-                            </Typography>
-                        </div>
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <FormControl required sx={{ minWidth: 240 }}>
-                                <InputLabel id="residence-label">Nom de votre résidence</InputLabel>
+                        <div className="flex flex-row gap-4 items-center">
+                            <span>Rezel-</span>
+                            <div className="w-72">
                                 <Controller
-                                    name="residence"
                                     control={control}
-                                    render={({ field: { onChange, value } }) => (
-                                        <Select
-                                            labelId="residence-label"
-                                            id="residence"
+                                    name={"ssid"}
+                                    rules={{ required: true, validate: (value) => allSSIDs.find((ssid: string) => ssid.toLowerCase() === "rezel-" + value.toLowerCase()) != null }}
+                                    render={({ field: { onChange, value, ref } }) => (
+                                        <TextField
+                                            fullWidth
                                             variant="standard"
+                                            inputRef={ref}
                                             value={value}
-                                            onChange={onChange}
-                                        >
-                                            {Object.values(Residence).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
-                                        </Select>
-                                    )} />
-                            </FormControl>
-                            <TextField required id="appartement_id" label="Appartment n°" variant="standard" {...register("appartement_id")} />
+                                            onChange={onChange}>
+                                        </TextField>
+                                    )}
+                                />
+                            </div>
                         </div>
-                        <div className="mt-16 mb-8">
-                            <Typography variant="h5" color="text.primary" align="left">
-                                Premier mois d'adhésion : <strong>10€</strong>
-                                <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 10€/mois)</Typography>
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" align="left">
-                                Le premier mois d'adhésion est à régler dès maintenant.<br />
-                                Une fois que nous aurons confirmé la réception du paiement,
-                                nous activerons un nouveau réseau Wi-Fi pour toi sur la box que tu as
-                                indiquée plus haut. Tu recevras alors un mail de confirmation.
-                            </Typography>
-                        </div>
-                        <div className="flex flex-col gap-4">
-                            <FormControl required variant="standard" sx={{ textAlign: "left" }}>
-                                <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
-                                <Controller
-                                    name="paymentMethodFirstMonth"
-                                    control={control}
-                                    rules={{ required: true }}
-                                    render={({ field: { onChange, value } }) => (
-                                        <RadioGroup
-                                            aria-label="paymentMethodFirstMonth"
-                                            name="paymentMethodFirstMonth"
-                                            value={value}
-                                            onChange={onChange}
-                                        >
-                                            <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
-                                            <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
-                                        </RadioGroup>
-                                    )} />
-                                <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
-                            </FormControl>
-                        </div>
+
+                    )}
+                    {formState.errors.ssid &&
+                        <Typography variant="body2" color="error" align="left">
+                            Ce réseau Wi-Fi n'existe pas.
+                        </Typography>
+                    }
+                    <div className="mt-8 mb-12" >
+                        <Typography variant="h5" color="text.primary" align="left">
+                            Informations personelles
+                        </Typography>
                     </div>
-                    <div className="mt-16">
-                        {formState.isSubmitting ?
-                            <CircularProgress />
-                            :
-                            <Button variant="contained" type="submit" disabled={!watch("ssid")} >
-                                Je souhaite adhérer à Rezel
-                            </Button>
-                        }
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <FormControl required sx={{ minWidth: 240 }}>
+                            <InputLabel id="residence-label">Nom de votre résidence</InputLabel>
+                            <Controller
+                                name="residence"
+                                control={control}
+                                render={({ field: { onChange, value } }) => (
+                                    <Select
+                                        labelId="residence-label"
+                                        id="residence"
+                                        variant="standard"
+                                        value={value}
+                                        onChange={onChange}
+                                    >
+                                        {Object.values(Residence).map((key) => <MenuItem value={key} key={key}>{key}</MenuItem>)}
+                                    </Select>
+                                )} />
+                        </FormControl>
+                        <TextField required id="appartement_id" label="Appartment n°" variant="standard" {...register("appartement_id")} />
                     </div>
+                    <div className="mt-16 mb-8">
+                        <Typography variant="h5" color="text.primary" align="left">
+                            Premier mois d'adhésion : <strong>10€</strong>
+                            <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 10€/mois)</Typography>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="left">
+                            Le premier mois d'adhésion est à régler dès maintenant.<br />
+                            Une fois que nous aurons confirmé la réception du paiement,
+                            nous activerons un nouveau réseau Wi-Fi pour toi sur la box que tu as
+                            indiquée plus haut. Tu recevras alors un mail de confirmation.
+                        </Typography>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        <FormControl required variant="standard" sx={{ textAlign: "left" }}>
+                            <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
+                            <Controller
+                                name="paymentMethodFirstMonth"
+                                control={control}
+                                rules={{ required: true }}
+                                render={({ field: { onChange, value } }) => (
+                                    <RadioGroup
+                                        aria-label="paymentMethodFirstMonth"
+                                        name="paymentMethodFirstMonth"
+                                        value={value}
+                                        onChange={onChange}
+                                    >
+                                        <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
+                                    </RadioGroup>
+                                )} />
+                            <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
+                        </FormControl>
+                    </div>
+                </div>
+                <div className="mt-16">
+                    {formState.isSubmitting ?
+                        <CircularProgress />
+                        :
+                        <Button variant="contained" type="submit" disabled={!watch("ssid")} >
+                            Je souhaite adhérer à Rezel
+                        </Button>
+                    }
                 </div>
             </form >
         </div >
