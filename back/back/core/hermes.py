@@ -316,5 +316,5 @@ async def generate_unique_ssid(db: AsyncIOMotorDatabase) -> str:
             random_ssid = None
 
     if random_ssid is None:
-        random_ssid = "default-ssid-" + str(datetime.now().timestamp())
+        random_ssid = "Rezel-" + str(datetime.now().timestamp())
     return random_ssid
