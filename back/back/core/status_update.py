@@ -5,6 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from pymongo import ReturnDocument
 
+from back.core.dolibarr import create_dolibarr_user
 from back.core.hermes import get_box_from_user
 from back.core.pon import get_ont_from_box
 from back.messaging.mails import (
@@ -20,7 +21,6 @@ from back.mongodb.user_models import (
     MembershipType,
     User,
 )
-from back.core.dolibarr import create_user
 
 
 class StatusUpdateEffect:
@@ -221,7 +221,7 @@ class StatusUpdateManager:
                 ),
                 StatusUpdateEffect(
                     "Ajout de l'adhérent dans dolibarr",
-                    lambda user, db: create_user(user, db),
+                    create_dolibarr_user,
                 ),
             ],
         )
@@ -374,7 +374,7 @@ class StatusUpdateManager:
                 ),
                 StatusUpdateEffect(
                     "Ajout de l'adhérent dans dolibarr",
-                    lambda user, db: create_user(user, db),
+                    create_dolibarr_user,
                 ),
             ],
         )
