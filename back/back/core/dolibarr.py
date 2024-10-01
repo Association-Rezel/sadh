@@ -1,16 +1,14 @@
-from back.env import ENV
-
-from back.mongodb.user_models import User, MembershipType
-from back.messaging.matrix import send_matrix_message
-from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from pymongo import ReturnDocument
-
 import requests
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo import ReturnDocument
 from requests.exceptions import SSLError
 
+from back.env import ENV
+from back.messaging.matrix import send_matrix_message
+from back.mongodb.user_models import MembershipType, User
 
-async def create_user(
+
+async def create_dolibarr_user(
     user: User,
     db: AsyncIOMotorDatabase,
     api_token: str = ENV.dolibarr_api_token,
@@ -52,9 +50,7 @@ async def create_user(
 
     if ENV.deploy_env != "prod":
         print("DEPLOY_ENV is local or dev")
-        print(
-            f"NOT adding member to dolibarr ! (We don't have a dolibarr dev instance)"
-        )
+        print("NOT adding member to dolibarr ! (We don't have a dolibarr dev instance)")
         return user
 
     try:
@@ -73,7 +69,7 @@ async def create_user(
         )
         raise ValueError(
             "Error while adding user to dolibarr : SSL error ! The certificate of treso.rezel.net may have expired !"
-        )
+        ) from e
 
     if r.status_code != 200:
         send_matrix_message(
@@ -86,10 +82,10 @@ async def create_user(
 
     try:
         dolibarr_id = int(r.text)
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             "Error while adding user to dolibarr : Dolibarr's response is not an int !"
-        )
+        ) from e
 
     dolibarr_id = int(r.text)
     userdict = await db.users.find_one_and_update(
@@ -105,7 +101,7 @@ async def create_user(
     return User.model_validate(userdict)
 
 
-def delete_user(
+def delete_dolibarr_user(
     user: User,
     api_token: str = ENV.dolibarr_api_token,
     base_url: str = ENV.dolibarr_base_url,
@@ -127,7 +123,7 @@ def delete_user(
     if ENV.deploy_env != "prod":
         print("DEPLOY_ENV is local or dev")
         print(
-            f"NOT removing member to dolibarr ! (We don't have a dolibarr dev instance)"
+            "NOT removing member to dolibarr ! (We don't have a dolibarr dev instance)"
         )
         return
 
@@ -150,7 +146,7 @@ def delete_user(
         )
         raise ValueError(
             "Error while cancelling user to dolibarr : SSL error ! The certificate of treso.rezel.net may have expired !"
-        )
+        ) from e
 
     if r.status_code != 200:
         send_matrix_message(
