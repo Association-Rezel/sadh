@@ -1,3 +1,5 @@
+import re
+
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
@@ -28,7 +30,9 @@ async def _get_box_by_ssid(
     ssid: str,
     db: AsyncIOMotorDatabase = get_db,
 ) -> Box:
-    box_dict = await db.boxes.find_one({"unets.wifi.ssid": ssid})
+    box_dict = await db.boxes.find_one(
+        {"unets.wifi.ssid": re.compile(f"^{ssid}$", re.IGNORECASE)}
+    )
 
     if box_dict is None:
         raise HTTPException(status_code=404, detail="Box not found")

@@ -6,15 +6,17 @@ from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from back.core.dolibarr import create_dolibarr_user
-from back.core.hermes import get_box_from_user
+from back.core.hermes import get_box_from_user, get_users_on_box
 from back.core.pon import get_ont_from_box
 from back.messaging.mails import (
     send_email_validated_ftth,
     send_email_validated_wifi,
     send_mail_appointment_validated,
     send_mail_new_adherent_on_box,
+    send_mail_no_more_wifi_on_box,
 )
 from back.messaging.matrix import send_matrix_message
+from back.mongodb.hermes_models import Box
 from back.mongodb.user_models import (
     DepositStatus,
     MembershipStatus,
@@ -379,6 +381,41 @@ class StatusUpdateManager:
             ],
         )
 
+        self.register_update(
+            MembershipType.WIFI,
+            MembershipStatus.ACTIVE,
+            MembershipStatus.INACTIVE,
+            [
+                StatusUpdateCondition(
+                    "L'utilisateur a un UNetProfile assigné",
+                    lambda user, _: user.membership is not None
+                    and user.membership.unetid is not None,
+                )
+            ],
+            [
+                StatusUpdateEffect(
+                    "Passage de l'adhésion à l'état INACTIVE",
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.INACTIVE
+                    ),
+                ),
+                StatusUpdateEffect(
+                    " ".join(
+                        [
+                            "S'il s'agit du dernier adhérent Wi-Fi sur la box,",
+                            "envoi d'un email au PROPRIETAIRE de la box pour lui indiquer",
+                            "qu'il n'y a plus personne (donc plus de remboursement partiel)",
+                        ]
+                    ),
+                    _send_mail_if_no_more_wifi_on_box,
+                ),
+                StatusUpdateEffect(
+                    "Suppression du UNetProfile de l'adhérent",
+                    _delete_unet_of_wifi_adherent,
+                ),
+            ],
+        )
+
     def register_update(
         self,
         membership_type: MembershipType,
@@ -434,3 +471,40 @@ async def _update_membership_status(
     )
 
     return User.model_validate(userdict)
+
+
+async def _send_mail_if_no_more_wifi_on_box(
+    user: User, db: AsyncIOMotorDatabase
+) -> None:
+    boxdict = await get_box_from_user(db, user)
+    if not boxdict:
+        raise ValueError("User has no box")
+
+    box = Box.model_validate(boxdict)
+
+    if len(box.unets) == 2:  # Main unet + user who will become inactive
+        send_mail_no_more_wifi_on_box((await get_users_on_box(db, box))[0])
+
+
+async def _delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) -> None:
+    if (
+        not user.membership
+        or not user.membership.unetid
+        or user.membership.type != MembershipType.WIFI
+    ):
+        raise ValueError("User has no membership or no unetid or not a WIFI membership")
+
+    boxdict = await db.boxes.find_one({"unets.unet_id": user.membership.unetid})
+    if not boxdict:
+        raise ValueError("User has no box")
+    box = Box.model_validate(boxdict)
+
+    await db.boxes.update_one(
+        {"mac": str(box.mac)},
+        {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
+    )
+
+    await db.users.update_one(
+        {"_id": str(user.id)},
+        {"$unset": {"membership.unetid": ""}},
+    )

@@ -176,6 +176,7 @@ export default function UnetSection({
                                     />
                                 )}
                             />
+                            {user.membership.type === MembershipType.WIFI && <Alert severity="info">{user.membership.init.ssid}</Alert>}
                             <div className={user.membership.type === MembershipType.WIFI ? "hidden" : ""}>
                                 <FormControl>
                                     <InputLabel id="boxtype-label">Type de box</InputLabel>

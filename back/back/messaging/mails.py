@@ -100,7 +100,7 @@ async def send_email_validated_wifi(user: User, db: AsyncIOMotorDatabase) -> Non
     user_unetid = user.membership.unetid
     adh_unet = next(filter(lambda unet: unet.unet_id == user_unetid, box.unets))
 
-    PARIS_TZ = tz = pytz.timezone("Europe/Paris")
+    PARIS_TZ = pytz.timezone("Europe/Paris")
     date_wifi: datetime
     if datetime.now(tz=PARIS_TZ).hour < 5:
         date_wifi = datetime.now(tz=PARIS_TZ).replace(
@@ -184,5 +184,16 @@ async def send_mail_new_adherent_on_box(user: User, db: AsyncIOMotorDatabase) ->
             box=box,
         ),
         main_unet_user.email,
+        html=True,
+    )
+
+
+def send_mail_no_more_wifi_on_box(user: User) -> None:
+    _send_email(
+        "Rezel - Plus d'autres adhérents wifi sur le lien fibre",
+        jinja2_emails_env.get_template("no_more_wifi_adherent_on_box.html").render(
+            user=user,
+        ),
+        user.email,
         html=True,
     )
