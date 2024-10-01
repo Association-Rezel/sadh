@@ -98,6 +98,7 @@ export interface User {
     last_name: string;
     membership?: Membership;
     availability_slots: AppointmentSlot[];
+    dolibarr_id?: string;
     prev_memberships: Membership[];
 }
 
