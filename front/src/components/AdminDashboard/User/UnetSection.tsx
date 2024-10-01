@@ -176,7 +176,11 @@ export default function UnetSection({
                                     />
                                 )}
                             />
-                            {user.membership.type === MembershipType.WIFI && <Alert severity="info">{user.membership.init.ssid}</Alert>}
+                            {user.membership.type === MembershipType.WIFI &&
+                                <Alert severity="info">
+                                    L'adhérent indique capter le Wi-Fi {user.membership.init.ssid}. La mac correspondante est pré-renseignée ci-dessous
+                                </Alert>
+                            }
                             <div className={user.membership.type === MembershipType.WIFI ? "hidden" : ""}>
                                 <FormControl>
                                     <InputLabel id="boxtype-label">Type de box</InputLabel>
@@ -237,12 +241,12 @@ export default function UnetSection({
                                 buttonColor="error"
                                 onConfirm={onUpdateMac}
                                 confirmationText={<p>La MAC de la box sera modifée en base de donnée,
-                                et l'ONT associé sera mis à jour avec la nouvelle MAC.<br />
-                                <br />
-                                Les boxs ne seront pas redémarrées ni reconfigurées ! Ce
-                                changement ne sera effectif <strong>qu'en base de données</strong>. Par exemple,
-                                il est conseillé de redémarrer les boxs avec les deux adresses MAC afin
-                                de ne pas avoir de duplication d'adresse.</p>}
+                                    et l'ONT associé sera mis à jour avec la nouvelle MAC.<br />
+                                    <br />
+                                    Les boxs ne seront pas redémarrées ni reconfigurées ! Ce
+                                    changement ne sera effectif <strong>qu'en base de données</strong>. Par exemple,
+                                    il est conseillé de redémarrer les boxs avec les deux adresses MAC afin
+                                    de ne pas avoir de duplication d'adresse.</p>}
                             >
                                 Valider nouvelle mac
                             </ConfirmableButton>}
