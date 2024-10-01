@@ -5,12 +5,17 @@ export default function UserSection({ user }: { user: User }) {
     if (!user) return (<>Chargement...</>);
 
     return (
-        <div>
+        <div className="flex flex-col items-center">
             <Typography variant="h3" align="center" color="text.primary" component="div" sx={{ marginTop: 3 }}>
                 Adhérent : {user.first_name} {user.last_name}
             </Typography>
             <Typography variant="body1" align="center" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                <strong>{user.email} - {user.phone_number ? user.phone_number : "NO PHONE NUMBER"}</strong>
+                <div className="flex flex-row gap-8">
+                    <strong>{user.email} - {user.phone_number ? user.phone_number : "NO PHONE NUMBER"}</strong>
+                    <a href={`https://treso.rezel.net/adherents/card.php?rowid=${user.dolibarr_id}`} target="_blank" rel="noreferrer">
+                        Dolibarr ID : {user.dolibarr_id}
+                    </a>
+                </div>
             </Typography>
         </div>
     )
