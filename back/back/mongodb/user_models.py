@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 import pytz
@@ -119,6 +119,7 @@ class Membership(BaseModel):
     documenso_contract_id: Optional[int] = Field(None)
     documenso_adherent_url: Optional[str] = Field(None)
     documenso_president_url: Optional[str] = Field(None)
+    deleted_date: Optional[datetime] = Field(None)
 
     def redact_for_non_admin(self):
         self.comment = ""
@@ -141,6 +142,7 @@ class User(BaseModel):
     membership: Optional[Membership] = Field(None)
     availability_slots: set[AppointmentSlot] = Field([])
     dolibarr_id: Optional[int] = Field(None)
+    prev_memberships: List[Membership] = Field([])
 
     def redact_for_non_admin(self):
         if self.membership and isinstance(self.membership, Membership):

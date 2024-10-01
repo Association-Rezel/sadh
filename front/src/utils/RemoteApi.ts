@@ -181,6 +181,10 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/membership`, membership, "PATCH"));
     }
 
+    async deleteMembership(user_id: string): Promise<User> {
+        return this.parseUser(await this.myAuthenticatedRequest(`/users/${user_id}/membership`, null, "DELETE"));
+    }
+
     async fetchUserBox(user_id: string): Promise<Box> {
         return await this.fetchOrDefault("/users/" + user_id + "/box", null, true);
     }
