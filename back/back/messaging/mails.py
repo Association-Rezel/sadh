@@ -170,6 +170,12 @@ async def send_mail_new_adherent_on_box(user: User, db: AsyncIOMotorDatabase) ->
     if box is None:
         raise ValueError("User has no box")
 
+    if len(box.unets) != 2:
+        # Either there is only the main unet (Should never happen)
+        # Or there is more than 2 unets, which means the main user
+        # has already been notified
+        return
+
     main_unet_user = await db.users.find_one({"membership.unetid": box.main_unet_id})
 
     if main_unet_user is None:
