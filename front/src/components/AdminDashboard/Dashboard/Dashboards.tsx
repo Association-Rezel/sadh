@@ -45,7 +45,7 @@ export default function Dashboards() {
     // Users with an appointment earlier but not active
     const toTransferToActiveFilter: UserFilter = {
         filter(user: User): boolean {
-            return user.membership?.status === MembershipStatus.SENT_CMD_ACCES
+            return user.membership?.status === MembershipStatus.APPOINTMENT_VALIDATED
                 && user.membership?.appointment !== null
                 && user.membership.appointment.slot.end < new Date();
         }
