@@ -23,6 +23,7 @@ import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus, Mem
 import ConfirmableButton from "../../utils/ConfirmableButton"; // Import the new component
 import MembershipTypeChip from "../../utils/Utils";
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Config } from "../../../utils/Config";
 
 interface MembershipSectionProps {
     setUser: (user: User) => void;
@@ -174,12 +175,17 @@ export default function MembershipSection({
                             </div>
                             <div className="flex items-center">
                                 <Button size="small" variant="outlined" color="error" href={user.membership.documenso_adherent_url} target="_blank" rel="noreferrer">
-                                    Lien adhérent ⚠️
+                                    Signature (adhérent ⚠️)
                                 </Button>
                             </div>
                             <div className="flex items-center">
-                                <Button size="small" variant="contained" color="success" href={user.membership.documenso_president_url} target="_blank" rel="noreferrer">
-                                    Lien contrat président
+                                <Button size="small" variant="outlined" color="success" href={user.membership.documenso_president_url} target="_blank" rel="noreferrer">
+                                    Signature (président)
+                                </Button>
+                            </div>
+                            <div className="flex items-center">
+                                <Button size="small" variant="outlined" color="primary" href={`${Config.DOCUMENSO_BASE_URL}/t/rezel/documents/${user.membership.documenso_contract_id}`} target="_blank" rel="noreferrer">
+                                    Voir le contrat
                                 </Button>
                             </div>
                         </>
