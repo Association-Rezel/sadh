@@ -120,7 +120,7 @@ async def _me_create_membership_request(
     send_matrix_message(
         f"<h4>🆕 Demande d'adhésion - {request.type.name}</h4>",
         f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
-        f"🔗 https://fai.rezel.net/admin/users/f{user.id}",
+        f"🔗 https://fai.rezel.net/admin/users/{user.id}",
     )
 
     user.redact_for_non_admin()
