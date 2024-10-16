@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -6,6 +7,7 @@ from pymongo import ReturnDocument
 
 from back.core.charon import register_ont_in_olt
 from back.core.hermes import get_users_on_box
+from back.core.ipam_logging import create_log
 from back.core.pon import (
     get_ont_from_box,
     get_ontinfo_from_box,
@@ -14,6 +16,7 @@ from back.core.pon import (
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
+from back.mongodb.log_models import IpamLog
 from back.mongodb.pon_models import ONTInfo
 from back.server.dependencies import get_box_from_mac_str, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
@@ -81,6 +84,20 @@ async def _delete_box_by_mac(
 
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Box not found")
+
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Deleted unet {box.unets[0].unet_id} which had {box.unets[0].network.wan_ipv4.ip}",
+                    f"and {box.unets[0].network.ipv6_prefix} assigned.",
+                ]
+            ),
+        ),
+    )
 
     return box
 

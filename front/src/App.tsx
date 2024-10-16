@@ -19,6 +19,7 @@ import LoginCallback from "./pages/auth/LoginCallback";
 import LogoutPage from "./pages/auth/LogoutPage";
 import { CircularProgress } from "@mui/material";
 import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
+import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
 
 function AppRouter() {
     const { appState } = useContext(AppStateContext);
@@ -48,11 +49,11 @@ function AppRouter() {
                         <Route path="users" Component={Users} />
                         <Route path="users/:user_id" Component={UserComponent} />
                         <Route path="olt-debug" Component={OLTDebug} />
+                        <Route path="logs-ipam" Component={IpamLogs} />
                     </Route>
                 )}
 
                 <Route path="appointment" element={<Navigate to="/account/appointment" />} />
-                
                 <Route path="*" Component={Page404} />
             </Route>
         </Routes>

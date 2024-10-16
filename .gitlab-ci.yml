@@ -81,7 +81,7 @@ deploybackend:
       variables:
         DEPLOY_ENV: "dev"
         DEPLOY_NAMESPACE: "dev"
-    - when: manual
+    - when: never
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']
@@ -112,7 +112,7 @@ deployfrontend:
       variables:
         DEPLOY_ENV: "dev"
         DEPLOY_NAMESPACE: "dev"
-    - when: manual
+    - when: never
   image:
     name: bitnami/kubectl:latest
     entrypoint: ['']

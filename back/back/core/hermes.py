@@ -7,6 +7,7 @@ from netaddr import EUI, IPAddress
 from xkcdpass import xkcd_password
 
 from back.core.ipam import MongoIpam
+from back.core.ipam_logging import create_log
 from back.mongodb.hermes_models import (
     Box,
     Dhcp,
@@ -18,6 +19,7 @@ from back.mongodb.hermes_models import (
     WanVlan,
     WifiDetails,
 )
+from back.mongodb.log_models import IpamLog
 from back.mongodb.user_models import User
 
 ADH_TP_IPV4_WAN_VLAN = WanVlan(
@@ -91,6 +93,15 @@ async def register_box_for_new_ftth_adh(
 
     await db.boxes.insert_one(new_box.model_dump(mode="json"))
 
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=f"{available_ipv4.ip} and {ipv6.ip}/{prefix} assigned to unet {unet_id} on box {mac}",
+        ),
+    )
+
     return new_box
 
 
@@ -143,6 +154,15 @@ async def register_unet_on_box(
     await db.boxes.update_one(
         {"mac": str(box.mac)},
         {"$push": {"unets": new_profile.model_dump(mode="json")}},
+    )
+
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=f"{available_ipv4.ip} and {ipv6.ip}/{prefix} assigned to unet {unet_id} on box {box.mac}",
+        ),
     )
 
     return new_profile
