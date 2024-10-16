@@ -189,4 +189,5 @@ export interface ApiInterface {
     fetchAllONTSummary(): Promise<string>;
     fetchIpamLogs(start: Date, end: Date): Promise<IpamLog[]>;
     createIpamLog(message: string, source: string): Promise<void>;
+    transferDevices(user_id: string, target_user_id: string): Promise<void>;
 }

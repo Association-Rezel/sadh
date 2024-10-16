@@ -73,7 +73,15 @@ async def _delete_box_by_mac(
             status_code=400, detail="This box still has an ONT attached"
         )
 
-    user = (await get_users_on_box(db, box))[0]
+    users = await get_users_on_box(db, box)
+
+    if len(users) != 1:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal error. There is only one unet on the box but zero or more than one users are associated with it",
+        )
+
+    user = users[0]
 
     await db.users.find_one_and_update(
         {"_id": str(user.id)},

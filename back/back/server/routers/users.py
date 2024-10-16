@@ -38,6 +38,7 @@ from back.mongodb.user_models import (
     UserUpdate,
 )
 from back.server.dependencies import (
+    get_box,
     get_box_from_user_id,
     get_status_update_manager,
     get_user_from_user_id,
@@ -594,3 +595,69 @@ async def _user_generate_new_contract(
     )
 
     return User.model_validate(userdict)
+
+
+@router.post(
+    "/{user_id}/transfer-devices",
+    dependencies=[must_be_sadh_admin],
+    response_model=None,
+)
+async def _user_transfer_devices(
+    target_user_id: str,
+    db: AsyncIOMotorDatabase = get_db,
+    user: User = get_user_from_user_id,
+    box: Box = get_box_from_user_id,
+) -> None:
+    """
+    Transfer all devices from one user to another.
+    """
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    ont = await get_ont_from_box(db, box)
+    if not ont:
+        raise HTTPException(status_code=404, detail="No ONT found for this user")
+
+    target_user = await db.users.find_one({"_id": target_user_id})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="Target user not found")
+    target_user = User.model_validate(target_user)
+
+    if not target_user.membership or target_user.membership.type != MembershipType.FTTH:
+        raise HTTPException(
+            status_code=400, detail="Target user has no FTTH membership"
+        )
+
+    target_user_current_box = await get_box(db, target_user)
+    if target_user_current_box:
+        raise HTTPException(status_code=400, detail="Target user already has a box")
+
+    await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {"$unset": {"membership.unetid": ""}},
+    )
+
+    await db.users.find_one_and_update(
+        {"_id": target_user_id},
+        {"$set": {"membership.unetid": box.main_unet_id}},
+    )
+
+    main_unet = next(unet for unet in box.unets if unet.unet_id == box.main_unet_id)
+
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Transferred ONT {ont.serial_number} and Box {box.mac} from {user.first_name} {user.last_name}",
+                    f"to {target_user.first_name} {target_user.last_name}. Main unet {main_unet.unet_id}",
+                    f"has been assigned to {target_user.first_name} {target_user.last_name} ",
+                    f"({target_user.membership.address.residence.name} - {target_user.membership.address.appartement_id}).",
+                    f"IP addresses & blocks are {main_unet.network.wan_ipv4.ip} and",
+                    f"{main_unet.network.ipv6_prefix}",
+                ]
+            ),
+        ),
+    )
