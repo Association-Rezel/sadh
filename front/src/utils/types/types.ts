@@ -1,4 +1,5 @@
 import { Box } from "./hermes_types";
+import { IpamLog } from "./log_types";
 import { ONTInfo, PMInfo, RegisterONT } from "./pon_types";
 
 export enum MembershipStatus {
@@ -186,4 +187,6 @@ export interface ApiInterface {
     updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box>;
     forceOntRegistration(serial_number: string): Promise<ONTInfo>;
     fetchAllONTSummary(): Promise<string>;
+    fetchIpamLogs(start: Date, end: Date): Promise<IpamLog[]>;
+    createIpamLog(message: string, source: string): Promise<void>;
 }

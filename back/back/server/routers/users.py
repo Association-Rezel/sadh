@@ -14,6 +14,7 @@ from back.core.documenso import (
     prefill_address_in_draft,
 )
 from back.core.hermes import register_box_for_new_ftth_adh, register_unet_on_box
+from back.core.ipam_logging import create_log
 from back.core.pon import (
     get_ont_from_box,
     get_ontinfo_from_box,
@@ -23,6 +24,7 @@ from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
+from back.mongodb.log_models import IpamLog
 from back.mongodb.pon_models import ONTInfo, RegisterONT
 from back.mongodb.user_models import (
     AppointmentSlot,
@@ -348,6 +350,21 @@ async def _user_register_box(
 
     new_box = await register_box_for_new_ftth_adh(db, box_type, mac_address, telecomian)
 
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Main unet {new_box.main_unet_id} created on new box {mac_address}",
+                    f"for {user.first_name} {user.last_name}",
+                    f"({user.membership.address.residence.name} - {user.membership.address.appartement_id})",
+                ]
+            ),
+        ),
+    )
+
     await db.users.find_one_and_update(
         {"_id": str(user.id)},
         {"$set": {"membership.unetid": new_box.main_unet_id}},
@@ -377,6 +394,21 @@ async def _user_register_unet(
 
     unet_profile = await register_unet_on_box(db, box, telecomian)
 
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Unet {unet_profile.unet_id} created on existing box {mac_address}",
+                    f"for {user.first_name} {user.last_name}",
+                    f"({user.membership.address.residence.name} - {user.membership.address.appartement_id})",
+                ]
+            ),
+        ),
+    )
+
     await db.users.find_one_and_update(
         {"_id": str(user.id)},
         {"$set": {"membership.unetid": unet_profile.unet_id}},
@@ -405,7 +437,7 @@ async def _user_delete_unet(
             status_code=400, detail="Cannot delete the main unet of a box"
         )
 
-    box = Box.model_validate(
+    updated_box = Box.model_validate(
         await db.boxes.find_one_and_update(
             {"mac": str(box.mac)},
             {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
@@ -418,7 +450,25 @@ async def _user_delete_unet(
         {"$unset": {"membership.unetid": ""}},
     )
 
-    return box
+    # Log the deletion of the unet and freeing of the IP addresses and blocks
+    deleted_unet = next(
+        unet for unet in box.unets if unet.unet_id == user.membership.unetid
+    )
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Deleted Unet {user.membership.unetid} which had {deleted_unet.network.wan_ipv4.ip}",
+                    f"and {deleted_unet.network.ipv6_prefix} assigned.",
+                ]
+            ),
+        ),
+    )
+
+    return updated_box
 
 
 @router.get(

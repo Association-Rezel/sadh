@@ -27,6 +27,7 @@ import Drawer from "../Dashboard/Drawer";
 import { ListItem, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
 import DebugIcon from "@mui/icons-material/BugReport";
+import EvenListIcon from "@mui/icons-material/EventNote";
 
 function AdminDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -86,6 +87,15 @@ function AdminDashboard() {
                                 <DebugIcon />
                             </ListItemIcon>
                             <ListItemText primary="OLT Debug" />
+                        </ListItemButton>
+                    </Link>
+
+                    <Link to={"logs-ipam"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <EvenListIcon />
+                            </ListItemIcon>
+                            <ListItemText primary="Logs IPAM" />
                         </ListItemButton>
                     </Link>
                 </List>

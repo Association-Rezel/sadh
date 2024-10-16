@@ -2,6 +2,7 @@ import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeA
 import { Config } from "./Config";
 import { ONTInfo, PMInfo, RegisterONT } from "./types/pon_types";
 import { Box } from "./types/hermes_types";
+import { IpamLog } from "./types/log_types";
 
 const jsonReplacer = (_key: string, value: any) => {
     if (value instanceof Set) {
@@ -133,6 +134,11 @@ export class RemoteApi implements ApiInterface {
         return data;
     }
 
+    parseIpamLog(data: any): IpamLog {
+        data.timestamp = data.timestamp && new Date(data.timestamp * 1000);
+        return data;
+    }
+
     async fetchMe(): Promise<User> {
         return this.parseUser(await this.fetchOrDefault("/users/me", null, true));
     }
@@ -251,5 +257,14 @@ export class RemoteApi implements ApiInterface {
 
     async fetchAllONTSummary(): Promise<string> {
         return await this.fetchOrDefault("/net/get-all-ont-summary", "Cannot fetch", true);
+    }
+
+    async fetchIpamLogs(start: Date, end: Date): Promise<IpamLog[]> {
+        const data = await this.fetchOrDefault(`/logging/ipam?start=${Math.floor(start.getTime() / 1000)}&end=${Math.floor(end.getTime() / 1000)}`, [], true);
+        return data.map((usage: any) => this.parseIpamLog(usage));
+    }
+
+    async createIpamLog(message: string, source: string): Promise<void> {
+        await this.myAuthenticatedRequest(`/logging/ipam?message=${message}&source=${source}`, null, "POST");
     }
 }
