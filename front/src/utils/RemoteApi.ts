@@ -267,4 +267,8 @@ export class RemoteApi implements ApiInterface {
     async createIpamLog(message: string, source: string): Promise<void> {
         await this.myAuthenticatedRequest(`/logging/ipam?message=${message}&source=${source}`, null, "POST");
     }
+
+    async transferDevices(user_id: string, target_user_id: string): Promise<void> {
+        await this.myAuthenticatedRequest(`/users/${user_id}/transfer-devices?target_user_id=${target_user_id}`, null, "POST");
+    }
 }

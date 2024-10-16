@@ -13,6 +13,7 @@ import {
     DialogActions,
     Chip,
     CircularProgress,
+    Tooltip,
 } from "@mui/material";
 import { useState } from "react";
 import { Controller } from "react-hook-form";
@@ -24,6 +25,7 @@ import ConfirmableButton from "../../utils/ConfirmableButton"; // Import the new
 import MembershipTypeChip from "../../utils/Utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Config } from "../../../utils/Config";
+import { TransferWithinAStation } from "@mui/icons-material";
 
 interface MembershipSectionProps {
     setUser: (user: User) => void;
@@ -42,6 +44,7 @@ export default function MembershipSection({
 
     const [manualStatusUpdate, setManualStatusUpdate] = useState<boolean>(false);
     const [openDialogWarningManualStatusUpdate, setOpenDialogWarningManualStatusUpdate] = useState<boolean>(false);
+    const [openDialogTransferMembership, setOpenDialogTransferMembership] = useState<boolean>(false);
     const [recreateContractLoading, setRecreateContractLoading] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -72,7 +75,7 @@ export default function MembershipSection({
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
-                Adhésion <MembershipTypeChip type={user.membership.type} /> 
+                Adhésion <MembershipTypeChip type={user.membership.type} />
                 <ConfirmableButton
                     variant="text"
                     confirmationText="La suppression de l'adhésion va supprimer toutes
@@ -91,6 +94,20 @@ export default function MembershipSection({
                 >
                     <DeleteIcon />
                 </ConfirmableButton>
+                {user.membership?.type === MembershipType.FTTH && user.membership?.unetid &&
+                    <>
+                        <Tooltip title="Transférer les équipements à un autre utilsiateur">
+                            <IconButton onClick={() => setOpenDialogTransferMembership(true)}>
+                                <TransferWithinAStation />
+                            </IconButton>
+                        </Tooltip>
+                        <TransferMembershipDialog
+                            currentUser={user}
+                            open={openDialogTransferMembership}
+                            onClose={() => setOpenDialogTransferMembership(false)}
+                        />
+                    </>
+                }
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <div className="flex flex-col gap-3 justify-items-start">
@@ -240,4 +257,94 @@ function WarningManualStatusUpdateDialog({ open, onConfirm, onClose }: { open: b
             </DialogActions>
         </Dialog>
     )
-}  
+}
+
+function TransferMembershipDialog({ currentUser, open, onClose }: { currentUser: User, open: boolean, onClose: any }) {
+    const [targetUser, setTargetUser] = useState<User>();
+    const [searchID, setSearchID] = useState<string>("");
+    const [notFound, setNotFound] = useState<boolean>(false);
+
+    const onSearch = () => {
+        setNotFound(false);
+        Api.fetchUser(searchID).then((user) => {
+            if (user == null) {
+                setNotFound(true);
+                return;
+            }
+            setTargetUser(user);
+        }).catch((e) => {
+            alert(e);
+        });
+    }
+
+    const onConfirm = () => {
+        if (!targetUser) return;
+
+        Api.transferDevices(currentUser.id, targetUser.id).then(() => {
+            alert("Transfert effectué avec succès");
+            window.location.reload();
+            onClose();
+        }).catch((e) => {
+            alert(e);
+        });
+    }
+
+    return (
+        <Dialog open={open} onClose={onClose}>
+            <DialogTitle>Transférer les équipements</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    Une adhésion ne peut pas être transférée à un utilisateur à proprement parler.
+                    Cette action aura uniquement pour effet de transférer les équipements
+                    (ONT et Box) à un autre utilisateur. Il n'y aura aucun effet sur la configuration
+                    des équipements, ni des UNETs secondaires associés.<br />
+                    <br />
+                    En réalité, le seul effet en base de données est de transférer le
+                    Unet principal de l'adhérent source à l'adhérent cible.
+                </DialogContentText>
+                <div className="mt-8">
+                    <Alert severity="info">
+                        L'UUID d'un utilisateur est disponible dans l'URL de la page de l'utilisateur
+                    </Alert>
+                    <strong>UUID de l'utilisateur auquel transférer les équipements</strong>
+                    <div className="flex flex-row align-bottom gap-5">
+                        <TextField
+                            label="UUID"
+                            variant="standard"
+                            onChange={(e) => setSearchID(e.target.value)}
+                            fullWidth
+                        />
+                        <Button onClick={onSearch} variant="outlined">Chercher</Button>
+                    </div>
+                    {notFound && <Alert severity="error">Utilisateur non trouvé</Alert>}
+                    {targetUser && (
+                        <div>
+                            <strong>Utilisateur trouvé</strong>
+                            <div>
+                                <strong>Prénom</strong> : {targetUser.first_name}
+                            </div>
+                            <div>
+                                <strong>Nom</strong> : {targetUser.last_name}
+                            </div>
+                            <div>
+                                <strong>Email</strong> : {targetUser.email}
+                            </div>
+                        </div>
+                    )}
+                    {targetUser && targetUser.membership?.type !== MembershipType.FTTH && (
+                        <Alert severity="error">L'utilisateur cible doit avoir une adhésion FTTH et aucun équipements associés</Alert>
+                    )}
+                </div>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>Annuler</Button>
+                <Button
+                    onClick={onConfirm}
+                    disabled={!targetUser || targetUser.membership?.type !== MembershipType.FTTH}
+                >
+                    Transférer ONT et Box {targetUser?.first_name ? "à " + targetUser.first_name : ""}
+                </Button>
+            </DialogActions>
+        </Dialog>
+    )
+}
