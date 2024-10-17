@@ -18,6 +18,7 @@ from back.mongodb.db import get_db
 from back.mongodb.hermes_models import Box
 from back.mongodb.log_models import IpamLog
 from back.mongodb.pon_models import ONTInfo
+from back.mongodb.user_models import User
 from back.server.dependencies import get_box_from_mac_str, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
@@ -244,3 +245,15 @@ async def _register_ont_in_olt(
     """Force the registration of an ONT in the OLT."""
 
     return register_ont_in_olt(serial_number)
+
+
+@router.get(
+    "/box/{mac_str}/users",
+    response_model=list[User],
+    dependencies=[must_be_sadh_admin],
+)
+async def _get_users_on_box(
+    box: Box = get_box_from_mac_str,
+    db: AsyncIOMotorDatabase = get_db,
+) -> list[User]:
+    return await get_users_on_box(db, box)

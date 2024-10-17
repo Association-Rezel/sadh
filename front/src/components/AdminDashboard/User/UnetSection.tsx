@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Chip, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Chip, CircularProgress, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
@@ -46,13 +46,16 @@ export default function UnetSection({
     const [maskedPsk, setMaskedPsk] = useState("**********");
     const [editingMac, setEditingMac] = useState(false);
     const [newMac, setNewMac] = useState("");
+    const [usersOnBox, setUsersOnBox] = useState<User[]>([]);
+
     if (box && newMac === "") {
         setNewMac(box.mac);
     }
 
-    const main_unet = box?.unets.filter(u => u.unet_id === box.main_unet_id)[0];
+    const mainUser = usersOnBox.find(u => u.membership?.unetid === box?.main_unet_id);
     let myUnetProfile: UnetProfile | null = null;
     let isMainUnet: boolean = false;
+
     if (box) {
         myUnetProfile = box.unets.filter(u => user.membership.unetid === u.unet_id)[0];
         isMainUnet = myUnetProfile?.unet_id === box.main_unet_id;
@@ -151,6 +154,17 @@ export default function UnetSection({
             });
         }
     }, [user?.id]);
+
+    useEffect(() => {
+        console.log("Fetching users on box");
+        if (!box) return;
+        console.log("Fetching users on boxAA");
+        Api.fetchAllUsersOnBox(box.mac).then(users => {
+            setUsersOnBox(users);
+        }).catch(e => {
+            alert(e);
+        });
+    }, [box]);
 
     return (
         <div className="mt-10 max-w-xs">
@@ -252,14 +266,30 @@ export default function UnetSection({
                             </ConfirmableButton>}
                             <br />
                             <strong>Type</strong> : {box.type}<br />
-                            <strong>Unet principal</strong> : {main_unet.unet_id}<br />
+                            {mainUser &&
+                                <>
+                                    <strong>User principal</strong> :
+                                    <Link className="pl-2" href={`/admin/users/${mainUser?.id}`}>{mainUser?.first_name}</Link> ({box?.main_unet_id})
+                                    <br />
+                                </>
+                            }
+                            <strong>Autres adhérents</strong> : 
+                            {!usersOnBox || usersOnBox.length <= 0 && <CircularProgress />}
+                            {usersOnBox?.length === 1 && "Aucun"}
+                            {usersOnBox?.length > 1 && <>
+                                <List>
+                                    {usersOnBox.filter(u => u != mainUser).map(u => (
+                                        <Link href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link>
+                                    ))}
+                                </List>
+                            </>
+                            }
                         </div>
                         <div>
                             <Typography variant="h6" align="left" component="div" >
                                 UNetProfile
                             </Typography>
                             {!myUnetProfile && <Alert severity="warning">Rechargez la page pour voir toutes les infos</Alert>}
-                            <strong>Unet principal de la box : </strong>{isMainUnet ? <Chip label="Oui" color="info" /> : <Chip label="Non" color="info" />} <br />
                             <strong>Unet ID de {user.first_name}</strong> : {myUnetProfile?.unet_id}<br />
                             <strong>IPv4 WAN</strong> : {myUnetProfile?.network.wan_ipv4.ip}<br />
                             <strong>IPv6 WAN</strong> : {myUnetProfile?.network.wan_ipv6.ip}<br />

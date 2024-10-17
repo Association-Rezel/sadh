@@ -15,7 +15,7 @@ export default function InteropSection({
 
     return (
         <div className="mt-10 max-w-xs">
-            <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
+            <Typography variant="h5" align="left" color="text.primary" component="div">
                 Interop
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" className="mt-3">
