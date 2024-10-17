@@ -248,6 +248,7 @@ export default function UnetSection({
                             >
                                 {generateManagementIPv6(box?.mac)}
                             </Button>
+                            <br />
                             <strong>MAC</strong> :<span className="pr-2" />
                             {editingMac ?
                                 <TextField
