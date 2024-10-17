@@ -277,7 +277,7 @@ export default function UnetSection({
                             {mainUser &&
                                 <>
                                     <strong>User principal</strong> :
-                                    <Link className="pl-2" href={`/admin/users/${mainUser?.id}`}>{mainUser?.first_name}</Link> ({box?.main_unet_id})
+                                    <Link underline="hover" className="pl-2" href={`/admin/users/${mainUser?.id}`}>{mainUser?.first_name}</Link> ({box?.main_unet_id})
                                     <br />
                                 </>
                             }
@@ -285,11 +285,11 @@ export default function UnetSection({
                             {!usersOnBox || usersOnBox.length <= 0 && <CircularProgress />}
                             {usersOnBox?.length === 1 && "Aucun"}
                             {usersOnBox?.length > 1 && <>
-                                <List>
+                                <ul className="mt-2">
                                     {usersOnBox.filter(u => u != mainUser).map(u => (
-                                        <Link href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link>
+                                        <li><Link underline="hover" href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link> ({u.membership?.unetid})</li>
                                     ))}
-                                </List>
+                                </ul>
                             </>
                             }
                         </div>
