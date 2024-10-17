@@ -101,6 +101,7 @@ export class RemoteApi implements ApiInterface {
         try {
             return await this.myFetcher(url, auth);
         } catch (e) {
+            console.error(e);
             return defaultValue;
         }
     }
@@ -270,5 +271,10 @@ export class RemoteApi implements ApiInterface {
 
     async transferDevices(user_id: string, target_user_id: string): Promise<void> {
         await this.myAuthenticatedRequest(`/users/${user_id}/transfer-devices?target_user_id=${target_user_id}`, null, "POST");
+    }
+
+    async fetchAllUsersOnBox(mac_address: string): Promise<User[]> {
+        const users = await this.fetchOrDefault(`/devices/box/${mac_address}/users`, [], true);
+        return users.map((user: any) => this.parseUser(user));
     }
 }
