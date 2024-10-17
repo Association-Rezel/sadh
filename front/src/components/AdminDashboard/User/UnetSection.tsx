@@ -8,6 +8,7 @@ import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
 import EditIcon from '@mui/icons-material/Edit';
+import { ContentCopy } from "@mui/icons-material";
 
 type FormValues = {
     boxType?: string;
@@ -156,9 +157,7 @@ export default function UnetSection({
     }, [user?.id]);
 
     useEffect(() => {
-        console.log("Fetching users on box");
         if (!box) return;
-        console.log("Fetching users on boxAA");
         Api.fetchAllUsersOnBox(box.mac).then(users => {
             setUsersOnBox(users);
         }).catch(e => {
@@ -242,7 +241,14 @@ export default function UnetSection({
                             <Typography variant="h6" align="left" component="div" >
                                 Box
                             </Typography>
-                            <strong>MAC</strong> :
+                            <Button
+                                onClick={() => navigator.clipboard.writeText(generateManagementIPv6(box?.mac))}
+                                startIcon={<ContentCopy />}
+                                size="small"
+                            >
+                                {generateManagementIPv6(box?.mac)}
+                            </Button>
+                            <strong>MAC</strong> :<span className="pr-2" />
                             {editingMac ?
                                 <TextField
                                     value={newMac}
@@ -266,6 +272,7 @@ export default function UnetSection({
                             </ConfirmableButton>}
                             <br />
                             <strong>Type</strong> : {box.type}<br />
+                            <br />
                             {mainUser &&
                                 <>
                                     <strong>User principal</strong> :
@@ -273,7 +280,7 @@ export default function UnetSection({
                                     <br />
                                 </>
                             }
-                            <strong>Autres adhérents</strong> : 
+                            <strong>Autres adhérents</strong> :
                             {!usersOnBox || usersOnBox.length <= 0 && <CircularProgress />}
                             {usersOnBox?.length === 1 && "Aucun"}
                             {usersOnBox?.length > 1 && <>
@@ -331,4 +338,23 @@ export default function UnetSection({
             </Typography>
         </div >
     )
+}
+
+function generateManagementIPv6(macAddress: string): string {
+    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+    if (!macRegex.test(macAddress)) {
+        throw new Error("Invalid MAC address format.");
+    }
+
+    const normalizedMac = macAddress.replace(/[:-]/g, "");
+
+    const eui64Mac = `${normalizedMac.slice(0, 6)}fffe${normalizedMac.slice(6)}`;
+
+    const firstOctet = parseInt(eui64Mac.slice(0, 2), 16);
+    const invertedFirstOctet = (firstOctet ^ 0x02).toString(16).padStart(2, "0"); // XOR with 0x02
+    const eui64 = `${invertedFirstOctet}${eui64Mac.slice(2)}`;
+
+    const ipv6Address = `fd99:fa1:ad4:65:${eui64.match(/.{1,4}/g)!.join(":")}`;
+
+    return ipv6Address;
 }
