@@ -12,7 +12,7 @@ router = ROUTEURS.new("pms")
 
 @router.get(
     "/",
-    response_model=List[PMInfo],
+    response_model=list[PMInfo],
     dependencies=[must_be_sadh_admin],
 )
 async def _list_pms(

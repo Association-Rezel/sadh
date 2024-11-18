@@ -1,7 +1,6 @@
 {
     "recommendations": [
         "matangover.mypy",
-        "charliermarsh.ruff",
         "ms-python.pylint"
     ]
 }

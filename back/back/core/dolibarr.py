@@ -7,6 +7,9 @@ from back.env import ENV
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.user_models import MembershipType, User
 
+TYPE_ADHERENT_WIFI = "5"
+TYPE_ADHERENT_FTTH = "4"
+
 
 async def create_dolibarr_user(
     user: User,
@@ -30,10 +33,10 @@ async def create_dolibarr_user(
         "DOLAPIKEY": api_token,
     }
     if user.membership.type == MembershipType.FTTH:
-        typeid = "4"
+        typeid = TYPE_ADHERENT_FTTH
         cotisation = 20
     else:
-        typeid = "5"
+        typeid = TYPE_ADHERENT_WIFI
         cotisation = 10
     methode_payement = "- par virement bancaire, voici notre RIB : <br><br> IBAN : FR76 4255 9100 0008 0260 8696 293<br> Domiciliation : Crédit Coopératif <br> BIC : CCOPFRPPXXX<br><br>- en espèce ou chèque à notre local, salle 0A206 à Télécom Paris (au fond du couloir des associations, côté LudoTech/Robotics/Forum/BDS), 19 Pl. Marguerite Perey, 91120 Palaiseau.<br>"
     data = {

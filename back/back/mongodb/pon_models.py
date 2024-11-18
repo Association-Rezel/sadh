@@ -1,96 +1,32 @@
 import re
-from datetime import datetime
-from typing import Optional
+from typing import Optional, Self
 
-import pytz
-from netaddr import EUI, mac_unix_expanded
-from pydantic import AliasChoices, BaseModel, Field, field_validator
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic import AliasChoices, Field, field_validator, model_validator
+
+from back.mongodb.base import PortableDatetime, PortableMac, RezelBaseModel
 
 
-class ONTOperationalData(BaseModel):
+class ONTOperationalData(RezelBaseModel):
     path: str
     admin_status: bool
     operational_status: bool
     dbm_level: str
     estimation_distance: str
-    last_operational_up: Optional[datetime]
-    last_fetched: datetime
-
-    @field_validator("last_fetched", mode="after")
-    @classmethod
-    def parse_datetime(cls, v) -> datetime:
-        """Parse datetime from iso string or datetime."""
-        if isinstance(v, datetime):
-            return v.astimezone(pytz.timezone("Europe/Paris"))
-        if isinstance(v, float) or isinstance(v, int):
-            # We use Europe/Paris timezone so that when it is formatted to string
-            # (e.g. in emails or matrix messages) it is displayed in the correct timezone
-            # It does NOT change the value of the datetime object, just the way it is displayed
-            # when using python.
-            # The front-end is being communicated the datetime as a timestamp, so it will
-            # display it in the timezone of the browser.
-            return datetime.fromtimestamp(v, tz=pytz.timezone("Europe/Paris"))
-
-        raise ValueError("Invalid datetime format")
-
-    @field_validator("last_operational_up", mode="after")
-    @classmethod
-    def parse_optional_datetime(cls, v) -> Optional[datetime]:
-        """Parse datetime from iso string or datetime."""
-        if v is None:
-            return None
-        if isinstance(v, datetime):
-            return v.astimezone(pytz.timezone("Europe/Paris"))
-        if isinstance(v, float) or isinstance(v, int):
-            # We use Europe/Paris timezone so that when it is formatted to string
-            # (e.g. in emails or matrix messages) it is displayed in the correct timezone
-            # It does NOT change the value of the datetime object, just the way it is displayed
-            # when using python.
-            # The front-end is being communicated the datetime as a timestamp, so it will
-            # display it in the timezone of the browser.
-            return datetime.fromtimestamp(v, tz=pytz.timezone("Europe/Paris"))
-
-        raise ValueError("Invalid datetime format")
-
-    class Config:
-        json_encoders = {
-            datetime: lambda d: d.timestamp(),
-        }
+    last_operational_up: Optional[PortableDatetime]
+    last_fetched: PortableDatetime
 
 
-class ONT(BaseModel):
+class ONT(RezelBaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
-    box_mac_address: EUI = Field(...)
+    box_mac_address: PortableMac = Field(...)
     position_in_pon: int = Field(...)
     position_in_subscriber_panel: Optional[str] = Field(default=None)
     operational_data: Optional[ONTOperationalData] = Field(default=None)
     configured_in_olt: Optional[bool] = Field(default=None)
 
-    @field_validator("box_mac_address", mode="before")
-    @classmethod
-    def parse_mac(cls, v):
-        if isinstance(v, EUI):
-            return EUI(v, dialect=mac_unix_expanded)
 
-        if isinstance(v, str):
-            mac_obj = EUI(v, dialect=mac_unix_expanded)
-            if mac_obj is None:
-                raise ValueError("Invalid MAC address")
-            return mac_obj
-
-        else:
-            raise ValueError("Invalid MAC address")
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {
-            EUI: lambda mac: str(EUI(mac, dialect=mac_unix_expanded)),
-        }
-
-
-class PON(BaseModel):
+class PON(RezelBaseModel):
     olt_interface: str = Field(...)
     olt_id: str = Field(...)
     mec128_offset: int = Field(...)
@@ -99,22 +35,20 @@ class PON(BaseModel):
     tiroir: int = Field(...)
     ont_list: list[ONT] = Field(default_factory=list)
 
-    @field_validator("ont_list", mode="after")
-    @classmethod
-    def check_ont_list(cls, v: list[ONT], info: FieldValidationInfo):
-        if len(v) > info.data["number_of_ports"]:
+    @model_validator(mode="after")
+    def _check_ont_list(self) -> Self:
+        if len(self.ont_list) > self.number_of_ports:
             raise ValueError("The number of ONTs is greater than the number of ports")
 
-        for ont in v:
-            if ont.position_in_pon > info.data["number_of_ports"]:
+        for ont in self.ont_list:  # pylint: disable=not-an-iterable
+            if ont.position_in_pon > self.number_of_ports:
                 raise ValueError(
                     f"The position of the ONT {ont.serial_number} is greater than the number of ports"
                 )
+        return self
 
-        return v
 
-
-class PM(BaseModel):
+class PM(RezelBaseModel):
     id: str = Field(validation_alias=AliasChoices("id", "_id"))
     description: str = Field(...)
     pon_list: list[PON] = Field(default_factory=list)
@@ -125,7 +59,7 @@ class PM(BaseModel):
 ####
 
 
-class ONTInfo(BaseModel):
+class ONTInfo(RezelBaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
     box_mac_address: str = Field(...)
@@ -139,12 +73,12 @@ class ONTInfo(BaseModel):
     configured_in_olt: Optional[bool] = Field(default=None)
 
 
-class PMInfo(BaseModel):
+class PMInfo(RezelBaseModel):
     id: str = Field(..., validation_alias=AliasChoices("id", "_id"))
     description: str = Field(...)
 
 
-class RegisterONT(BaseModel):
+class RegisterONT(RezelBaseModel):
     serial_number: str = Field(...)
     software_version: str = Field(...)
     pm_id: str = Field(...)

@@ -13,7 +13,7 @@ router = ROUTEURS.new("net")
 
 @router.get(
     "/ssids",
-    response_model=List[str],
+    response_model=list[str],
 )
 async def _list_ssids(
     db: AsyncIOMotorDatabase = get_db,
