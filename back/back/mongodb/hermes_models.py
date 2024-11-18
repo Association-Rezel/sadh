@@ -3,14 +3,16 @@ Defines Models for the database
 """
 
 from netaddr import EUI, mac_unix_expanded
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field
+
+from back.mongodb.base import PortableMac, RezelBaseModel
 
 REGEX_IPV4_CIDR = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
 REGEX_IPV4 = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 REGEX_UNET_ID = r"^[a-z0-9]{8}$"
 
 
-class WanIpv4(BaseModel):
+class WanIpv4(RezelBaseModel):
     """
     WanIpv4 Model
     """
@@ -19,7 +21,7 @@ class WanIpv4(BaseModel):
     ip: str = Field(pattern=REGEX_IPV4_CIDR)
 
 
-class WanIpv6(BaseModel):
+class WanIpv6(RezelBaseModel):
     """
     WanIpv6 Model
     """
@@ -28,7 +30,7 @@ class WanIpv6(BaseModel):
     ip: str
 
 
-class LanIpv4(BaseModel):
+class LanIpv4(RezelBaseModel):
     """
     LanIpv4 Model
     """
@@ -37,7 +39,7 @@ class LanIpv4(BaseModel):
     vlan: int
 
 
-class UnetNetwork(BaseModel):
+class UnetNetwork(RezelBaseModel):
     """
     UnetNetwork Model
     """
@@ -48,7 +50,7 @@ class UnetNetwork(BaseModel):
     lan_ipv4: LanIpv4
 
 
-class WifiDetails(BaseModel):
+class WifiDetails(RezelBaseModel):
     """
     WifiDetails Model
     """
@@ -57,7 +59,7 @@ class WifiDetails(BaseModel):
     psk: str
 
 
-class Ipv4Portforwarding(BaseModel):
+class Ipv4Portforwarding(RezelBaseModel):
     """
     Ipv4Portforwarding Model
     """
@@ -70,7 +72,7 @@ class Ipv4Portforwarding(BaseModel):
     desc: str
 
 
-class Ipv6Portopening(BaseModel):
+class Ipv6Portopening(RezelBaseModel):
     """
     Ipv6Portopening Model
     """
@@ -82,7 +84,7 @@ class Ipv6Portopening(BaseModel):
     desc: str
 
 
-class UnetFirewall(BaseModel):
+class UnetFirewall(RezelBaseModel):
     """
     UnetFirewall Model
     """
@@ -91,7 +93,7 @@ class UnetFirewall(BaseModel):
     ipv6_port_opening: list[Ipv6Portopening]
 
 
-class DnsServers(BaseModel):
+class DnsServers(RezelBaseModel):
     """
     DnsServers Model
     """
@@ -100,7 +102,7 @@ class DnsServers(BaseModel):
     ipv6: list[str]
 
 
-class Dhcp(BaseModel):
+class Dhcp(RezelBaseModel):
     """
     DnsV4 Model
     """
@@ -108,7 +110,7 @@ class Dhcp(BaseModel):
     dns_servers: DnsServers
 
 
-class UnetProfile(BaseModel):
+class UnetProfile(RezelBaseModel):
     """
     UnetProfile Model
     """
@@ -120,7 +122,7 @@ class UnetProfile(BaseModel):
     dhcp: Dhcp
 
 
-class WanVlan(BaseModel):
+class WanVlan(RezelBaseModel):
     """
     WanVlan Model
     """
@@ -130,31 +132,16 @@ class WanVlan(BaseModel):
     ipv6_gateway: str
 
 
-class Box(BaseModel):
+class Box(RezelBaseModel):
     """
     Box Model
     """
 
     type: str  # Type de box (ex: ac2350)
     main_unet_id: str = Field(pattern=REGEX_UNET_ID)
-    mac: EUI
+    mac: PortableMac
     unets: list[UnetProfile]
     wan_vlan: list[WanVlan]
-
-    @field_validator("mac", mode="before")
-    @classmethod
-    def parse_mac(cls, v):
-        if isinstance(v, EUI):
-            return EUI(v, dialect=mac_unix_expanded)
-
-        if isinstance(v, str):
-            mac_obj = EUI(v, dialect=mac_unix_expanded)
-            if mac_obj is None:
-                raise ValueError("Invalid MAC address")
-            return mac_obj
-
-        else:
-            raise ValueError("Invalid MAC address")
 
     class Config:
         arbitrary_types_allowed = True

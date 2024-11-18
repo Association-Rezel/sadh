@@ -15,14 +15,14 @@ router = ROUTEURS.new("logging")
 
 @router.get(
     "/ipam",
-    response_model=List[IpamLog],
+    response_model=list[IpamLog],
     dependencies=[must_be_sadh_admin],
 )
 async def _get_ipam_logs(
     start: int,
     end: int,
     db: AsyncIOMotorDatabase = get_db,
-) -> List[IpamLog]:
+) -> list[IpamLog]:
 
     if start >= end:
         return []

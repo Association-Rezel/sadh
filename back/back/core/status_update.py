@@ -2,7 +2,6 @@ import asyncio
 from collections.abc import Awaitable, Callable
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from back.core.dolibarr import create_dolibarr_user
@@ -16,6 +15,7 @@ from back.messaging.mails import (
     send_mail_no_more_wifi_on_box,
 )
 from back.messaging.matrix import send_matrix_message
+from back.mongodb.base import RezelBaseModel
 from back.mongodb.hermes_models import Box
 from back.mongodb.user_models import (
     DepositStatus,
@@ -146,7 +146,7 @@ class StatusUpdate:
         return user
 
 
-class StatusUpdateInfo(BaseModel):
+class StatusUpdateInfo(RezelBaseModel):
     from_status: MembershipStatus
     to_status: MembershipStatus
     conditions: list[str]

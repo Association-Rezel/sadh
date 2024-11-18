@@ -1,15 +1,36 @@
 {
-    "mypy.enabled": false,
     "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/CVS": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "front": true,
-        "back": true,
-        "infra": true,
-        "documentation": true
-    }
+        "**/__pycache__": true,
+        "**/.*_cache": true,
+        "**/.venv": true
+    },
+    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.linting.mypyEnabled": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit",
+            "source.unusedImports": "explicit",
+        },
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "black",
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        ".venv/**",
+        "*/.venv/**"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "mypy.dmypyExecutable": "${workspaceFolder}/back/.venv/bin/dmypy",
+    "mypy.extraArguments": [
+        "--disable-error-code=import-untyped"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/back"
+    ],
 }

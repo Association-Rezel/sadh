@@ -4,9 +4,9 @@ from typing import Dict
 import requests
 from authlib.jose import jwt
 from authlib.oauth2.rfc7662 import IntrospectTokenValidator
-from pydantic import BaseModel
 
 from back.env import ENV
+from back.mongodb.base import RezelBaseModel
 
 
 class ValidatorError(Exception):
@@ -98,7 +98,7 @@ class ZitadelIntrospectTokenValidator(IntrospectTokenValidator):
         return token
 
 
-class ZitadelUserInfo(BaseModel):
+class ZitadelUserInfo(RezelBaseModel):
     given_name: str
     family_name: str
     email: str

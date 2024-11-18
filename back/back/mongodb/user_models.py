@@ -1,10 +1,10 @@
-from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import Optional, Self
 from uuid import UUID
 
-import pytz
-from pydantic import AliasChoices, BaseModel, Field, ValidationInfo, field_validator
+from pydantic import AliasChoices, Field, model_validator
+
+from back.mongodb.base import PortableDatetime, RezelBaseModel
 
 
 class MembershipStatus(int, Enum):
@@ -42,42 +42,20 @@ class AppointmentType(int, Enum):
     RACCORDEMENT = 1
 
 
-class Address(BaseModel):
+class Address(RezelBaseModel):
     residence: Residence = Field(...)
     appartement_id: str = Field(...)
 
 
-class AppointmentSlot(BaseModel):
-    start: datetime = Field(...)
-    end: datetime = Field(...)
-
-    @field_validator("start", "end", mode="before")
-    @classmethod
-    def parse_datetime(cls, v) -> datetime:
-        """Parse datetime from iso string or datetime."""
-        if isinstance(v, datetime):
-            return v.astimezone(pytz.timezone("Europe/Paris"))
-        if isinstance(v, float) or isinstance(v, int):
-            # We use Europe/Paris timezone so that when it is formatted to string
-            # (e.g. in emails or matrix messages) it is displayed in the correct timezone
-            # It does NOT change the value of the datetime object, just the way it is displayed
-            # when using python.
-            # The front-end is being communicated the datetime as a timestamp, so it will
-            # display it in the timezone of the browser.
-            return datetime.fromtimestamp(v, tz=pytz.timezone("Europe/Paris"))
-
-        raise ValueError("Invalid datetime format")
-
-    class Config:
-        json_encoders = {
-            datetime: lambda d: d.timestamp(),
-        }
+class AppointmentSlot(RezelBaseModel):
+    start: PortableDatetime = Field(...)
+    end: PortableDatetime = Field(...)
 
     def __hash__(self) -> int:
         return hash((self.start, self.end))
 
 
-class Appointment(BaseModel):
+class Appointment(RezelBaseModel):
     slot: AppointmentSlot = Field(...)
     type: AppointmentType = Field(...)
 
@@ -88,7 +66,7 @@ class PaymentMethod(str, Enum):
     ESPECE = "ESPECE"
 
 
-class MembershipInitialization(BaseModel):
+class MembershipInitialization(RezelBaseModel):
     payment_method_first_month: PaymentMethod = Field(...)
     payment_method_deposit: Optional[PaymentMethod] = Field(None)
     ssid: Optional[str] = Field(None)
@@ -99,7 +77,7 @@ class MembershipType(str, Enum):
     WIFI = "WIFI"
 
 
-class Membership(BaseModel):
+class Membership(RezelBaseModel):
     type: MembershipType = Field(...)
     status: MembershipStatus = Field(...)
     address: Address = Field(...)
@@ -119,7 +97,7 @@ class Membership(BaseModel):
     documenso_contract_id: Optional[int] = Field(None)
     documenso_adherent_url: Optional[str] = Field(None)
     documenso_president_url: Optional[str] = Field(None)
-    deleted_date: Optional[datetime] = Field(None)
+    deleted_date: Optional[PortableDatetime] = Field(None)
 
     def redact_for_non_admin(self):
         self.comment = ""
@@ -133,7 +111,7 @@ class Membership(BaseModel):
         self.documenso_president_url = None
 
 
-class User(BaseModel):
+class User(RezelBaseModel):
     id: UUID = Field(validation_alias=AliasChoices("id", "_id"))
     email: str = Field(...)
     phone_number: Optional[str] = Field(None)
@@ -142,7 +120,7 @@ class User(BaseModel):
     membership: Optional[Membership] = Field(None)
     availability_slots: set[AppointmentSlot] = Field([])
     dolibarr_id: Optional[int] = Field(None)
-    prev_memberships: List[Membership] = Field([])
+    prev_memberships: list[Membership] = Field([])
 
     def redact_for_non_admin(self):
         if self.membership and isinstance(self.membership, Membership):
@@ -154,7 +132,7 @@ class User(BaseModel):
 ####
 
 
-class MembershipUpdate(BaseModel):
+class MembershipUpdate(RezelBaseModel):
     status: Optional[MembershipStatus] = Field(None)
     address: Optional[Address] = Field(None)
     comment: Optional[str] = Field(None)
@@ -170,13 +148,13 @@ class MembershipUpdate(BaseModel):
     appointment: Optional[Appointment] = Field(None)
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(RezelBaseModel):
     phone_number: Optional[str] = Field(None)
     membership: Optional[Membership] = Field(None)
     availability_slots: Optional[set[AppointmentSlot]] = Field(None)
 
 
-class MembershipRequest(BaseModel):
+class MembershipRequest(RezelBaseModel):
     type: MembershipType = Field(...)
     ssid: Optional[str] = Field(None)
     phone_number: Optional[str] = Field(None)
@@ -184,18 +162,16 @@ class MembershipRequest(BaseModel):
     payment_method_first_month: PaymentMethod = Field(...)
     payment_method_deposit: Optional[str] = Field(None)
 
-    @field_validator("phone_number", "payment_method_deposit", mode="before")
-    @classmethod
-    def _validate_ftth(cls, v: str | None, info: ValidationInfo):
-        if info.data["type"] == MembershipType.FTTH and v is None:
-            raise ValueError(f"{info.field_name} is required for FTTH membership")
-
-        return v
-
-    @field_validator("ssid", mode="before")
-    @classmethod
-    def _validate_wifi(cls, v: str | None, info: ValidationInfo):
-        if info.data["type"] == MembershipType.WIFI and v is None:
-            raise ValueError(f"{info.field_name} is required for WIFI membership")
-
-        return v
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if self.type == MembershipType.FTTH:
+            if self.phone_number is None:
+                raise ValueError("phone_number is required for FTTH membership")
+            if self.payment_method_deposit is None:
+                raise ValueError(
+                    "payment_method_deposit is required for FTTH membership"
+                )
+        elif self.type == MembershipType.WIFI:
+            if self.ssid is None:
+                raise ValueError("ssid is required for WIFI membership")
+        return self
