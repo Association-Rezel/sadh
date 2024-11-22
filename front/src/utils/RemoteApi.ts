@@ -1,7 +1,7 @@
 import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus } from "./types/types";
 import { Config } from "./Config";
 import { ONTInfo, PMInfo, RegisterONT } from "./types/pon_types";
-import { Box } from "./types/hermes_types";
+import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
 
 const jsonReplacer = (_key: string, value: any) => {
@@ -157,6 +157,14 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.myAuthenticatedRequest("/users/me/availability", availabilities, "POST"));
     }
 
+    async fetchMyUnet(): Promise<UnetProfile> {
+        return await this.fetchOrDefault("/users/me/unet", null, true);
+    }
+
+    async updateMyUnet(unet: UnetProfile): Promise<UnetProfile> {
+        return await this.myAuthenticatedRequest("/users/me/unet", unet, "PATCH");
+    }
+
     // ADMIN
 
     async fetchUsers(): Promise<User[]> {
@@ -220,8 +228,12 @@ export class RemoteApi implements ApiInterface {
         return await this.myFetcher("/net/ssids", true);
     }
 
-    async fetchBoxBySSID(ssid: string): Promise<Box> {
-        return await this.fetchOrDefault("/devices/box/by_ssid/" + ssid, null, true);
+    async fetchValidSSID(ssid: string): Promise<boolean> {
+        return await this.myFetcher(`/net/valid_ssid/${ssid}`, true);
+    }
+
+    async fetchBoxByUnetID(main_unet_id: string): Promise<Box> {
+        return await this.fetchOrDefault("/devices/box/by_unet_id/" + main_unet_id, null, true);
     }
 
     async createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box> {

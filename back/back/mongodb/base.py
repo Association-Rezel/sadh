@@ -51,3 +51,4 @@ class RezelBaseModel(BaseModel):
             EUI: lambda mac: str(EUI(mac, dialect=mac_unix_expanded)),
         }
         arbitrary_types_allowed = True
+        validate_assignment = True

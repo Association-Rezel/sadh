@@ -33,4 +33,5 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/back"
     ],
+    "makefile.configureOnOpen": false,
 }

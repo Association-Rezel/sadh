@@ -1,11 +1,10 @@
-from typing import List
-
 import requests
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.env import ENV
 from back.mongodb.db import get_db
-from back.server.dependencies import must_be_sadh_admin
+from back.mongodb.user_models import User
+from back.server.dependencies import get_user_me, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("net")
@@ -29,6 +28,34 @@ async def _list_ssids(
             ]
         ).to_list(None)
     )[0]["ssids"]
+
+
+@router.get(
+    "/valid_ssid/{ssid}",
+    response_model=bool,
+)
+async def _validate_ssid(
+    ssid: str,
+    user: User = get_user_me,
+    db: AsyncIOMotorDatabase = get_db,
+) -> bool:
+    """Check if the SSID is not already used."""
+
+    if user.membership is None:
+        return True
+
+    nb = await db.boxes.count_documents(
+        {
+            "unets": {
+                "$elemMatch": {
+                    "wifi.ssid": ssid,
+                    "unet_id": {"$ne": user.membership.unetid},
+                }
+            }
+        }
+    )
+
+    return nb == 0
 
 
 @router.get(

@@ -147,7 +147,7 @@ export default function UnetSection({
     useEffect(() => {
         if (!user) return;
         if (user.membership.type === MembershipType.WIFI) {
-            Api.fetchBoxBySSID(user.membership.init.ssid).then(box => {
+            Api.fetchBoxByUnetID(user.membership.init.main_unet_id).then(box => {
                 reset({
                     ...getValues(),
                     macAddress: box.mac,
@@ -185,13 +185,19 @@ export default function UnetSection({
                                             checked={value}
                                             onChange={onChange}
                                         />}
-                                        label="⚠️ IP Télécommienne"
+                                        label="Assigner une IP du range 137.194.8.0/22 (Réservé au étudiants ou personnels de Télécom Paris)"
                                     />
                                 )}
                             />
-                            {user.membership.type === MembershipType.WIFI &&
+                            {user.membership.type === MembershipType.WIFI && user.membership.init.main_unet_id &&
                                 <Alert severity="info">
-                                    L'adhérent indique capter le Wi-Fi {user.membership.init.ssid}. La mac correspondante est pré-renseignée ci-dessous
+                                    L'adhérent indique capter le Wi-Fi correspondant au unet id {user.membership.init.main_unet_id}. La mac correspondante est pré-renseignée ci-dessous
+                                </Alert>
+
+                            }
+                            {user.membership.type === MembershipType.WIFI && !user.membership.init.main_unet_id &&
+                                <Alert severity="error">
+                                    L'adhérent avait indiqué un SSID avant le changement de système du 23/11/2024 (https://gitlab.fai.rezel.net/fai/sadh/-/merge_requests/22) Il faut lui redemander le Wi-Fi qu'il capte.
                                 </Alert>
                             }
                             <div className={user.membership.type === MembershipType.WIFI ? "hidden" : ""}>

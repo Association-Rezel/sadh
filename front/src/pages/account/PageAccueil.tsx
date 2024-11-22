@@ -1,7 +1,6 @@
 import { Copyright } from "@mui/icons-material";
 import { Grid, Paper } from "@mui/material";
 import AccountDashboard from "../../components/AccountDashboard/AccountDashboard";
-import Chart from "./Chart";
 import Deposits from "./Deposits";
 import Orders from "./Orders";
 
@@ -19,7 +18,6 @@ export function PageAccueil() {
               height: 240,
             }}
           >
-            <Chart />
           </Paper>
         </Grid>
         {/* Recent Deposits */}
