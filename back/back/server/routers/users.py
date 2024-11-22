@@ -13,7 +13,12 @@ from back.core.documenso import (
     generate_contract_draft_for_user,
     prefill_address_in_draft,
 )
-from back.core.hermes import register_box_for_new_ftth_adh, register_unet_on_box
+from back.core.hermes import (
+    get_box_by_ssid,
+    get_box_from_user,
+    register_box_for_new_ftth_adh,
+    register_unet_on_box,
+)
 from back.core.ipam_logging import create_log
 from back.core.pon import (
     get_ont_from_box,
@@ -23,7 +28,7 @@ from back.core.pon import (
 from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
-from back.mongodb.hermes_models import Box
+from back.mongodb.hermes_models import Box, UnetProfile
 from back.mongodb.log_models import IpamLog
 from back.mongodb.pon_models import ONTInfo, RegisterONT
 from back.mongodb.user_models import (
@@ -40,6 +45,7 @@ from back.mongodb.user_models import (
 from back.server.dependencies import (
     get_box,
     get_box_from_user_id,
+    get_my_box,
     get_status_update_manager,
     get_user_from_user_id,
     get_user_me,
@@ -96,6 +102,14 @@ async def _me_create_membership_request(
         )
 
     elif request.type is MembershipType.WIFI:
+        if not request.ssid:
+            raise HTTPException(
+                status_code=400, detail="SSID is required for WIFI membership"
+            )
+        associated_box = await get_box_by_ssid(db, request.ssid)
+        if not associated_box:
+            raise HTTPException(status_code=404, detail="No box found for this SSID")
+
         userdict = await db.users.find_one_and_update(
             {"_id": str(user.id)},
             {
@@ -105,7 +119,7 @@ async def _me_create_membership_request(
                     "membership.status": MembershipStatus.REQUEST_PENDING_VALIDATION,
                     "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
                     "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
-                    "membership.init.ssid": request.ssid,
+                    "membership.init.main_unet_id": associated_box.main_unet_id,
                     "membership.init.payment_method_first_month": request.payment_method_first_month,
                     "membership.documenso_contract_id": document_id,
                     "membership.documenso_adherent_url": links[0],
@@ -157,6 +171,107 @@ async def _me_add_availability_slots(
     user.redact_for_non_admin()
 
     return user
+
+
+@router.get("/me/unet", dependencies=[], response_model=UnetProfile)
+async def _user_get_unet(
+    user: User = get_user_me,
+    db: AsyncIOMotorDatabase = get_db,
+) -> UnetProfile:
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if not user.membership.unetid:
+        raise HTTPException(status_code=400, detail="User has no unetid")
+
+    # find the box where the unetid is in the unets Array
+    box = await get_box_from_user(db, user)
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    # get the unet profile from the box
+    for unet in box.unets:
+        if unet.unet_id == user.membership.unetid:
+            return unet
+
+    raise HTTPException(status_code=404, detail="No unet found for this user")
+
+
+@router.patch("/me/unet", dependencies=[], response_model=UnetProfile)
+async def _user_update_unet(
+    new_unet: UnetProfile,
+    user: User = get_user_me,
+    box: Box = get_my_box,
+    db: AsyncIOMotorDatabase = get_db,
+) -> UnetProfile:
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if not user.membership.unetid:
+        raise HTTPException(status_code=400, detail="User has no unetid")
+
+    if not user.membership.unetid == new_unet.unet_id:
+        raise HTTPException(
+            status_code=400, detail="Unet ID does not match user's unetid"
+        )
+
+    # check SSID
+    if not new_unet.wifi.ssid.startswith("Rezel-"):
+        raise HTTPException(
+            status_code=400,
+            detail="SSID must start with 'Rezel-'",
+        )
+
+    # Count the number of boxs containing a unet with the same SSID
+    same_ssid_nb = await db.boxes.count_documents(
+        {
+            "unets": {
+                "$elemMatch": {
+                    "wifi.ssid": new_unet.wifi.ssid,
+                    "unet_id": {"$ne": user.membership.unetid},
+                }
+            }
+        }
+    )
+    if same_ssid_nb > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"SSID {new_unet.wifi.ssid} is already used",
+        )
+
+    # update the unet profile in the box, but only the fields
+    # that are allowed to be updated by  the user (e.g. not the WAN adresses)
+    for unet in box.unets:
+        if unet.unet_id == user.membership.unetid:
+            for field in [
+                "wifi",
+                "firewall",
+                "dhcp",
+            ]:
+                setattr(unet, field, getattr(new_unet, field))
+            break
+
+    # update the box in the database
+    box_dict = await db.boxes.find_one_and_update(
+        {"mac": str(box.mac)},
+        {
+            "$set": {
+                "unets": [
+                    unet.model_dump(exclude_unset=True, mode="json")
+                    for unet in box.unets
+                ]
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+
+    box = Box.model_validate(box_dict)
+
+    for unet in box.unets:
+        if unet.unet_id == user.membership.unetid:
+            return unet
+
+    raise HTTPException(status_code=404, detail="No unet found for this user")
 
 
 ### ADMIN

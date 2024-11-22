@@ -59,9 +59,15 @@ export default function WifiMembershipForm() {
 
     const onSubmitMembership = async (event: FormValues) => {
         try {
+            const realSSID = allSSIDs.find((ssid) => ssid.toLowerCase() === "rezel-" + event.ssid.toLowerCase());
+            if (!realSSID) {
+                alert("Erreur lors de la demande d'adhésion. Le réseau Wi-Fi n'existe pas.");
+                return;
+            }
+
             const user = await Api.submitMyMembershipRequest({
                 type: MembershipType.WIFI,
-                ssid: allSSIDs.find((ssid) => ssid.toLowerCase() === "rezel-" + event.ssid.toLowerCase()), // To get correct case
+                ssid: realSSID,
                 address: {
                     residence: Residence[event.residence],
                     appartement_id: event.appartement_id,

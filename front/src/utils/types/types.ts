@@ -1,4 +1,4 @@
-import { Box } from "./hermes_types";
+import { Box, UnetProfile } from "./hermes_types";
 import { IpamLog } from "./log_types";
 import { ONTInfo, PMInfo, RegisterONT } from "./pon_types";
 
@@ -66,7 +66,7 @@ export enum MembershipType {
 export interface MembershipInitialization {
     payment_method_first_month: PaymentMethod;
     payment_method_deposit?: PaymentMethod;
-    ssid?: string;
+    main_unet_id?: string;
 }
 
 export interface Membership {
@@ -162,6 +162,8 @@ export interface ApiInterface {
     fetchAppointmentSlots(weekOffset: number): Promise<AppointmentSlot[][]>;
     updateMyAvailabilities: (availabilities: AppointmentSlot[]) => Promise<User>;
     fetchMe(): Promise<User>;
+    fetchMyUnet(): Promise<UnetProfile>;
+    updateMyUnet(unet: UnetProfile): Promise<UnetProfile>;
     submitMyMembershipRequest(request: MembershipRequest): Promise<User>;
     fetchUser(user_id: string): Promise<User>;
     updateUser(user_id: string, update: Partial<User>): Promise<User>;
@@ -177,7 +179,8 @@ export interface ApiInterface {
     fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo>;
     updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
     fetchAllSSIDs(): Promise<string[]>;
-    fetchBoxBySSID(ssid: string): Promise<Box>;
+    fetchValidSSID(ssid: string): Promise<boolean>;
+    fetchBoxByUnetID(main_unet_id: string): Promise<Box>;
     createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box>;
     generateNewContract(user_id: string): Promise<void>;
     refreshContract(user_id: string): Promise<User>;

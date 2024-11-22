@@ -28,7 +28,7 @@ install: i-back i-front
 
 
 back/.venv:
-	@bash -c 'cd back && python3.11 -m venv .venv'
+	@bash -c 'cd back && python3 -m venv .venv'
 
 .PHONY: i-back
 i-back: back/.venv
@@ -43,7 +43,7 @@ i-front:
 
 .PHONY: start-back
 start-back:
-	@bash -c 'cd back && source .venv/bin/activate && python -m uvicorn --factory back:make_app --reload --port 8000 --log-level debug'
+	@bash -c 'cd back && source .venv/bin/activate && python3 -m uvicorn --factory back:make_app --reload --port 8000 --log-level debug'
 
 .PHONY: start-front
 start-front:

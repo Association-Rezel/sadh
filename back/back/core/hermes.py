@@ -1,6 +1,7 @@
 import random
 import string
 from datetime import datetime
+from ipaddress import IPv4Address, IPv6Address
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from netaddr import EUI, IPAddress
@@ -78,8 +79,11 @@ async def register_box_for_new_ftth_adh(
                 ),
                 dhcp=Dhcp(
                     dns_servers=DnsServers(
-                        ipv4=["8.8.8.8", "1.1.1.1"],
-                        ipv6=["2001:4860:4860::8888", "2606:4700:4700::1111"],
+                        ipv4=[IPv4Address("8.8.8.8"), IPv4Address("1.1.1.1")],
+                        ipv6=[
+                            IPv6Address("2001:4860:4860::8888"),
+                            IPv6Address("2606:4700:4700::1111"),
+                        ],
                     )
                 ),
                 firewall=UnetFirewall(
@@ -141,8 +145,11 @@ async def register_unet_on_box(
         wifi=WifiDetails(ssid=await generate_unique_ssid(db), psk=generate_password()),
         dhcp=Dhcp(
             dns_servers=DnsServers(
-                ipv4=["8.8.8.8", "1.1.1.1"],
-                ipv6=["2001:4860:4860::8888", "2606:4700:4700::1111"],
+                ipv4=[IPv4Address("8.8.8.8"), IPv4Address("1.1.1.1")],
+                ipv6=[
+                    IPv6Address("2001:4860:4860::8888"),
+                    IPv6Address("2606:4700:4700::1111"),
+                ],
             )
         ),
         firewall=UnetFirewall(

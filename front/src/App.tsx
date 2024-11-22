@@ -13,6 +13,7 @@ import { useContext } from "react";
 import UserComponent from "./components/AdminDashboard/User/User";
 import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
+import PageSettings from "./pages/account/settings/PageSettings";
 import LoginPage from "./pages/auth/LoginPage";
 import { ZitadelContextWrapper } from "./utils/ZitadelContext";
 import LoginCallback from "./pages/auth/LoginCallback";
@@ -72,24 +73,39 @@ function App() {
 }
 
 function accountRoute({ appState }: { appState: AppState }) {
+    const appointmentRoute = (
+        <Route path="appointment" Component={PageAppointment} />
+    );
+    const settingsRoute = (
+        <Route path="settings" element={<PageSettings />} />
+    );
+
     if (!appState.user) {
         return <Route path="account" element={<Navigate to="/login" />} />
     }
-
-    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)
-        && appState.user?.membership?.type === MembershipType.FTTH) {
-        return (
-            <Route path="account" element={<AccountDashboard />}>
-                <Route path="appointment" Component={PageAppointment} />
-                {/*
-                        <Route index Component={PageAccueil} />
-                        <Route path="orders" Component={Orders} />
-                        <Route path="devices" Component={ConnectedDevices} />
-                        <Route path="DHCP" Component={DHCP} />
-                        <Route path="ports" Component={Ports} />
-                        */}
-            </Route>
-        )
+    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)) {
+        if (appState.user.membership?.type == MembershipType.FTTH) {
+            if (appState.user.membership?.unetid) {
+                return (
+                    <Route path="account" element={<AccountDashboard appState={appState} />}>
+                        {appointmentRoute}
+                        {settingsRoute}
+                    </Route>
+                )
+            } else {
+                return (
+                    <Route path="account" element={<AccountDashboard appState={appState} />}>
+                        {appointmentRoute}
+                    </Route>
+                )
+            }
+        } else { // WIFI
+            return (
+                <Route path="account" element={<AccountDashboard appState={appState} />}>
+                    {settingsRoute}
+                </Route>
+            )
+        }
     }
 
     else if (appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {

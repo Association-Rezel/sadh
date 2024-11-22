@@ -69,7 +69,7 @@ class PaymentMethod(str, Enum):
 class MembershipInitialization(RezelBaseModel):
     payment_method_first_month: PaymentMethod = Field(...)
     payment_method_deposit: Optional[PaymentMethod] = Field(None)
-    ssid: Optional[str] = Field(None)
+    main_unet_id: Optional[str] = Field(None)
 
 
 class MembershipType(str, Enum):
@@ -106,7 +106,6 @@ class Membership(RezelBaseModel):
         self.ref_prestation = None
         self.cmd_acces_sent = False
         self.cr_mes_sent = False
-        self.unetid = None
         self.documenso_contract_id = None
         self.documenso_president_url = None
 

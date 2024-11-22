@@ -1,56 +1,83 @@
-import { Stack, TextField, Button } from "@mui/material";
+import { Stack, TextField, Button, InputAdornment } from "@mui/material";
 import React from "react";
+import { useState } from 'react';
 import { Api } from "../../utils/Api";
 
 
-export default function SsidResetForm({box, setBox, setRefreshKey}){
+export default function SsidResetForm({ unet, setUnet }) {
+    const [newSSID, setNewSSID] = useState<string>(unet.wifi.ssid.replace("Rezel-", ""));
+    const [error, setError] = useState<String>("");
+    const [info, setInfo] = useState<String>("");
 
-    const [newSSID, setNewSSID] = React.useState<string>("");
+    async function isSSIDValid() {
+        if (newSSID.length < 10 - 6) {
+            return { valid: false, message: "Le SSID doit contenir au moins 10 caractère" };
+        } else if (newSSID.length > 32 - 6) {
+            return { valid: false, message: "Le SSID doit contenir au plus 32 caractère" };
+        } else {
+            const valid = await Api.fetchValidSSID(`Rezel-${newSSID}`);
 
-    function ssidValid(){
-        // TODO : vérifier que le SSID n'a pas déja été modifié dans les 24h
-        return newSSID.length > 10;
+            if (!valid) {
+                console.log("SSID already used");
+                return { valid: false, message: "Le SSID est déjà utilisé" };
+            }
+        }
+        return { valid: true, message: "" };
     }
 
+    async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        setInfo("");
+        setError("");
 
-    function handleReset(e){
-        if (!ssidValid()){
-            alert("Le SSID doit contenir au moins 10 caractères");
-            return;
+        const validSSID = await isSSIDValid();
+        if (!validSSID.valid) {
+            setError(validSSID.message);
+        } else {
+            // copy the box into a new one
+            const newUnet = { ...unet };
+            newUnet.wifi.ssid = `Rezel-${newSSID}`;
+            try {
+                await Api.updateMyUnet(newUnet);
+                setUnet(newUnet);
+                setNewSSID(unet.wifi.ssid.replace("Rezel-", ""));
+                setInfo("Le SSID a bien été modifié, la modification sera effective à 6h du matin");
+            } catch (apiError) {
+                setError(apiError.message || "Une erreur est survenue lors de la mise à jour du SSID");
+            }
         }
-        
-        // copy the box into a new one
-        const newBox = {...box};
-        newBox.SSID = newSSID;
-        setBox(newBox);
-        // Api.updateMyBox(newBox);
-        setRefreshKey((refreshKey) => refreshKey + 1);
     }
 
     return (
-        <div style={{width:"60%"}}>
-            <Stack direction={"column"} 
-                spacing={2}
-                alignItems={"center"}
-                justifyContent={"center"}
-                width={"100%"}>
-                <TextField
-                    required
-                    id="rounded"
-                    label="Saisissez votre nouveau SSID"
-                    variant="outlined"
-                    type="text"
-                    sx={{ width: "100%" }}
-                    onChange={(e) => {
-                        setNewSSID(e.target.value);
-                    }}
-                />
-                <Button variant="contained" 
-                        onClick={(e) => {
-                            handleReset(e);
-                        }
-                    }>Valider</Button>
-            </Stack>
+        <div style={{ width: "60%" }}>
+            <form onSubmit={handleSubmit}>
+                <Stack direction={"column"}
+                    spacing={2}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    width={"100%"}>
+                    <TextField name="password"
+                        required
+                        label="Saisissez votre nouveau SSID"
+                        variant="outlined"
+                        sx={{ width: "100%" }}
+                        InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                Rezel-
+                              </InputAdornment>
+                            ),
+                        }}
+                        value={newSSID}
+                        onChange={(event) => setNewSSID(event.target.value)}
+                        helperText={error ? error : info}
+                        error={!!error}
+                    />
+                    <Button variant="contained" type="submit" disabled={newSSID === unet.wifi.ssid.replace("Rezel-", "")}>
+                        Valider
+                    </Button>
+                </Stack>
+            </form>
         </div>
     )
 }

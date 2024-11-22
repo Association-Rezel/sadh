@@ -1,5 +1,5 @@
-import re
 from datetime import datetime
+import re
 
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -37,6 +37,23 @@ async def _get_box_by_ssid(
     box_dict = await db.boxes.find_one(
         {"unets.wifi.ssid": re.compile(f"^{ssid}$", re.IGNORECASE)}
     )
+
+    if box_dict is None:
+        raise HTTPException(status_code=404, detail="Box not found")
+
+    return Box.model_validate(box_dict)
+
+
+@router.get(
+    "/box/by_unet_id/{main_unet_id}",
+    response_model=Box,
+    dependencies=[must_be_sadh_admin],
+)
+async def _get_box_by_unet_id(
+    main_unet_id: str,
+    db: AsyncIOMotorDatabase = get_db,
+) -> Box:
+    box_dict = await db.boxes.find_one({"main_unet_id": main_unet_id})
 
     if box_dict is None:
         raise HTTPException(status_code=404, detail="Box not found")
