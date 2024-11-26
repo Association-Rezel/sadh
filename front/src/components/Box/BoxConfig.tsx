@@ -213,7 +213,7 @@ function FirewallInfos({ unet, setUnet }) {
                                     <br />
                                     <b>Protocole : </b> {forwarded.protocol.toUpperCase()}
                                     <br />
-                                    <b>Adresse locale du routeur : </b> {forwarded.lan_ip}
+                                    <b>Adresse locale : </b> {forwarded.lan_ip}
                                     <br />
                                     <b>Port local : </b> {forwarded.lan_port}
                                     <br />

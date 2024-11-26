@@ -1,10 +1,10 @@
 import random
 import string
 from datetime import datetime
-from ipaddress import IPv4Address, IPv6Address
+from ipaddress import IPv4Address, IPv4Interface, IPv6Address
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from netaddr import EUI, IPAddress
+from netaddr import EUI
 from xkcdpass import xkcd_password
 
 from back.core.ipam import MongoIpam
@@ -24,13 +24,15 @@ from back.mongodb.log_models import IpamLog
 from back.mongodb.user_models import User
 
 ADH_TP_IPV4_WAN_VLAN = WanVlan(
-    vlan_id=101, ipv4_gateway="137.194.11.254/24", ipv6_gateway=""
+    vlan_id=101, ipv4_gateway=IPv4Address("137.194.11.254"), ipv6_gateway=None
 )
 ADH_EXTE_IPV4_WAN_VLAN = WanVlan(
-    vlan_id=102, ipv4_gateway="195.14.28.254/24", ipv6_gateway=""
+    vlan_id=102,
+    ipv4_gateway=IPv4Address("195.14.28.254"),
+    ipv6_gateway=None,
 )
 ADH_IPV6_WAN_VLAN = WanVlan(
-    vlan_id=103, ipv4_gateway="", ipv6_gateway="2a09:6847:ffff::1/64"
+    vlan_id=103, ipv4_gateway=None, ipv6_gateway=IPv6Address("2a09:6847:ffff::1")
 )
 
 
@@ -55,9 +57,7 @@ async def register_box_for_new_ftth_adh(
     ipam = MongoIpam(db)
 
     available_ipv4 = await ipam.get_available_ipv4(telecom_ip)
-    ipv6, prefix = ipam.compute_ipv6_and_prefix(
-        IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip
-    )
+    ipv6, prefix = ipam.compute_ipv6_and_prefix(available_ipv4.ip.ip, telecom_ip)
 
     unet_id = await _generate_unique_unet_id(db)
 
@@ -72,7 +72,7 @@ async def register_box_for_new_ftth_adh(
                     wan_ipv4=available_ipv4,
                     wan_ipv6=ipv6,
                     ipv6_prefix=prefix,
-                    lan_ipv4=LanIpv4(address="192.168.1.1/24", vlan=1),
+                    lan_ipv4=LanIpv4(address=IPv4Interface("192.168.1.1/24"), vlan=1),
                 ),
                 wifi=WifiDetails(
                     ssid=await generate_unique_ssid(db), psk=generate_password()
@@ -125,11 +125,13 @@ async def register_unet_on_box(
     ipam = MongoIpam(db)
 
     available_ipv4 = await ipam.get_available_ipv4(telecom_ip)
-    ipv6, prefix = ipam.compute_ipv6_and_prefix(
-        IPAddress(available_ipv4.ip.split("/")[0]), telecom_ip
-    )
+    ipv6, prefix = ipam.compute_ipv6_and_prefix(available_ipv4.ip.ip, telecom_ip)
 
     unet_id = await _generate_unique_unet_id(db)
+
+    # To be sure not to have a duplicate local network in the box,
+    # We take the highest vlan number and add 1
+    highest_lan = max([unet.network.lan_ipv4.vlan for unet in box.unets])
 
     new_profile = UnetProfile(
         unet_id=unet_id,
@@ -138,8 +140,8 @@ async def register_unet_on_box(
             wan_ipv6=ipv6,
             ipv6_prefix=prefix,
             lan_ipv4=LanIpv4(
-                address=f"192.168.{len(box.unets) + 1}.1/24",
-                vlan=len(box.unets) + 1,
+                address=IPv4Interface(f"192.168.{highest_lan+1}.1/24"),
+                vlan=highest_lan + 1,
             ),
         ),
         wifi=WifiDetails(ssid=await generate_unique_ssid(db), psk=generate_password()),

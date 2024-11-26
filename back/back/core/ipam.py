@@ -6,13 +6,13 @@ and retrieve available IP ranges and addresses.
 
 """
 
+from ipaddress import IPv4Address, IPv4Interface, IPv6Interface, IPv6Network
 from typing import Tuple
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from netaddr import IPAddress, IPNetwork
 
 from back.mongodb.hermes_models import Box, WanIpv4, WanIpv6
-from back.mongodb.ipam_models import Networks
+from back.mongodb.ipam_models import IPAMNetworks
 
 
 class MongoIpam:
@@ -37,25 +37,26 @@ class MongoIpam:
         # Get the used IPs
         used_ips = await self.__get_all_used_ip_addresses()
         used_ipv4 = [
-            IPAddress(unet_profile.network.wan_ipv4.ip.split("/")[0])
+            unet_profile.network.wan_ipv4.ip.ip
             for box in used_ips
             for unet_profile in box.unets
         ]
 
         # Find the first available IP
         for ipv4network in ipv4_nets:
-            network = IPNetwork(ipv4network.network)
-            for ip in network.iter_hosts():
+            network = ipv4network.network
+            for ip in network.hosts():
                 if ip not in used_ipv4:
                     return WanIpv4(
-                        ip=f"{ip}/{network.prefixlen}", vlan=ipv4network.vlan
+                        ip=IPv4Interface(f"{ip}/{network.prefixlen}"),
+                        vlan=ipv4network.vlan,
                     )
 
         raise ValueError("No available IPv4 address found.")
 
     def compute_ipv6_and_prefix(
-        self, ipv4_addr: IPAddress, from_telecom: bool
-    ) -> Tuple[WanIpv6, str]:
+        self, ipv4_addr: IPv4Address, from_telecom: bool
+    ) -> Tuple[WanIpv6, IPv6Network]:
         """Computes the IPv6 prefix from an IPv4 address from telecom.
         Rules at : https://a.notes.rezel.net/Co4oqxHwQPWwVAMkf6AwHw
 
@@ -70,7 +71,7 @@ class MongoIpam:
             [_, _, _, z] = str(ipv4_addr).split(".")
             prefix = f"2a09:6847:4{int(z):02x}::/48"
             public_ip = f"2a09:6847:ffff::4{int(z):02x}/64"
-        return WanIpv6(ip=public_ip, vlan=103), prefix
+        return WanIpv6(ip=IPv6Interface(public_ip), vlan=103), IPv6Network(prefix)
 
     async def __get_all_used_ip_addresses(self) -> list[Box]:
         """Retrieve all the boxes from the database
@@ -83,11 +84,11 @@ class MongoIpam:
 
         return [Box.model_validate(elt) async for elt in response]
 
-    async def __get_all_networks(self) -> Networks:
+    async def __get_all_networks(self) -> IPAMNetworks:
         """Returns all the IP ranges from the database."""
         response = await self.db.ipam.find_one()
         if response is None:
             raise ValueError("No IP ranges found in the database.")
         del response["_id"]
-        networks = Networks.model_validate(response)
+        networks = IPAMNetworks.model_validate(response)
         return networks
