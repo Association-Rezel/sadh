@@ -1,16 +1,17 @@
-"""
-Defines Models for the database
-"""
+import logging
+from ipaddress import (
+    IPv4Address,
+    IPv4Interface,
+    IPv6Address,
+    IPv6Interface,
+    IPv6Network,
+)
+from typing import Optional, Self
 
-from ipaddress import IPv4Address, IPv6Address
-
-from netaddr import EUI, mac_unix_expanded
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from back.mongodb.base import PortableMac, RezelBaseModel
 
-REGEX_IPV4_CIDR = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
-REGEX_IPV4 = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 REGEX_UNET_ID = r"^[a-z0-9]{8}$"
 
 
@@ -20,7 +21,7 @@ class WanIpv4(RezelBaseModel):
     """
 
     vlan: int
-    ip: str = Field(pattern=REGEX_IPV4_CIDR)
+    ip: IPv4Interface
 
 
 class WanIpv6(RezelBaseModel):
@@ -29,7 +30,7 @@ class WanIpv6(RezelBaseModel):
     """
 
     vlan: int
-    ip: str
+    ip: IPv6Interface
 
 
 class LanIpv4(RezelBaseModel):
@@ -37,7 +38,7 @@ class LanIpv4(RezelBaseModel):
     LanIpv4 Model
     """
 
-    address: str
+    address: IPv4Interface
     vlan: int
 
 
@@ -48,7 +49,7 @@ class UnetNetwork(RezelBaseModel):
 
     wan_ipv4: WanIpv4
     wan_ipv6: WanIpv6
-    ipv6_prefix: str
+    ipv6_prefix: IPv6Network
     lan_ipv4: LanIpv4
 
 
@@ -133,6 +134,34 @@ class UnetProfile(RezelBaseModel):
     firewall: UnetFirewall
     dhcp: Dhcp
 
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        for ipv4_port_forwarding in self.firewall.ipv4_port_forwarding:
+            if ipv4_port_forwarding.lan_ip not in self.network.lan_ipv4.address.network:
+                logging.error("Failed to validate unet profile %s", self.unet_id)
+                logging.error(
+                    "Port forwarding error : %s is not in %s",
+                    ipv4_port_forwarding.lan_ip,
+                    self.network.lan_ipv4.address.network,
+                )
+                raise ValueError(
+                    f"Port forwarding error : {ipv4_port_forwarding.lan_ip} is not in {self.network.lan_ipv4.address.network}"
+                )
+
+        for ipv6_port_opening in self.firewall.ipv6_port_opening:
+            if ipv6_port_opening.ip not in self.network.ipv6_prefix:
+                logging.error("Failed to validate unet profile %s", self.unet_id)
+                logging.error(
+                    "Port opening error : %s is not in %s",
+                    ipv6_port_opening.ip,
+                    self.network.ipv6_prefix,
+                )
+                raise ValueError(
+                    f"Port opening error : {ipv6_port_opening.ip} is not in {self.network.ipv6_prefix}"
+                )
+
+        return self
+
 
 class WanVlan(RezelBaseModel):
     """
@@ -140,8 +169,8 @@ class WanVlan(RezelBaseModel):
     """
 
     vlan_id: int
-    ipv4_gateway: str = Field(pattern=REGEX_IPV4_CIDR + r"|^$")
-    ipv6_gateway: str
+    ipv4_gateway: Optional[IPv4Address] = Field(None)
+    ipv6_gateway: Optional[IPv6Address] = Field(None)
 
 
 class Box(RezelBaseModel):
@@ -154,9 +183,3 @@ class Box(RezelBaseModel):
     mac: PortableMac
     unets: list[UnetProfile]
     wan_vlan: list[WanVlan]
-
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {
-            EUI: lambda mac: str(EUI(mac, dialect=mac_unix_expanded)),
-        }

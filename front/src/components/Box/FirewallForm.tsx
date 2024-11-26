@@ -5,8 +5,9 @@ import AddIcon from '@mui/icons-material/Add';
 
 import PopupForm from "../utils/PopupForm";
 import { Api } from "../../utils/Api";
+import { UnetProfile } from "../../utils/types/hermes_types";
 
-export function AddIPv4RedirectionForm({ unet, setUnet }) {
+export function AddIPv4RedirectionForm({ unet, setUnet }: { unet: UnetProfile, setUnet: (value: UnetProfile) => void }) {
     const [errors, setErrors] = useState<{ [key: string]: string }>({}); // Erreurs du formulaire
 
     const isValidName = (name: string) => {
@@ -48,6 +49,12 @@ export function AddIPv4RedirectionForm({ unet, setUnet }) {
         const lan_ip = data.get('lan_ip') as string;
         if (!lan_ip) {
             setErrors((prev) => ({ ...prev, lan_ip: 'L\'adresse IP locale est obligatoire' }));
+            return false;
+        }
+
+        if (lan_ip.slice(0, 9) !== unet.network.lan_ipv4.address.slice(0, 9)) {
+            const network_address = unet.network.lan_ipv4.address.replace(/192\.168\.(\d+).1+\/24+/, '192.168.$1.0/24');
+            setErrors((prev) => ({ ...prev, lan_ip: 'L\'adresse IP locale doit être dans réseau ' + network_address }));
             return false;
         }
 
@@ -154,7 +161,7 @@ export function AddIPv4RedirectionForm({ unet, setUnet }) {
     );
 }
 
-export function AddIPv6OpeningForm({ unet, setUnet }) {
+export function AddIPv6OpeningForm({ unet, setUnet }: { unet: UnetProfile, setUnet: (value: UnetProfile) => void }) {
     const [errors, setErrors] = useState<{ [key: string]: string }>({}); // Erreurs du formulaire
 
     const isValidName = (name: string) => {
