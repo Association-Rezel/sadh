@@ -1,11 +1,10 @@
 import { useState, useRef } from "react";
-import { FormControl, Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-import { Form } from "react-router-dom";
+import { FormControl, Button, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress } from "@mui/material";
 
 interface PopupFormProps {
     children: React.ReactNode;
     buttonText: string;
-    onSubmit: (formData: FormData) => boolean;
+    onSubmit: (data: FormData) => Promise<boolean>;
     Title?: string;
     buttonColor?: "primary" | "secondary" | "error" | "warning" | "info" | "success";
     buttonSize?: "small" | "medium" | "large";
@@ -26,6 +25,7 @@ export default function PopupForm({
     disabled = false,
 }: PopupFormProps) {
     const [openDialog, setOpenDialog] = useState(false);
+    const [loading, setLoading] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
     const handleOpenDialog = () => {
@@ -36,14 +36,17 @@ export default function PopupForm({
         setOpenDialog(false);
     };
 
-    const handleSubmit = (e: React.FormEvent = null) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         if (e) {
             e.preventDefault();
         }
+        setLoading(true);
 
         const formData = new FormData(formRef.current);
 
-        if (onSubmit(formData)) {
+        let valid = await onSubmit(formData);
+        setLoading(false);
+        if (valid) {
             handleCloseDialog();
         }
     }
@@ -68,8 +71,8 @@ export default function PopupForm({
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleCloseDialog}>Annuler</Button>
-                        <Button type="submit" autoFocus>
-                            Confirmer
+                        <Button type="submit" disabled={loading}>
+                            {loading ? <CircularProgress size="2em" /> : "Confirmer"}
                         </Button>
                     </DialogActions>
                 </FormControl>
