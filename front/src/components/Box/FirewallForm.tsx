@@ -23,7 +23,7 @@ export function AddIPv4RedirectionForm({ unet, setUnet }: { unet: UnetProfile, s
         return { valid: true };
     }
 
-    const addRedirection = (data: FormData) => {
+    const addRedirection = async (data: FormData) => {
         // Réinitialiser les erreurs du formulaire
         setErrors({});
 
@@ -66,7 +66,7 @@ export function AddIPv4RedirectionForm({ unet, setUnet }: { unet: UnetProfile, s
         }
 
         // copy the box into a new one
-        const newUnet = { ...unet };
+        const newUnet = structuredClone(unet);
         newUnet.firewall.ipv4_port_forwarding.push({
             name: data.get('name') as string,
             desc: data.get('desc') as string,
@@ -75,9 +75,14 @@ export function AddIPv4RedirectionForm({ unet, setUnet }: { unet: UnetProfile, s
             lan_ip: lan_ip,
             lan_port: lan_port
         });
-        Api.updateMyUnet(newUnet).then(setUnet).catch((apiError) => {
-            alert(apiError.message || "Une erreur est survenue lors de la mise à jour de la redirection de port");
-        });
+        
+        try {
+            const unetResponse = await Api.updateMyUnet(newUnet);
+            setUnet(unetResponse);
+        } catch (apiError) {
+            setErrors({ name: apiError.message || "Une erreur est survenue lors de l'ajout de la redirection de port" });
+            return false;
+        }
 
         return true;
     }
@@ -177,7 +182,7 @@ export function AddIPv6OpeningForm({ unet, setUnet }: { unet: UnetProfile, setUn
         return { valid: true };
     }
 
-    const addOpening = (data: FormData) => {
+    const addOpening = async (data: FormData) => {
         // Réinitialiser les erreurs du formulaire
         setErrors({});
 
@@ -209,7 +214,7 @@ export function AddIPv6OpeningForm({ unet, setUnet }: { unet: UnetProfile, setUn
         }
 
         // copy the box into a new one
-        const newUnet = { ...unet };
+        const newUnet = structuredClone(unet);
         newUnet.firewall.ipv6_port_opening.push({
             name: data.get('name') as string,
             desc: data.get('desc') as string,
@@ -218,9 +223,13 @@ export function AddIPv6OpeningForm({ unet, setUnet }: { unet: UnetProfile, setUn
             port: port
         });
 
-        Api.updateMyUnet(newUnet).then(setUnet).catch((apiError) => {
-            alert(apiError.message || "Une erreur est survenue lors de la mise à jour de l'ouverture de port");
-        });
+        try {
+            const unetResponse = await Api.updateMyUnet(newUnet);
+            setUnet(unetResponse);
+        } catch (apiError) {
+            setErrors({ name: apiError.message || "Une erreur est survenue lors de l'ajout de l'ouverture de port" });
+            return false;
+        }
 
         return true;
     }

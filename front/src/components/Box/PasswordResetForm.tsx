@@ -1,4 +1,4 @@
-import { Stack, TextField, Button } from "@mui/material";
+import { Stack, TextField, Button, CircularProgress } from "@mui/material";
 import React from "react";
 import { useState } from 'react';
 import { Api } from "../../utils/Api";
@@ -8,6 +8,7 @@ function PasswordResetForm({ unet, setUnet }) {
   const [password, setPassword] = useState<String>("");
   const [error, setError] = useState<String>("");
   const [info, setInfo] = useState<String>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   function passwordValid() {
     return password.length >= 10;
@@ -18,6 +19,7 @@ function PasswordResetForm({ unet, setUnet }) {
     event.preventDefault();
     setInfo("");
     setError("");
+    setLoading(true);
 
     if (!passwordValid()) {
       setError("Le mot de passe doit contenir au moins 10 caractères");
@@ -25,17 +27,18 @@ function PasswordResetForm({ unet, setUnet }) {
     }
 
     // copy the box into a new one
-    const newUnet = { ...unet };
+    const newUnet = structuredClone(unet);
     newUnet.wifi.psk = password;
     // Api.updateMyUnet(newUnet).then(setUnet);
     try {
-      await Api.updateMyUnet(newUnet);
-      setUnet(newUnet);
+      const unetResponse = await Api.updateMyUnet(newUnet);
+      setUnet(unetResponse);
       setPassword("");
       setInfo("Le mot de passe a bien été modifié, la modification sera effective à 6h du matin");
     } catch (apiError) {
       setError(apiError.message || "Une erreur est survenue lors de la mise à jour du SSID");
     }
+    setLoading(false);
   }
 
   return (
@@ -56,7 +59,9 @@ function PasswordResetForm({ unet, setUnet }) {
             helperText={error ? error : info}
             error={!!error}
           />
-          <Button variant="contained" type="submit" disabled={!password}>Valider</Button>
+          <Button variant="contained" type="submit" disabled={!password || loading}>
+            {loading ? <CircularProgress size="2em" /> : "Valider"}
+          </Button>
         </Stack>
       </form>
     </div>

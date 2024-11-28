@@ -80,7 +80,7 @@ export default function BoxConfigurationPage() {
             >
                 <FirewallInfos unet={unet} setUnet={setUnet} />
             </Stack>
-            {/*
+            
             <Divider />
             <Stack
                 direction={"column"}
@@ -91,7 +91,7 @@ export default function BoxConfigurationPage() {
             >
                 <DNSServers unet={unet} setUnet={setUnet} />
             </Stack>
-            */}
+           
         </Stack >
     );
 }
@@ -174,7 +174,7 @@ function SSIDHelper() {
 
 function FirewallInfos({ unet, setUnet }) {
     const deleteRedirection = (type: 'ipv4' | 'ipv6', index: number) => {
-        const newUnet = { ...unet };
+        const newUnet = structuredClone(unet);
 
         if (type === 'ipv4') {
             newUnet.firewall.ipv4_port_forwarding.splice(index, 1);
@@ -276,7 +276,7 @@ function FirewallInfos({ unet, setUnet }) {
 
 function DNSServers({ unet, setUnet }) {
     const deleteDNS = (type: 'ipv4' | 'ipv6', index: number) => {
-        const newUnet = { ...unet };
+        const newUnet = structuredClone(unet);
 
         if (type === 'ipv4') {
             newUnet.dhcp.dns_servers.ipv4.splice(index, 1);
@@ -292,6 +292,8 @@ function DNSServers({ unet, setUnet }) {
     return (
         <div style={{ textAlign: 'left', width: '60%' }}>
             <h2>Serveurs DNS</h2>
+            <br />
+            <p><i>Serveurs DNS distribués à vos appareils par le serveur DHCP de la box.</i></p>
             <br />
             <p><i>Toute modification sera effective à 6h du matin</i></p>
             <br />
@@ -309,7 +311,7 @@ function DNSServers({ unet, setUnet }) {
                                     <ConfirmableButton
                                         variant="outlined"
                                         onConfirm={() => deleteDNS('ipv4', index)}
-                                        confirmationText="Êtes-vous sûr de vouloir supprimer cette redirection de port ?"
+                                        confirmationText="Êtes-vous sûr de vouloir supprimer ce serveur DNS ?"
                                         startIcon={<DeleteIcon />}
                                     >
                                         Supprimer

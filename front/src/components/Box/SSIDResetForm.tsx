@@ -1,4 +1,4 @@
-import { Stack, TextField, Button, InputAdornment } from "@mui/material";
+import { Stack, TextField, Button, InputAdornment, CircularProgress } from "@mui/material";
 import React from "react";
 import { useState } from 'react';
 import { Api } from "../../utils/Api";
@@ -8,6 +8,7 @@ export default function SsidResetForm({ unet, setUnet }) {
     const [newSSID, setNewSSID] = useState<string>(unet.wifi.ssid.replace("Rezel-", ""));
     const [error, setError] = useState<String>("");
     const [info, setInfo] = useState<String>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     async function isSSIDValid() {
         if (newSSID.length < 10 - 6) {
@@ -29,23 +30,25 @@ export default function SsidResetForm({ unet, setUnet }) {
         event.preventDefault();
         setInfo("");
         setError("");
+        setLoading(true);
 
         const validSSID = await isSSIDValid();
         if (!validSSID.valid) {
             setError(validSSID.message);
         } else {
             // copy the box into a new one
-            const newUnet = { ...unet };
+            const newUnet = structuredClone(unet);
             newUnet.wifi.ssid = `Rezel-${newSSID}`;
             try {
-                await Api.updateMyUnet(newUnet);
-                setUnet(newUnet);
-                setNewSSID(unet.wifi.ssid.replace("Rezel-", ""));
+                const unetResponse = await Api.updateMyUnet(newUnet);
+                setNewSSID(unetResponse.wifi.ssid.replace("Rezel-", ""));
+                setUnet(unetResponse);
                 setInfo("Le SSID a bien été modifié, la modification sera effective à 6h du matin");
             } catch (apiError) {
                 setError(apiError.message || "Une erreur est survenue lors de la mise à jour du SSID");
             }
         }
+        setLoading(false);
     }
 
     return (
@@ -73,8 +76,8 @@ export default function SsidResetForm({ unet, setUnet }) {
                         helperText={error ? error : info}
                         error={!!error}
                     />
-                    <Button variant="contained" type="submit" disabled={newSSID === unet.wifi.ssid.replace("Rezel-", "")}>
-                        Valider
+                    <Button variant="contained" type="submit" disabled={newSSID === unet.wifi.ssid.replace("Rezel-", "") || loading}>
+                        {loading ? <CircularProgress size="2em" /> : "Valider"}
                     </Button>
                 </Stack>
             </form>

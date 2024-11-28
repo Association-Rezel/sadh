@@ -10,7 +10,7 @@ import { UnetProfile } from "../../utils/types/hermes_types";
 export function AddDNSForm({ unet, setUnet, type }: { unet: UnetProfile, setUnet: (value: UnetProfile) => void, type: 'ipv4' | 'ipv6' }) {
     const [errors, setErrors] = useState<{ [key: string]: string }>({}); // Erreurs du formulaire
 
-    const addDNS = (data: FormData) => {
+    const addDNS = async (data: FormData) => {
         // Réinitialiser les erreurs du formulaire
         setErrors({});
 
@@ -22,7 +22,7 @@ export function AddDNSForm({ unet, setUnet, type }: { unet: UnetProfile, setUnet
         }
 
         // copy the box into a new one
-        const newUnet = { ...unet };
+        const newUnet = structuredClone(unet);
         if (type == "ipv4") {
             newUnet.dhcp.dns_servers.ipv4.push(ip);
         } else {
@@ -30,7 +30,8 @@ export function AddDNSForm({ unet, setUnet, type }: { unet: UnetProfile, setUnet
         }
 
         try {
-            Api.updateMyUnet(newUnet).then(setUnet);
+            const unetResponse = await Api.updateMyUnet(newUnet);
+            setUnet(unetResponse);
         } catch (apiError) {
             setErrors({ ip: apiError.message || "Une erreur est survenue lors de la mise à jour du serveur DNS" });
             return false;
