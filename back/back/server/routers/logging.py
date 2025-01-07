@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import List
 
-from common_models.log_models import IpamLog, IpamLogBucket
-from common_models.user_models import User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.core.ipam_logging import create_log
 from back.mongodb.db import get_db
+from back.mongodb.log_models import IpamLog, IpamLogBucket
+from back.mongodb.user_models import User
 from back.server.dependencies import get_user_me, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 

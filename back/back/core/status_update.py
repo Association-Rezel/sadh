@@ -1,14 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
 
-from common_models.base import RezelBaseModel
-from common_models.hermes_models import Box
-from common_models.user_models import (
-    DepositStatus,
-    MembershipStatus,
-    MembershipType,
-    User,
-)
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
@@ -23,6 +15,14 @@ from back.messaging.mails import (
     send_mail_no_more_wifi_on_box,
 )
 from back.messaging.matrix import send_matrix_message
+from back.mongodb.base import RezelBaseModel
+from back.mongodb.hermes_models import Box
+from back.mongodb.user_models import (
+    DepositStatus,
+    MembershipStatus,
+    MembershipType,
+    User,
+)
 
 
 class StatusUpdateEffect:

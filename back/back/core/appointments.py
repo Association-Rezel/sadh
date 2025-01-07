@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from common_models.user_models import AppointmentSlot
+from back.mongodb.user_models import AppointmentSlot
 
 
 def get_week_appointment_slots(

@@ -1,7 +1,5 @@
 import uuid
 
-from common_models.hermes_models import Box
-from common_models.user_models import User
 from fastapi import Depends, Header, HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from netaddr import EUI, mac_unix_expanded
@@ -16,6 +14,8 @@ from back.core.zitadel import (
 )
 from back.env import ENV
 from back.mongodb.db import get_db
+from back.mongodb.hermes_models import Box
+from back.mongodb.user_models import User
 
 
 @Depends
