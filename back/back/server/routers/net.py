@@ -1,9 +1,9 @@
 import requests
+from common_models.user_models import User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.env import ENV
 from back.mongodb.db import get_db
-from back.mongodb.user_models import User
 from back.server.dependencies import get_user_me, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
