@@ -1,12 +1,8 @@
-# Index par défaut
---index-url https://pypi.org/simple
-# Index personnalisé (common-models)
---extra-index-url https://gitlab.fai.rezel.net/api/v4/projects/56/packages/pypi/simple
 uvicorn==0.32.0
 fastapi==0.115.5
-pydantic==2.9.2
 psycopg2-binary==2.9.10
 python-dotenv==1.0.1
+pydantic==2.9.2
 matrix-nio==0.25.2
 requests==2.32.3
 fillpdf==0.7.3
@@ -21,4 +17,3 @@ Jinja2==3.1.4
 pytz==2024.2
 motor==3.6.0
 babel==2.16.0
-common-models>=0.1.0

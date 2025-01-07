@@ -4,9 +4,9 @@ from typing import Dict
 import requests
 from authlib.jose import jwt
 from authlib.oauth2.rfc7662 import IntrospectTokenValidator
-from common_models.base import RezelBaseModel
 
 from back.env import ENV
+from back.mongodb.base import RezelBaseModel
 
 
 class ValidatorError(Exception):

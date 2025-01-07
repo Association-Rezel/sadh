@@ -3,7 +3,13 @@ import string
 from datetime import datetime
 from ipaddress import IPv4Address, IPv4Interface, IPv6Address
 
-from common_models.hermes_models import (
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from netaddr import EUI
+from xkcdpass import xkcd_password
+
+from back.core.ipam import MongoIpam
+from back.core.ipam_logging import create_log
+from back.mongodb.hermes_models import (
     Box,
     Dhcp,
     DnsServers,
@@ -14,14 +20,8 @@ from common_models.hermes_models import (
     WanVlan,
     WifiDetails,
 )
-from common_models.log_models import IpamLog
-from common_models.user_models import User
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from netaddr import EUI
-from xkcdpass import xkcd_password
-
-from back.core.ipam import MongoIpam
-from back.core.ipam_logging import create_log
+from back.mongodb.log_models import IpamLog
+from back.mongodb.user_models import User
 
 ADH_TP_IPV4_WAN_VLAN = WanVlan(
     vlan_id=101, ipv4_gateway=IPv4Address("137.194.11.254"), ipv6_gateway=None

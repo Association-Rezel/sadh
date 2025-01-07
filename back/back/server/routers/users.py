@@ -2,19 +2,6 @@
 
 from datetime import datetime
 
-from common_models.hermes_models import Box, UnetProfile
-from common_models.log_models import IpamLog
-from common_models.user_models import (
-    AppointmentSlot,
-    DepositStatus,
-    EquipmentStatus,
-    MembershipRequest,
-    MembershipStatus,
-    MembershipType,
-    MembershipUpdate,
-    User,
-    UserUpdate,
-)
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
@@ -41,7 +28,20 @@ from back.core.pon import (
 from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
-from back.mongodb.pon_com_models import ONTInfo, RegisterONT
+from back.mongodb.hermes_models import Box, UnetProfile
+from back.mongodb.log_models import IpamLog
+from back.mongodb.pon_models import ONTInfo, RegisterONT
+from back.mongodb.user_models import (
+    AppointmentSlot,
+    DepositStatus,
+    EquipmentStatus,
+    MembershipRequest,
+    MembershipStatus,
+    MembershipType,
+    MembershipUpdate,
+    User,
+    UserUpdate,
+)
 from back.server.dependencies import (
     get_box,
     get_box_from_user_id,

@@ -1,12 +1,11 @@
 import re
 from typing import Tuple
 
-from common_models.hermes_models import Box
-from common_models.pon_models import ONT, PM, PON
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from netaddr import EUI, mac_unix_expanded
 
-from back.mongodb.pon_com_models import ONTInfo
+from back.mongodb.hermes_models import Box
+from back.mongodb.pon_models import ONT, PM, PON, ONTInfo
 
 
 def get_first_free_port(pm: PM) -> Tuple[PON, int]:

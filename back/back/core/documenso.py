@@ -1,11 +1,11 @@
 from typing import Optional, Tuple
 
 import requests
-from common_models.user_models import Address, MembershipType, User
 
 from back.core.geo import get_postal_address
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
+from back.mongodb.user_models import Address, MembershipType, User
 
 
 def _get_template(
