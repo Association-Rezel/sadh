@@ -1,6 +1,9 @@
-from datetime import datetime
 import re
+from datetime import datetime
 
+from common_models.hermes_models import Box
+from common_models.log_models import IpamLog
+from common_models.user_models import User
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
@@ -15,10 +18,7 @@ from back.core.pon import (
 )
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
-from back.mongodb.hermes_models import Box
-from back.mongodb.log_models import IpamLog
-from back.mongodb.pon_models import ONTInfo
-from back.mongodb.user_models import User
+from back.mongodb.pon_com_models import ONTInfo
 from back.server.dependencies import get_box_from_mac_str, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 

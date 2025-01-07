@@ -1,11 +1,11 @@
 import requests
+from common_models.user_models import MembershipType, User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 from requests.exceptions import SSLError
 
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.user_models import MembershipType, User
 
 TYPE_ADHERENT_WIFI = "5"
 TYPE_ADHERENT_FTTH = "4"
