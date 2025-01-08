@@ -1,3 +1,4 @@
+from common_models.user_models import User
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
@@ -5,7 +6,6 @@ from pymongo import ReturnDocument
 from back.core.documenso import is_document_signed_by_adherent
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
-from back.mongodb.user_models import User
 from back.server.dependencies import get_user_from_user_id, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 

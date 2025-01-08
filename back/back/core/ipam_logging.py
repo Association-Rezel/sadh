@@ -1,10 +1,10 @@
 import uuid
 from datetime import timedelta
 
+from common_models.log_models import IpamLog
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.log_models import IpamLog
 
 
 async def create_log(

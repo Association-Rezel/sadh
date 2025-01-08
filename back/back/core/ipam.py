@@ -9,10 +9,9 @@ and retrieve available IP ranges and addresses.
 from ipaddress import IPv4Address, IPv4Interface, IPv6Interface, IPv6Network
 from typing import Tuple
 
+from common_models.hermes_models import Box, WanIpv4, WanIpv6
+from common_models.ipam_models import IPAMNetworks
 from motor.motor_asyncio import AsyncIOMotorDatabase
-
-from back.mongodb.hermes_models import Box, WanIpv4, WanIpv6
-from back.mongodb.ipam_models import IPAMNetworks
 
 
 class MongoIpam:

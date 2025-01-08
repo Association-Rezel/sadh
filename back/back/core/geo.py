@@ -1,4 +1,4 @@
-from back.mongodb.user_models import Residence
+from common_models.user_models import Residence
 
 
 def get_postal_address(residence: Residence) -> str:
