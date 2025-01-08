@@ -1,8 +1,8 @@
 from datetime import datetime
 
+from common_models.user_models import AppointmentSlot
 
 from back.core.appointments import get_week_appointment_slots
-from back.mongodb.user_models import AppointmentSlot
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("appointments")

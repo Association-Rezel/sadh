@@ -1,9 +1,7 @@
-from typing import List
-
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.mongodb.db import get_db
-from back.mongodb.pon_models import PMInfo
+from back.mongodb.pon_com_models import PMInfo
 from back.server.dependencies import must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 

@@ -4,7 +4,7 @@
         "**/.*_cache": true,
         "**/.venv": true
     },
-    "python.defaultInterpreterPath": "./.venv/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder}/back/.venv/bin/python",
     "python.linting.mypyEnabled": true,
     "[python]": {
         "editor.formatOnSave": true,
