@@ -6,7 +6,6 @@ export interface OperationalData {
     estimation_distance: string;
     last_operational_up: number;
     last_fetched: number;
-    fetched_on_last_batch: boolean;
 }
 
 export interface ONTInfo {
