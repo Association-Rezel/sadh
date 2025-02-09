@@ -13,7 +13,7 @@ import { useContext } from "react";
 import UserComponent from "./components/AdminDashboard/User/User";
 import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
-import PageSettings from "./pages/account/settings/PageSettings";
+import PageSettings from "./pages/account/PageNetworkSettings";
 import LoginPage from "./pages/auth/LoginPage";
 import { ZitadelContextWrapper } from "./utils/ZitadelContext";
 import LoginCallback from "./pages/auth/LoginCallback";
@@ -21,6 +21,8 @@ import LogoutPage from "./pages/auth/LogoutPage";
 import { CircularProgress } from "@mui/material";
 import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
+import PageNetworkSettings from "./pages/account/PageNetworkSettings";
+import PartialRefunds from "./components/PartialRefunds/PartialRefunds";
 
 function AppRouter() {
     const { appState } = useContext(AppStateContext);
@@ -51,6 +53,7 @@ function AppRouter() {
                         <Route path="users/:user_id" Component={UserComponent} />
                         <Route path="olt-debug" Component={OLTDebug} />
                         <Route path="logs-ipam" Component={IpamLogs} />
+                        <Route path="partial-refunds" Component={PartialRefunds} />
                     </Route>
                 )}
 
@@ -76,8 +79,11 @@ function accountRoute({ appState }: { appState: AppState }) {
     const appointmentRoute = (
         <Route path="appointment" Component={PageAppointment} />
     );
-    const settingsRoute = (
-        <Route path="settings" element={<PageSettings />} />
+    const networkSettingsRoute = (
+        <Route path="network" element={<PageNetworkSettings />} />
+    );
+    const bankSettingsRoute = (
+        <Route path="bank-settings" element={<PageNetworkSettings />} />
     );
 
     if (!appState.user) {
@@ -89,7 +95,8 @@ function accountRoute({ appState }: { appState: AppState }) {
                 return (
                     <Route path="account" element={<AccountDashboard appState={appState} />}>
                         {appointmentRoute}
-                        {settingsRoute}
+                        {networkSettingsRoute}
+                        {bankSettingsRoute}
                     </Route>
                 )
             } else {
@@ -102,7 +109,7 @@ function accountRoute({ appState }: { appState: AppState }) {
         } else { // WIFI
             return (
                 <Route path="account" element={<AccountDashboard appState={appState} />}>
-                    {settingsRoute}
+                    {networkSettingsRoute}
                 </Route>
             )
         }

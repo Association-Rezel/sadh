@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Awaitable, Callable
+from datetime import datetime
 
 from common_models.base import RezelBaseModel
 from common_models.hermes_models import Box
@@ -320,6 +321,10 @@ class StatusUpdateManager:
                         db, user, MembershipStatus.ACTIVE
                     ),
                 ),
+                StatusUpdateEffect(
+                    "Mise à jour de la date de début d'adhésion à aujourd'hui",
+                    _set_adhesion_date_today,
+                ),
             ],
         )
 
@@ -508,3 +513,14 @@ async def _delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) ->
         {"_id": str(user.id)},
         {"$unset": {"membership.unetid": ""}},
     )
+
+
+async def _set_adhesion_date_today(user: User, db: AsyncIOMotorDatabase) -> User:
+    if not user.membership:
+        raise ValueError("User has no membership")
+    user.membership.start_date = datetime.now()
+    await db.users.update_one(
+        {"_id": str(user.id)},
+        {"$set": {"membership.start_date": user.membership.start_date}},
+    )
+    return user

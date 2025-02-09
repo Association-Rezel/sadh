@@ -1,5 +1,10 @@
+from datetime import datetime
+
+import pytz
 import requests
+from common_models.hermes_models import Box, UnetProfile
 from common_models.user_models import User
+from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from back.env import ENV
@@ -73,3 +78,101 @@ def get_all_ont_summary():
         return f"Charon Error {r.status_code} : {r.text}"
 
     return r.text
+
+
+@router.post(
+    "/transfer-unet/{unet_id}/to/{mac}",
+    response_model=UnetProfile,
+    dependencies=[must_be_sadh_admin],
+)
+async def _transfer_unet(
+    unet_id: str,
+    mac: str,
+    db: AsyncIOMotorDatabase = get_db,
+):
+    """Transfer a unet to a new box."""
+
+    current_box = await db.boxes.find_one({"unets.unet_id": unet_id})
+    if not current_box:
+        raise HTTPException(
+            status_code=404, detail="No current box found for this unet"
+        )
+    current_box = Box.model_validate(current_box)
+
+    unet = next((unet for unet in current_box.unets if unet.unet_id == unet_id))
+
+    if current_box.main_unet_id == unet_id:
+        raise HTTPException(
+            status_code=400, detail="Cannot transfer the main unet of a box"
+        )
+
+    new_box = await db.boxes.find_one({"mac": str(mac)})
+    if not new_box:
+        raise HTTPException(status_code=404, detail="No box found with this mac")
+    new_box = Box.model_validate(new_box)
+
+    if next((unet for unet in new_box.unets if unet.unet_id == unet_id), None):
+        raise HTTPException(
+            status_code=400, detail="Unet already exists in the new box"
+        )
+
+    # Transfer the unet to the new box
+    await db.boxes.find_one_and_update(
+        {"mac": str(current_box.mac)},
+        {"$pull": {"unets": {"unet_id": unet_id}}},
+    )
+
+    await db.boxes.find_one_and_update(
+        {"mac": str(mac)},
+        {"$push": {"unets": unet.model_dump(mode="json")}},
+    )
+
+    ### Update attached wifi adherents
+
+    # Find the users related to the transfer
+    wifi_user = User.model_validate(
+        await db.users.find_one({"membership.unetid": unet_id})
+    )
+    original_ftth_user = User.model_validate(
+        await db.users.find_one({"membership.unetid": current_box.main_unet_id})
+    )
+    new_ftth_user = User.model_validate(
+        await db.users.find_one({"membership.unetid": new_box.main_unet_id})
+    )
+
+    # Update the original FTTH user
+    if (
+        original_ftth_user.membership
+        and original_ftth_user.membership.attached_wifi_adherents
+    ):
+        await db.users.find_one_and_update(
+            {"_id": str(original_ftth_user.id)},
+            {
+                "$set": {
+                    "membership.attached_wifi_adherents.$[elem].to_date": datetime.now(
+                        tz=pytz.timezone("Europe/Paris")
+                    ).timestamp(),
+                    "membership.attached_wifi_adherents.$[elem].comment": f"Transfered to box {mac}",
+                }
+            },
+            array_filters=[{"elem.user_id": str(wifi_user.id), "elem.to_date": None}],
+        )
+
+    # Update the new FTTH user
+    if new_ftth_user.membership:
+        await db.users.find_one_and_update(
+            {"_id": str(new_ftth_user.id)},
+            {
+                "$push": {
+                    "membership.attached_wifi_adherents": {
+                        "user_id": str(wifi_user.id),
+                        "from_date": datetime.now(
+                            tz=pytz.timezone("Europe/Paris")
+                        ).timestamp(),
+                        "comment": f"Transfered from box {current_box.mac}",
+                    }
+                }
+            },
+        )
+
+    return unet

@@ -14,4 +14,4 @@ def get_postal_address(residence: Residence) -> str:
     if residence is Residence.TWENTY_CAMPUS:
         return "44 Cr Pierre Vasseur, 91120 Palaiseau"
 
-    return ValueError("Unknown residence")
+    raise ValueError("Unknown residence")

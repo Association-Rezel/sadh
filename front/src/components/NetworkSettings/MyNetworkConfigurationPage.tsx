@@ -20,7 +20,7 @@ import ImgUrl from "/src/ressources/img/router.png"
 import { UnetProfile } from "../../utils/types/hermes_types";
 
 
-export default function BoxConfigurationPage() {
+export default function MyNetworkConfigurationPage() {
     const { appState } = useContext(AppStateContext);
 
     const [unet, setUnet] = useState<UnetProfile | null>(null);
@@ -52,7 +52,7 @@ export default function BoxConfigurationPage() {
                     justifyContent="center"
                     width="100%"
                 >
-                    <h3>Modifier le SSID de la Box <SSIDHelper /></h3>
+                    <h3>Modifier le SSID <SSIDHelper /></h3>
 
                     <SsidResetForm
                         unet={unet}
@@ -218,6 +218,7 @@ function FirewallInfos({ unet, setUnet }) {
                                     <b>Port local : </b> {forwarded.lan_port}
                                     <br />
                                     <ConfirmableButton
+                                        buttonColor="error"
                                         variant="outlined"
                                         onConfirm={() => deleteRedirection('ipv4', index)}
                                         confirmationText="Êtes-vous sûr de vouloir supprimer cette redirection de port ?"
@@ -255,6 +256,7 @@ function FirewallInfos({ unet, setUnet }) {
                                     <b>Port ouvert : </b> {opened.port}
                                     <br />
                                     <ConfirmableButton
+                                        buttonColor="error"
                                         variant="outlined"
                                         onConfirm={() => deleteRedirection('ipv6', index)}
                                         confirmationText="Êtes-vous sûr de vouloir supprimer cette ouverture de port ?"
@@ -309,6 +311,7 @@ function DNSServers({ unet, setUnet }) {
                                     <b>Serveur {index + 1} : </b> {server}
                                     &nbsp;&nbsp;
                                     <ConfirmableButton
+                                        buttonColor="error"
                                         variant="outlined"
                                         onConfirm={() => deleteDNS('ipv4', index)}
                                         confirmationText="Êtes-vous sûr de vouloir supprimer ce serveur DNS ?"
@@ -335,6 +338,7 @@ function DNSServers({ unet, setUnet }) {
                                     <b>Serveur {index + 1} : </b> {server}
                                     &nbsp;&nbsp;
                                     <ConfirmableButton
+                                        buttonColor="error"
                                         variant="outlined"
                                         onConfirm={() => deleteDNS('ipv6', index)}
                                         confirmationText="Êtes-vous sûr de vouloir supprimer cette redirection de port ?"

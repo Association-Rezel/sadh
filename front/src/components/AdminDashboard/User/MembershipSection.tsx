@@ -15,8 +15,8 @@ import {
     CircularProgress,
     Tooltip,
 } from "@mui/material";
-import { useState } from "react";
-import { Controller } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import EditIcon from '@mui/icons-material/Edit';
 import { Api } from "../../../utils/Api";
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -26,6 +26,9 @@ import MembershipTypeChip from "../../utils/Utils";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Config } from "../../../utils/Config";
 import { TransferWithinAStation } from "@mui/icons-material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 interface MembershipSectionProps {
     setUser: (user: User) => void;
@@ -44,6 +47,7 @@ export default function MembershipSection({
 
     const [manualStatusUpdate, setManualStatusUpdate] = useState<boolean>(false);
     const [openDialogWarningManualStatusUpdate, setOpenDialogWarningManualStatusUpdate] = useState<boolean>(false);
+    const [confirmedStartDateEdit, setConfirmedStartDateEdit] = useState<boolean>(false);
     const [openDialogTransferMembership, setOpenDialogTransferMembership] = useState<boolean>(false);
     const [recreateContractLoading, setRecreateContractLoading] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -71,6 +75,23 @@ export default function MembershipSection({
         });
     }
 
+    const startDateForm = useForm({
+        defaultValues: {
+            start: user.membership ? dayjs(user.membership.start_date) : null as Dayjs
+        }
+    });
+
+    useEffect(() => {
+        if (user?.membership)
+            startDateForm.reset({ start: dayjs(user.membership.start_date) })
+    }, [user])
+
+    const onEditStartDate = () => {
+        const date: Date = startDateForm.getValues("start").toDate();
+        Api.updateMembership(user.id, { start_date: date }).then(() => {
+            setUser({ ...user, membership: { ...user.membership, start_date: date } });
+        }).catch(alert);
+    }
 
     return (
         <div className="mt-10 max-w-xs">
@@ -91,6 +112,7 @@ export default function MembershipSection({
                             alert(e);
                         });
                     }}
+                    type="iconbutton"
                 >
                     <DeleteIcon />
                 </ConfirmableButton>
@@ -113,6 +135,45 @@ export default function MembershipSection({
                 <div className="flex flex-col gap-3 justify-items-start">
                     <span><strong>Adresse</strong> : {user?.membership.address.appartement_id} - {user?.membership.address.residence}</span>
                     <div className="grid grid-cols-3 gap-y-6">
+                        {user.membership.type === MembershipType.FTTH && (
+                            <>
+                                <strong>Début de l'adhésion</strong>
+                                <div className="flex flex-row gap-4 col-span-2">
+                                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
+                                        <Controller
+                                            name="start"
+                                            control={startDateForm.control}
+                                            render={({ field }) => (
+                                                <DatePicker
+                                                    {...field}
+                                                    slotProps={{ textField: { variant: "standard" } }}
+                                                    disabled={!confirmedStartDateEdit}
+                                                />
+                                            )}
+                                        />
+                                    </LocalizationProvider>
+                                    <ConfirmableButton
+                                        confirmationText={
+                                            <>Modifier la date de début de l'adhésion aura pour
+                                                effet de supprimer et de recréer tous les objects 'remboursement partiels'.
+                                                Ces objets sont parfaitement indicatifs et vous pourrez ensuite refaire le tri
+                                                pour cette utilisateur.<br />
+                                                <br />
+                                                La date de début d'adhésion est automatiquement ajoutée lors du passage à l'état ACTIVE.
+                                            </>}
+                                        onConfirm={() => setConfirmedStartDateEdit(!confirmedStartDateEdit)}
+                                        type="iconbutton"
+                                    >
+                                        <EditIcon />
+                                    </ConfirmableButton>
+                                </div>
+                            </>
+                        )}
+                        {confirmedStartDateEdit && startDateForm.formState.isDirty &&
+                            <Button className="col-span-3" onClick={startDateForm.handleSubmit(onEditStartDate)} variant="contained" color="warning">
+                                Enregistrer la date de début
+                            </Button>
+                        }
                         <strong>Statut</strong>
                         <div className="flex flex-row gap-4 col-span-2">
                             <StatusSelect
@@ -187,7 +248,7 @@ export default function MembershipSection({
                                         ⚠️ Cette action est irréversible."
                                     onConfirm={onRecreateContract}
                                 >
-                                    Regénérer contrat ⚠️
+                                    Regénérer contrat
                                 </ConfirmableButton>
                             </div>
                             <div className="flex items-center">

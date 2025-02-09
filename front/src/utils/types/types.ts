@@ -69,6 +69,13 @@ export interface MembershipInitialization {
     main_unet_id?: string;
 }
 
+export interface AttachedWifiAdherent {
+    user_id: string;
+    from_date: Date;
+    to_date?: Date;
+    comment: string;
+}
+
 export interface Membership {
     status: MembershipStatus;
     type: MembershipType;
@@ -89,6 +96,9 @@ export interface Membership {
     documenso_contract_id?: number;
     documenso_adherent_url?: string;
     documenso_president_url?: string;
+    deleted_date?: Date;
+    start_date?: Date;
+    attached_wifi_adherents: AttachedWifiAdherent[];
 }
 
 export interface User {
@@ -154,6 +164,17 @@ export interface CRMiseEnService {
     numero_sequence: string
 }
 
+export interface PartialRefund {
+    id: string;
+    membership_start: Date;
+    user_id: string;
+    month: number;
+    comment: string;
+    wifi_adherents: string[];
+    paid: boolean;
+    refunded_amount: number;
+}
+
 export interface ApiInterface {
     refreshToken(): void;
     token: string;
@@ -170,7 +191,7 @@ export interface ApiInterface {
     fetchPMs(): Promise<PMInfo[]>;
     fetchONT(user_id: string): Promise<ONTInfo>;
     registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo>;
-    updateMembership(membership_id: string, membership: Partial<Membership>): Promise<User>;
+    updateMembership(user_id: string, membership: Partial<Membership>): Promise<User>;
     deleteMembership(user_id: string): Promise<User>;
     fetchUserBox(user_id: string): Promise<Box>;
     registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
@@ -188,6 +209,7 @@ export interface ApiInterface {
     refreshContract(user_id: string): Promise<User>;
     deleteONT(serial_number: string): Promise<ONTInfo>;
     deleteBox(mac_address: string): Promise<Box>;
+    transferUnet(unet_id: string, target_mac_address: string): Promise<UnetProfile>;
     deleteUnet(user_id: string): Promise<Box>;
     updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box>;
     forceOntRegistration(serial_number: string): Promise<ONTInfo>;
@@ -196,4 +218,8 @@ export interface ApiInterface {
     createIpamLog(message: string, source: string): Promise<void>;
     transferDevices(user_id: string, target_user_id: string): Promise<void>;
     fetchAllUsersOnBox(mac_address: string): Promise<User[]>;
+    fetchAllPartialRefunds(): Promise<PartialRefund[]>;
+    updatePartialRefund(partial_refund: PartialRefund): Promise<PartialRefund>;
+    computePartialRefunds(): Promise<object>;
+    deletePartialRefund(partial_refund_id: string): Promise<void>;
 }

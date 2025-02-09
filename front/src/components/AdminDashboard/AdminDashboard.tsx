@@ -16,6 +16,7 @@ import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
 import DebugIcon from "@mui/icons-material/BugReport";
 import EvenListIcon from "@mui/icons-material/EventNote";
+import { Euro } from "@mui/icons-material";
 
 function AdminDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -84,6 +85,15 @@ function AdminDashboard() {
                                 <EvenListIcon />
                             </ListItemIcon>
                             <ListItemText primary="Logs IPAM" />
+                        </ListItemButton>
+                    </Link>
+
+                    <Link to={"partial-refunds"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <Euro />
+                            </ListItemIcon>
+                            <ListItemText primary="Remboursements" />
                         </ListItemButton>
                     </Link>
                 </List>

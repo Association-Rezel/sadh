@@ -1,10 +1,11 @@
 from typing import Optional, Self
 
-from common_models.base import RezelBaseModel
+from common_models.base import PortableDatetime, RezelBaseModel
 from common_models.user_models import (
     Address,
     Appointment,
     AppointmentSlot,
+    AttachedWifiAdherent,
     DepositStatus,
     EquipmentStatus,
     Membership,
@@ -29,6 +30,8 @@ class MembershipUpdate(RezelBaseModel):
     paid_first_month: Optional[bool] = Field(None)
     contract_signed: Optional[bool] = Field(None)
     appointment: Optional[Appointment] = Field(None)
+    start_date: Optional[PortableDatetime] = Field(None)
+    attached_wifi_adherents: Optional[list[AttachedWifiAdherent]] = Field(None)
 
 
 class UserUpdate(RezelBaseModel):
