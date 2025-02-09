@@ -3,6 +3,7 @@ from datetime import datetime
 
 from common_models.hermes_models import Box
 from common_models.log_models import IpamLog
+from common_models.pon_models import ONT
 from common_models.user_models import User
 from fastapi import HTTPException
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -23,6 +24,17 @@ from back.server.dependencies import get_box_from_mac_str, must_be_sadh_admin
 from back.utils.router_manager import ROUTEURS
 
 router = ROUTEURS.new("devices")
+
+
+@router.get(
+    "/box",
+    response_model=list[Box],
+    dependencies=[must_be_sadh_admin],
+)
+async def _list_boxes(
+    db: AsyncIOMotorDatabase = get_db,
+) -> list[Box]:
+    return [Box.model_validate(box) for box in await db.boxes.find().to_list(None)]
 
 
 @router.get(
@@ -167,6 +179,26 @@ async def _update_box_mac(
             )
 
     return updated_box
+
+
+@router.get(
+    "/ont",
+    response_model=list[ONT],
+    dependencies=[must_be_sadh_admin],
+)
+async def _list_onts(
+    db: AsyncIOMotorDatabase = get_db,
+) -> list[ONT]:
+    return [
+        ONT.model_validate(ont)
+        async for ont in db.pms.aggregate(
+            [
+                {"$unwind": "$pon_list"},
+                {"$unwind": "$pon_list.ont_list"},
+                {"$replaceRoot": {"newRoot": "$pon_list.ont_list"}},
+            ]
+        )
+    ]
 
 
 @router.get(

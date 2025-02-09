@@ -1,6 +1,6 @@
 import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus } from "./types/types";
 import { Config } from "./Config";
-import { ONTInfo, PMInfo, RegisterONT } from "./types/pon_types";
+import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
 
@@ -168,7 +168,7 @@ export class RemoteApi implements ApiInterface {
     // ADMIN
 
     async fetchUsers(): Promise<User[]> {
-        const users = await this.fetchOrDefault("/users", null, true);
+        const users = await this.fetchOrDefault("/users", [], true);
         return users.map((user: any) => this.parseUser(user));
     }
 
@@ -230,6 +230,14 @@ export class RemoteApi implements ApiInterface {
 
     async fetchValidSSID(ssid: string): Promise<boolean> {
         return await this.myFetcher(`/net/valid_ssid/${ssid}`, true);
+    }
+
+    async fetchONTs(): Promise<RawDBONT[]> {
+        return await this.fetchOrDefault("/devices/ont", [], true);
+    }
+
+    async fetchBoxes(): Promise<Box[]> {
+        return await this.fetchOrDefault("/devices/box", [], true);
     }
 
     async fetchBoxByUnetID(main_unet_id: string): Promise<Box> {
