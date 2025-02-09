@@ -1,6 +1,6 @@
 import { Box, UnetProfile } from "./hermes_types";
 import { IpamLog } from "./log_types";
-import { ONTInfo, PMInfo, RegisterONT } from "./pon_types";
+import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./pon_types";
 
 export enum MembershipStatus {
     REQUEST_PENDING_VALIDATION = 100,
@@ -180,6 +180,8 @@ export interface ApiInterface {
     updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
     fetchAllSSIDs(): Promise<string[]>;
     fetchValidSSID(ssid: string): Promise<boolean>;
+    fetchONTs(): Promise<RawDBONT[]>;
+    fetchBoxes(): Promise<Box[]>;
     fetchBoxByUnetID(main_unet_id: string): Promise<Box>;
     createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box>;
     generateNewContract(user_id: string): Promise<void>;

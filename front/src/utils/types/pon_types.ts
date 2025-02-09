@@ -22,6 +22,16 @@ export interface ONTInfo {
     configured_in_olt?: boolean;
 }
 
+export interface RawDBONT {
+    serial_number: string;
+    software_version: string;
+    box_mac_address: string;
+    position_in_pon: number;
+    position_in_subscriber_panel?: string;
+    operational_data?: OperationalData;
+    configured_in_olt?: boolean;
+}
+
 export interface PMInfo {
     id: string;
     description: string;
