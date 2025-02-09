@@ -16,6 +16,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import LoggedMenu from "../Menus/LoggedMenu";
 import { MembershipType } from "../../utils/types/types";
 import { AppState } from "../../utils/AppStateContext";
+import { AccountBalance } from "@mui/icons-material";
 
 function AccountDashboard({ appState }: { appState: AppState }) {
     const [open, setOpen] = React.useState(true);
@@ -43,8 +44,8 @@ function AccountDashboard({ appState }: { appState: AppState }) {
             </ListItemButton>
         </Link>
     );
-    const settingsLink = (
-        <Link to={"settings"}>
+    const networkSettingsLink = (
+        <Link to={"network"}>
             <ListItemButton>
                 <ListItemIcon>
                     <SettingsIcon />
@@ -53,6 +54,14 @@ function AccountDashboard({ appState }: { appState: AppState }) {
             </ListItemButton>
         </Link>
     );
+    const bankAccontSettings = <Link to={"bank-settings"}>
+        <ListItemButton>
+            <ListItemIcon>
+                <AccountBalance />
+            </ListItemIcon>
+            <ListItemText primary="Mon RIB" />
+        </ListItemButton>
+    </Link>;
 
     let drawerContent = <Outlet />;
     if (appState.user?.membership?.type == MembershipType.FTTH) {
@@ -60,7 +69,8 @@ function AccountDashboard({ appState }: { appState: AppState }) {
             drawerContent = (
                 <>
                     {appoinmentLink}
-                    {settingsLink}
+                    {networkSettingsLink}
+                    {/*bankAccontSettings*/}
                 </>
             );
         } else {
@@ -73,7 +83,7 @@ function AccountDashboard({ appState }: { appState: AppState }) {
     } else { // WIFI
         drawerContent = (
             <>
-                {settingsLink}
+                {networkSettingsLink}
             </>
         );
     }

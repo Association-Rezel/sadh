@@ -1,6 +1,6 @@
 """Get or edit users."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from common_models.hermes_models import Box, UnetProfile
 from common_models.log_models import IpamLog
@@ -528,6 +528,21 @@ async def _user_register_unet(
         {"$set": {"membership.unetid": unet_profile.unet_id}},
     )
 
+    await db.users.update_one(
+        {"membership.unetid": box.main_unet_id},
+        {
+            "$push": {
+                "membership.attached_wifi_adherents": {
+                    "user_id": str(user.id),
+                    # Because unet will be available tomorrow at 6:00, when
+                    # the box is reconfigured
+                    "from_date": datetime.today() + timedelta(days=1),
+                    "comment": "",
+                }
+            }
+        },
+    )
+
     return box
 
 
@@ -581,6 +596,23 @@ async def _user_delete_unet(
             ),
         ),
     )
+
+    main_unet_user = User.model_validate(
+        await db.users.find_one({"membership.unetid": box.main_unet_id})
+    )
+    if main_unet_user.membership and main_unet_user.membership.attached_wifi_adherents:
+        for attached_wifi_adherent in main_unet_user.membership.attached_wifi_adherents:
+            if attached_wifi_adherent.user_id == user.id:
+                attached_wifi_adherent.to_date = datetime.today()
+
+        await db.users.find_one_and_update(
+            {"_id": str(main_unet_user.id)},
+            {
+                "$set": {
+                    "membership.attached_wifi_adherents": main_unet_user.membership.attached_wifi_adherents
+                }
+            },
+        )
 
     return updated_box
 

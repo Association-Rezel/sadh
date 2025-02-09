@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Chip, CircularProgress, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import { Api } from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
@@ -8,7 +8,7 @@ import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
 import EditIcon from '@mui/icons-material/Edit';
-import { ContentCopy } from "@mui/icons-material";
+import { ContentCopy, ExitToApp, ImportExport, TransferWithinAStation } from "@mui/icons-material";
 
 type FormValues = {
     boxType?: string;
@@ -48,6 +48,7 @@ export default function UnetSection({
     const [editingMac, setEditingMac] = useState(false);
     const [newMac, setNewMac] = useState("");
     const [usersOnBox, setUsersOnBox] = useState<User[]>([]);
+    const [transferDialogOpen, setTransferDialogOpen] = useState(false);
 
     if (box && newMac === "") {
         setNewMac(box.mac);
@@ -169,7 +170,15 @@ export default function UnetSection({
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
                 Réseau de l'adhérent (UNetProfile)
+                {user.membership.type === MembershipType.WIFI &&
+                    <Tooltip title="Transférer le UnetProfile vers une autre box">
+                        <IconButton onClick={() => setTransferDialogOpen(true)}>
+                            <ExitToApp />
+                        </IconButton>
+                    </Tooltip>
+                }
             </Typography>
+            <TransferUnetToMacDialog unet_id={user.membership.unetid} open={transferDialogOpen} setTransferDialogOpen={setTransferDialogOpen} />
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 {(boxLoading) && <p>Chargement...</p>}
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -293,7 +302,7 @@ export default function UnetSection({
                             {usersOnBox?.length > 1 && <>
                                 <ul className="mt-2">
                                     {usersOnBox.filter(u => u != mainUser).map(u => (
-                                        <li><Link underline="hover" href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link> ({u.membership?.unetid})</li>
+                                        <li key={u.id}><Link underline="hover" href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link> ({u.membership?.unetid})</li>
                                     ))}
                                 </ul>
                             </>
@@ -344,6 +353,53 @@ export default function UnetSection({
                 )}
             </Typography>
         </div >
+    )
+}
+
+function TransferUnetToMacDialog({ unet_id, open, setTransferDialogOpen }: { unet_id: string, open: boolean, setTransferDialogOpen: (open: boolean) => void }) {
+    if (!open) return null;
+    const transferForm = useForm(
+        {
+            defaultValues: {
+                macAddress: "",
+            }
+        }
+    );
+
+    const onSubmit = (data: { macAddress: string }) => {
+        Api.transferUnet(unet_id, data.macAddress).then(() => {
+            window.location.reload();
+        }).catch(e => {
+            alert("Erreur lors du transfert : " + e);
+        });
+    }
+
+    return (
+        <Dialog open={open} onClose={() => setTransferDialogOpen(false)}>
+            <DialogTitle>Transférer le UnetProfile</DialogTitle>
+            <DialogContent>
+                <div>
+                    <p>
+                        Indiquez l'adresse MAC de la box vers laquelle vous souhaitez transférer le UnetProfile.<br />
+                        <br />
+                        Le changement ne sera effectif qu'en base de données ! Il faudra redémarrer les deux boxes
+                        ou attendre la prochaine synchronisation à 6h00 pour que le changement soit effectif.
+                    </p>
+                    <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
+                        <Stack direction={"column"}
+                            spacing={2}>
+                            <TextField
+                                label="Adresse MAC"
+                                {...transferForm.register("macAddress")}
+                            />
+                            <Button variant="contained" onClick={transferForm.handleSubmit(onSubmit)}>
+                                Transférer
+                            </Button>
+                        </Stack>
+                    </Typography>
+                </div>
+            </DialogContent>
+        </Dialog>
     )
 }
 

@@ -1,4 +1,4 @@
-import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus } from "./types/types";
+import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus, AttachedWifiAdherent, PartialRefund } from "./types/types";
 import { Config } from "./Config";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
@@ -60,7 +60,7 @@ export class RemoteApi implements ApiInterface {
 
         if (!response.ok) {
             const details = await response.text();
-            throw new Error("HTTP" + response.statusText + " : " + details);
+            throw {code: response.status, details: "HTTP " + response.statusText + " : " + details};
         }
         return await response.json();
     }
@@ -101,7 +101,9 @@ export class RemoteApi implements ApiInterface {
         try {
             return await this.myFetcher(url, auth);
         } catch (e) {
-            console.error(e);
+            if(e.code !== 404) {
+                console.error(e.details);
+            }
             return defaultValue;
         }
     }
@@ -123,6 +125,15 @@ export class RemoteApi implements ApiInterface {
         return data;
     }
 
+    parseAttachedWifiAdherent(data: any): AttachedWifiAdherent {
+        if (data !== null) {
+            data.from_date = new Date(data.from_date * 1000);
+            data.to_date = data.to_date && new Date(data.to_date * 1000);
+        }
+
+        return data;
+    }
+
     parseUser(data: any): User {
         if (data?.availability_slots) {
             data.availability_slots = data.availability_slots.map((slot: any) => this.parseAppointmentSlot(slot));
@@ -132,11 +143,28 @@ export class RemoteApi implements ApiInterface {
             data.membership.appointment = this.parseAppointment(data.membership.appointment);
         }
 
+        if (data?.membership?.attached_wifi_adherents) {
+            data.membership.attached_wifi_adherents = data.membership.attached_wifi_adherents.map((adherent: any) => this.parseAttachedWifiAdherent(adherent));
+        }
+
+        if (data?.membership?.start_date) {
+            data.membership.start_date = new Date(data.membership.start_date * 1000);
+        }
+
+        if (data?.membership?.deleted_date) {
+            data.membership.deleted_date = new Date(data.membership.deleted_date * 1000);
+        }
+
         return data;
     }
 
     parseIpamLog(data: any): IpamLog {
         data.timestamp = data.timestamp && new Date(data.timestamp * 1000);
+        return data;
+    }
+
+    parsePartialRefund(data: any): PartialRefund {
+        data.membership_start = new Date(data.membership_start * 1000);
         return data;
     }
 
@@ -264,6 +292,10 @@ export class RemoteApi implements ApiInterface {
         return await this.myAuthenticatedRequest("/devices/box/" + mac_address, null, "DELETE");
     }
 
+    async transferUnet(unet_id: string, target_mac_address: string): Promise<UnetProfile> {
+        return await this.myAuthenticatedRequest(`/net/transfer-unet/${unet_id}/to/${target_mac_address}`, null, "POST");
+    }
+
     async deleteUnet(user_id: string): Promise<Box> {
         return await this.myAuthenticatedRequest("/users/" + user_id + "/unet", null, "DELETE");
     }
@@ -296,5 +328,22 @@ export class RemoteApi implements ApiInterface {
     async fetchAllUsersOnBox(mac_address: string): Promise<User[]> {
         const users = await this.fetchOrDefault(`/devices/box/${mac_address}/users`, [], true);
         return users.map((user: any) => this.parseUser(user));
+    }
+
+    async fetchAllPartialRefunds(): Promise<PartialRefund[]> {
+        const data = await this.myFetcher("/partial-refunds", true);
+        return data.map((refund: any) => this.parsePartialRefund(refund));
+    }
+
+    async updatePartialRefund(partial_refund: PartialRefund): Promise<PartialRefund> {
+        return this.parsePartialRefund(await this.myAuthenticatedRequest("/partial-refunds", partial_refund, "PATCH"));
+    }
+
+    async computePartialRefunds(): Promise<object> {
+        return await this.myAuthenticatedRequest("/partial-refunds/compute", null, "POST");
+    }
+
+    async deletePartialRefund(id: string): Promise<void> {
+        await this.myAuthenticatedRequest(`/partial-refunds/${id}`, null, "DELETE");
     }
 }

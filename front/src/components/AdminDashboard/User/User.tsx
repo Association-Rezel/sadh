@@ -13,6 +13,8 @@ import { Button, Typography } from "@mui/material";
 import StatusUpdateSection from "./StatusUpdateSection";
 import { Box } from "../../../utils/types/hermes_types";
 import { ONTInfo } from "../../../utils/types/pon_types";
+import AttachedAdherents from "./PartialRefunds/AttachedAdherents";
+import PartialRefundSection from "./PartialRefunds/PartialRefundSection";
 
 
 function UserComponent() {
@@ -23,7 +25,7 @@ function UserComponent() {
     const [ont, setONT] = useState<ONTInfo | null>(null);
     const [ontLoading, setONTLoading] = useState<boolean>(true);
 
-    const { register, handleSubmit, reset, formState, control } = useForm({
+    const { register, handleSubmit, reset, formState, control } = useForm<Membership>({
         defaultValues: user?.membership
     });
 
@@ -66,6 +68,13 @@ function UserComponent() {
         reset(user?.membership);
     }, [user]);
 
+    const saveButton =
+        <div className="mt-10">
+            <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Enregistrer
+            </Button>
+        </div>
+
     return (
         <div>
             <UserSection user={user} />
@@ -77,7 +86,8 @@ function UserComponent() {
                 </Typography>}
             {user && user?.membership && (
                 <>
-                    <div className="flex gap-x-20 flex-wrap justify-between">
+                    {saveButton}
+                    <div className="flex gap-x-20 flex-wrap justify-around">
                         <MembershipSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} formControl={control} />
                         <StatusUpdateSection user={user} setUser={setUser} />
                         <UnetSection user={user} box={box} setBox={setBox} ont={ont} boxLoading={boxLoading} setBoxLoading={setBoxLoading} />
@@ -86,14 +96,11 @@ function UserComponent() {
                                 <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                                 <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
                                 <InteropSection registerToMembershipUpdateForm={register} user={user} />
+                                <PartialRefundSection user={user} setUser={setUser} />
                             </>
                         )}
                     </div>
-                    <div className="mt-10">
-                        <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                            Enregistrer
-                        </Button>
-                    </div>
+                    {saveButton}
                 </>
             )}
         </div>
