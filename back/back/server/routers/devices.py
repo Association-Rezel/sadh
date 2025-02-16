@@ -151,6 +151,16 @@ async def _update_box_mac(
     db: AsyncIOMotorDatabase = get_db,
 ) -> Box:
     """Replace the MAC address of a box."""
+
+    new_mac = new_mac.lower()
+
+    existing_box = await db.boxes.find_one({"mac": new_mac})
+    if existing_box:
+        raise HTTPException(
+            status_code=400,
+            detail="A box with this MAC address already exists",
+        )
+
     updated_box = Box.model_validate(
         await db.boxes.find_one_and_update(
             {"mac": str(box.mac)},

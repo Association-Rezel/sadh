@@ -457,6 +457,8 @@ async def _user_register_box(
             detail="User has no membership or already has a unetid attached",
         )
 
+    mac_address = mac_address.lower()
+
     if await db.boxes.find_one({"mac": str(mac_address)}):
         raise HTTPException(
             status_code=400, detail="Box with this MAC address already exists"
@@ -499,6 +501,8 @@ async def _user_register_unet(
             status_code=400,
             detail="User has no membership or already has a unetid attached",
         )
+
+    mac_address = mac_address.lower()
 
     box_dict = await db.boxes.find_one({"mac": str(mac_address)})
     if not box_dict:
