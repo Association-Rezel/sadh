@@ -1,7 +1,7 @@
 """
 MODIFIED FROM https://gitlab.com/rezel/faipp/proj104-2024/ipam-for-mongodb/-/blob/main/ipam_mongodb/ipam_mongodb.py?ref_type=heads
 
-Provides functions to interact with the MongoDB databases 
+Provides functions to interact with the MongoDB databases
 and retrieve available IP ranges and addresses.
 
 """
