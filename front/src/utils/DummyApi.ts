@@ -80,6 +80,7 @@
 //             dolibarr_information:"",
 //             cmd_acces_sent:true,
 //             cr_mes_sent:false,
+//             annul_acces:false,
 //             comment:"",
 //             paid_caution:false,
 //             paid_first_month:true,

@@ -88,6 +88,7 @@ export interface Membership {
     deposit_status: DepositStatus;
     cmd_acces_sent: boolean;
     cr_mes_sent: boolean;
+    annul_acces_sent: boolean;
     paid_first_month: boolean;
     contract_signed: boolean;
     appointment?: Appointment;
@@ -164,6 +165,19 @@ export interface CRMiseEnService {
     numero_sequence: string
 }
 
+// Voir https://gitlab.com/rezel/faipp/nix/-/blob/master/nix/main.py
+export interface AnnulAccesInfo {
+    residence: string,
+    ref_interne_rezel_commande: string,
+    ref_appartement: string,
+    e_rdv: string,
+    ref_pto: string,
+    ref_prestation_prise: string,
+    date_annulation: string,
+    numero_sequence: string
+}
+
+
 export interface PartialRefund {
     id: string;
     membership_start: Date;
@@ -197,6 +211,7 @@ export interface ApiInterface {
     registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box>;
     sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response>;
     sendCRMiseEnService(info: CRMiseEnService): Promise<Response>;
+    sendAnnulAcces(info: AnnulAccesInfo): Promise<Response>;
     fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo>;
     updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User>;
     fetchAllSSIDs(): Promise<string[]>;

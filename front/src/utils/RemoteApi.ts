@@ -1,4 +1,4 @@
-import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, MembershipRequest, StatusUpdateInfo, MembershipStatus, AttachedWifiAdherent, PartialRefund } from "./types/types";
+import { User, ApiInterface, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, AnnulAccesInfo,MembershipRequest, StatusUpdateInfo, MembershipStatus, AttachedWifiAdherent, PartialRefund } from "./types/types";
 import { Config } from "./Config";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
@@ -244,6 +244,10 @@ export class RemoteApi implements ApiInterface {
         return await this.myAuthenticatedRequest("/nix/generer_cr_mise_en_service", info, "POST", true);
     }
 
+    async sendAnnulAcces(info: AnnulAccesInfo): Promise<Response> {
+        return await this.myAuthenticatedRequest("/nix/generer_annul_access", info, "POST", true);
+    }
+    
     async fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo> {
         return await this.fetchOrDefault("/users/" + user_id + "/next-membership-status", null, true);
     }
