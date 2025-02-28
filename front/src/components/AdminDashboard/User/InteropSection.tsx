@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Button, TextField, Typography } from "@mui/material";
 import CmdAccesDialog from './CmdAccesDialog';
 import CRMESDialog from './CRMiseEnService';
+import AnnulAccesDialog from './AnnulAccesDialog';
 
 export default function InteropSection({
     registerToMembershipUpdateForm,
@@ -12,6 +13,7 @@ export default function InteropSection({
 }) {
     const [cmdAccesDialogOpen, setCmdAccesDialogOpen] = React.useState(false);
     const [CRMESDialogOpen, setCRMESDialogOpen] = React.useState(false);
+    const [annulAccesOpen, setAnnulAccesDialogOpen] = React.useState(false);
 
     return (
         <div className="mt-10 max-w-xs">
@@ -38,6 +40,11 @@ export default function InteropSection({
                             Générer CR_MES
                         </Button>
                     </div>
+                    <div className="mt-5">
+                        <Button variant="contained" onClick={() => setAnnulAccesDialogOpen(true)}>
+                            Générer ANNUL_ACCES
+                        </Button>
+                    </div>
                     <div className="flex items-center mt-5">
                         <input type="checkbox" {...registerToMembershipUpdateForm("cmd_acces_sent")} />
                         <strong className="pl-2">CMD_ACCES envoyé</strong>
@@ -45,6 +52,10 @@ export default function InteropSection({
                     <div className="flex items-center mt-5">
                         <input type="checkbox" {...registerToMembershipUpdateForm("cr_mes_sent")} />
                         <strong className="pl-2">CR_MES envoyé</strong>
+                    </div>
+                    <div className="flex items-center mt-5">
+                        <input type="checkbox" {...registerToMembershipUpdateForm("annul_acces_sent")} />
+                        <strong className="pl-2">ANNUL_ACCES envoyé</strong>
                     </div>
                     <CmdAccesDialog
                         open={cmdAccesDialogOpen}
@@ -54,6 +65,11 @@ export default function InteropSection({
                     <CRMESDialog
                         open={CRMESDialogOpen}
                         onClose={() => setCRMESDialogOpen(false)}
+                        user={user}
+                    />
+                    <AnnulAccesDialog
+                        open={annulAccesOpen}
+                        onClose={() => setAnnulAccesDialogOpen(false)}
                         user={user}
                     />
                 </div>

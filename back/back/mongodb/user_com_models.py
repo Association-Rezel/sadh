@@ -27,6 +27,7 @@ class MembershipUpdate(RezelBaseModel):
     deposit_status: Optional[DepositStatus] = Field(None)
     cmd_acces_sent: Optional[bool] = Field(None)
     cr_mes_sent: Optional[bool] = Field(None)
+    annul_acces_sent: Optional[bool] = Field(None)
     paid_first_month: Optional[bool] = Field(None)
     contract_signed: Optional[bool] = Field(None)
     appointment: Optional[Appointment] = Field(None)

@@ -19,4 +19,4 @@ mypy==1.13.0
 Jinja2==3.1.4
 motor==3.6.0
 babel==2.16.0
-common-models>=0.1.5
+common-models>=0.1.6

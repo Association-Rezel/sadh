@@ -3,15 +3,14 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import { CRMiseEnService, User } from '../../../utils/types/types';
+import { AnnulAccesInfo, User, MembershipStatus } from '../../../utils/types/types';
 import { DialogActions, TextField } from '@mui/material';
 import { Api } from '../../../utils/Api';
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
-import { ONTInfo } from '../../../utils/types/pon_types';
 
-export interface CRMESDialogProps {
+export interface AnnulAccesDialogProps {
     open: boolean;
     onClose: () => void;
     user: User;
@@ -23,41 +22,39 @@ export interface CSVFile {
 }
 
 
-export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
-    const [hasONT, setHasONT] = useState<boolean>(false);
+export default function AnnulAccesDialog({ open, onClose, user }: AnnulAccesDialogProps) {
+    const isPendingInactive = user.membership?.status === MembershipStatus.ACTIVE;
 
-    const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>({
+    const { register, handleSubmit, getValues, reset } = useForm<AnnulAccesInfo>({
         defaultValues: {
+            ref_appartement: "",
             ref_interne_rezel_commande: "",
             residence: "",
-            ref_appartement: "",
-            ref_prestation_prise: "",
-            date_mise_en_service: "",
+            e_rdv: "",
             ref_pto: "",
+            ref_prestation_prise: "",
+            date_annulation: "",
+            numero_sequence: ""
         }
     });
 
     useEffect(() => {
-        if (!user?.membership) return;
+        if (!isPendingInactive) return;
 
-        Api.fetchONT(user.id).then((ont: ONTInfo) => {
-            setHasONT(ont !== null);
-            if (ont === null) return;
-
-            reset({
-                ref_interne_rezel_commande: user.membership.ref_commande,
-                residence: user.membership.address.residence,
-                ref_appartement: user.membership.address.appartement_id,
-                ref_prestation_prise: user.membership.ref_prestation,
-                date_mise_en_service: dayjs(user.membership.appointment?.slot.end).format("YYYYMMDD HH:mm"),
-                ref_pto: "",
-                numero_sequence: "1",
-            });
-        })
+        reset({
+            residence: user.membership.address.residence,
+            ref_interne_rezel_commande: user.membership.ref_commande,
+            ref_appartement: user.membership.address.appartement_id,
+            e_rdv: user.membership.erdv_id,
+            ref_prestation_prise: user.membership.ref_prestation,
+            date_annulation: dayjs(user.membership.appointment?.slot.end).format("YYYYMMDD HH:mm"),
+            ref_pto: "",
+            numero_sequence: "",
+        });
     }, [user]);
 
-    const sendData = (info: CRMiseEnService) => {
-        Api.sendCRMiseEnService(info).then((res) => {
+    const sendData = (info: AnnulAccesInfo) => {
+        Api.sendAnnulAcces(info).then((res) => {
             res.json().then((json) => {
                 if (!res.ok) {
                     alert("Nix a retourné une erreur : \n" + JSON.stringify(json));
@@ -91,11 +88,11 @@ export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
     return (
         <Dialog onClose={onClose} open={open} maxWidth="sm" fullWidth={true}>
         <form onSubmit={handleSubmit(sendData)}>
-            {hasONT && (
+            {isPendingInactive && (
                 <>
-                    <DialogTitle>Récapitulatif du CR MES</DialogTitle>
+                    <DialogTitle>Récapitulatif du ANNUL ACCES</DialogTitle>
                     <List sx={{ pt: 0 }}>
-                        {Object.keys(getValues()).map((key: keyof CRMiseEnService) => (
+                        {Object.keys(getValues()).map((key: keyof AnnulAccesInfo) => (
                             <ListItem key={key} >
                                 <TextField
                                     required={key !== "ref_pto"}
@@ -108,8 +105,8 @@ export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
                     </List>
                 </>
             )}
-            {!hasONT && (
-                <DialogTitle>Vous devez d'abord assigner un ONT</DialogTitle>
+            {!isPendingInactive && (
+                <DialogTitle>Le status de l'adhérent n'est pas ACTIVE</DialogTitle>
             )}
             <DialogActions>
                 <Button variant="outlined" onClick={onClose}>Annuler</Button>
