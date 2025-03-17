@@ -9,40 +9,42 @@ from pymongo import ReturnDocument
 
 from back.core.hermes import get_box_from_user
 from back.core.status_update import StatusUpdateManager
-from back.core.zitadel import (
+from back.core.oidc import (
     ValidatorError,
-    ZitadelIntrospectTokenValidator,
-    ZitadelUserInfo,
+    OIDCTokenValidator,
+    OIDCUserInfo,
 )
 from back.env import ENV
 from back.mongodb.db import get_db
 
+token_validator = OIDCTokenValidator()
+
 
 @Depends
-def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInfo:
+def introspect_access_token(authorization: str = Header(None)) -> OIDCUserInfo:
     """
-    Request introspection token endpoint with the access token and
-    return the token information as a ZitadelUserInfo object.
+    Récupère le token d'accès, le valide via OIDC et retourne un objet `OIDCUserInfo`.
     """
 
     if authorization is None:
         raise HTTPException(status_code=401, detail="No Authorization header provided.")
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401, detail="Invalid Authorization header format."
+        )
+
     token = authorization.split("Bearer ")[1]
-    validator = ZitadelIntrospectTokenValidator()
     try:
-        introspected = validator(token, "openid profile email")
+        introspected = token_validator(token)
 
         try:
-            is_admin = (
-                ENV.zitadel_org_id
-                in introspected["urn:zitadel:iam:org:project:roles"][
-                    ENV.zitadel_admin_role
-                ]
+            is_admin = ENV.oidc_admin_entitlement in introspected.get(
+                "entitlements", []
             )
         except KeyError:
             is_admin = False
 
-        return ZitadelUserInfo(
+        return OIDCUserInfo(
             given_name=introspected["given_name"],
             family_name=introspected["family_name"],
             email=introspected["email"],
@@ -53,15 +55,15 @@ def introspect_access_token(authorization: str = Header(None)) -> ZitadelUserInf
 
 
 @Depends
-def must_be_sadh_admin(user: ZitadelUserInfo = introspect_access_token) -> None:
-    """If the user is not an admin, raise a 403 error."""
+def must_be_sadh_admin(user: OIDCUserInfo = introspect_access_token) -> None:
+    """If the user is not an admin, raise a 403 error"""
     if not user.admin:
         raise HTTPException(status_code=403, detail="User must be admin")
 
 
 @Depends
 async def get_user_me(
-    userInfo: ZitadelUserInfo = introspect_access_token,
+    userInfo: OIDCUserInfo = introspect_access_token,
     db: AsyncIOMotorDatabase = get_db,
 ) -> User:
     """
@@ -141,7 +143,6 @@ async def get_box_from_mac_str(
     db: AsyncIOMotorDatabase = get_db,
 ) -> Box:
     """Return the box with the given MAC address."""
-
     box_dict = await db.boxes.find_one({"mac": str(mac)})
 
     if box_dict is None:

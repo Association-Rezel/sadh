@@ -1,15 +1,10 @@
-import { useContext, useEffect } from "react";
-import { ZitadelContext } from "../../utils/ZitadelContext";
+import { useContext } from "react";
+import { OIDCContext } from "../../utils/OIDCContext"; 
 import { Button, Typography } from "@mui/material";
 import logoRezel from "../../ressources/img/cotcot.svg"
 
-export enum LoginPageMode {
-    DEFAULT,
-    REGISTER
-}
-
 export default function LoginPage() {
-    let zitadelAuth = useContext(ZitadelContext);
+    let oidcAuth = useContext(OIDCContext);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen gap-10">
@@ -21,7 +16,7 @@ export default function LoginPage() {
                 <Button
                     variant="contained"
                     className="bg-blue-500 text-white py-2 px-4 rounded"
-                    onClick={() => zitadelAuth.userManager.signinRedirect({ prompt: "create" })}
+                    onClick={() => oidcAuth.userManager.signinRedirect({ prompt: "create" })} //rajoute la query prompt=create, et Caddy (reverse proxy devant authentik) va rediriger vers la page de création de compte
                     fullWidth
                 >
                     Créer un compte
@@ -29,7 +24,7 @@ export default function LoginPage() {
                 <Button
                     variant="outlined"
                     className="bg-blue-500 text-white py-2 px-4 rounded"
-                    onClick={() => zitadelAuth.userManager.signinRedirect()}
+                    onClick={() => oidcAuth.userManager.signinRedirect()}
                     fullWidth
                 >
                     Se connecter

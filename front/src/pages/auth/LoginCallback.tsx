@@ -1,27 +1,25 @@
-// Inspired by https://zitadel.com/docs/examples/login/react
-
 import { useContext, useEffect } from "react";
-import { User as ZitadelUser } from "oidc-client-ts";
 import { AppStateContext } from "../../utils/AppStateContext";
-import { ZitadelContext } from "../../utils/ZitadelContext";
+import { OIDCContext } from "../../utils/OIDCContext";
 import { Navigate } from "react-router-dom";
-import { Config } from "../../utils/Config";
 
 export default function LoginCallback() {
-    const { appState, syncFromZitadelContext } = useContext(AppStateContext);
-    const zitadelAuth = useContext(ZitadelContext);
+    const { appState, syncFromOIDCContext } = useContext(AppStateContext);
+    const oidcAuth = useContext(OIDCContext);
 
     useEffect(() => {
-        if (!appState.user) {
-            zitadelAuth.userManager.signinRedirectCallback().then(() => {
-                syncFromZitadelContext();
+        if (!appState.user && oidcAuth) {
+            oidcAuth.userManager.signinRedirectCallback().then(() => {
+                syncFromOIDCContext?.();
+            }).catch((err) => {
+                console.error("Erreur lors du callback OIDC:", err);
             });
         }
-    }, []);
+    }, [appState.user, oidcAuth, syncFromOIDCContext]);
 
     if (appState.user) {
         return <Navigate to="/" />;
     } else {
         return <div>Logging in...</div>;
     }
-};
+}
