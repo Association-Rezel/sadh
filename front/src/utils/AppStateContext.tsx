@@ -1,66 +1,71 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User } from "./types/types";
 import { Api } from "./Api";
-import { ZitadelContext } from "./ZitadelContext";
+import { OIDCContext } from "./OIDCContext";
 import { Config } from "./Config";
 import { User as OIDCUser } from "oidc-client-ts";
 
-// The AppState interface contains useful information about the current user
 export interface AppState {
-    loaded: boolean,
-    admin?: boolean,
-    user?: User,
+    loaded: boolean;
+    admin?: boolean;
+    user?: User;
 }
 
-// A default app state that will be used when no state exists in localStorage
 const defaultAppState: AppState = {
     loaded: false,
 };
 
 interface AppStateContextValueWrapper {
-    appState: AppState,
-    updateAppState: (partialUpdate: Partial<AppState>) => void,
-    resetAppState: () => void
-    syncFromZitadelContext?: () => void
-};
+    appState: AppState;
+    updateAppState: (partialUpdate: Partial<AppState>) => void;
+    resetAppState: () => void;
+    syncFromOIDCContext?: () => void;
+}
 
 // We first create a context that will hold the app state and a function to update it
 // We temporarily set the app state to the default state, but the AppStateWrapper component
 // will update it with the actual state from localStorage
+
 export const AppStateContext = createContext<AppStateContextValueWrapper>({
     appState: defaultAppState,
-    updateAppState: () => { },
-    resetAppState: () => { }
+    updateAppState: () => {},
+    resetAppState: () => {},
 });
 
 // This component is a wrapper around the entire app that provides the AppStateContext
 export function AppStateWrapper({ children }: { children: any }) {
     const [appStateState, setAppStateState] = useState(defaultAppState);
-    const zitadelAuth = useContext(ZitadelContext);
+    const oidcAuth = useContext(OIDCContext);
 
-    const syncFromZitadelContext = () =>
-        zitadelAuth.userManager.getUser().then((user) => {
+    const syncFromOIDCContext = () => {
+        oidcAuth?.userManager.getUser().then((user: OIDCUser | null) => {
             if (!user || user.expired) {
                 setAppStateState({ loaded: true });
-            }
-            else {
-                const admin: boolean =
-                    user.profile[`urn:zitadel:iam:org:project:roles`]
-                    ?.[Config.ZITADEL_ROLE_SITE_ADMIN]
-                    ?.[Config.ZITADEL_ORG_ID] !== undefined;
+            } else {
+                // Vérifie si l'utilisateur a l'entitlement "sadh-admin"
+                const entitlements = user.profile.entitlements || [];
+                const isAdmin = Array.isArray(entitlements) && entitlements.includes(Config.ADMIN_ENTITLEMENT);
 
                 Api.token = user.access_token;
-                Api.refreshToken = () => zitadelAuth.userManager.signinSilent();
+                Api.refreshToken = () => oidcAuth.userManager.signinSilent();
                 Api.fetchMe().then((me) => {
-                    setAppStateState({ user: me, admin: admin, loaded: true });
+                    setAppStateState({ user: me, admin: isAdmin, loaded: true });
+                }).catch((err) => {
+                    console.error("Erreur lors de la récupération de l'utilisateur:", err);
+                    setAppStateState({ loaded: true });
                 });
             }
+        }).catch((err) => {
+            console.error("Erreur lors de la synchronisation OIDC:", err);
+            setAppStateState({ loaded: true });
         });
+    };
 
-    // Sync the Zitadel auth state with the app state
     useEffect(() => {
-        syncFromZitadelContext();
-    }, [zitadelAuth.userManager]);
+        if (oidcAuth) {
+            syncFromOIDCContext();
+        }
+    }, [oidcAuth?.userManager]);
 
     const contextValue: AppStateContextValueWrapper = {
         appState: appStateState,
@@ -70,10 +75,12 @@ export function AppStateWrapper({ children }: { children: any }) {
         resetAppState: () => {
             setAppStateState(defaultAppState);
         },
-        syncFromZitadelContext: syncFromZitadelContext
-    }
+        syncFromOIDCContext,
+    };
 
-    return <AppStateContext.Provider value={contextValue}>
-        {children}
-    </AppStateContext.Provider>
+    return (
+        <AppStateContext.Provider value={contextValue}>
+            {children}
+        </AppStateContext.Provider>
+    );
 }

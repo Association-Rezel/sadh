@@ -15,7 +15,6 @@ import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
 import PageSettings from "./pages/account/PageNetworkSettings";
 import LoginPage from "./pages/auth/LoginPage";
-import { ZitadelContextWrapper } from "./utils/ZitadelContext";
 import LoginCallback from "./pages/auth/LoginCallback";
 import LogoutPage from "./pages/auth/LogoutPage";
 import { CircularProgress } from "@mui/material";
@@ -23,6 +22,7 @@ import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
 import PageNetworkSettings from "./pages/account/PageNetworkSettings";
 import PartialRefunds from "./components/PartialRefunds/PartialRefunds";
+import { OIDCContext, OIDCContextWrapper } from "./utils/OIDCContext";
 
 function AppRouter() {
     const { appState } = useContext(AppStateContext);
@@ -66,11 +66,11 @@ function AppRouter() {
 
 function App() {
     return (
-        <ZitadelContextWrapper>
+        <OIDCContextWrapper>
             <AppStateWrapper>
                 <AppRouter />
             </AppStateWrapper>
-        </ZitadelContextWrapper>
+        </OIDCContextWrapper>
 
     );
 }

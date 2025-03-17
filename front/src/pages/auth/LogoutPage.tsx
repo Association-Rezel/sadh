@@ -1,15 +1,15 @@
 import { useContext, useEffect } from "react";
-import { ZitadelContext } from "../../utils/ZitadelContext";
+import { OIDCContext } from "../../utils/OIDCContext";
 import { AppStateContext } from "../../utils/AppStateContext";
 import { Navigate } from "react-router-dom";
 
 
 export default function LogoutPage() {
     const {resetAppState} = useContext(AppStateContext);
-    const zitadelAuth = useContext(ZitadelContext);
+    const oidcAuth = useContext(OIDCContext);
 
     useEffect(() => {
-        zitadelAuth.signout();
+        oidcAuth.signout();
         resetAppState();
     });
 

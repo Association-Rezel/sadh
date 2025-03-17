@@ -52,12 +52,10 @@ class Env:  # pylint: disable=too-many-instance-attributes
     # Logs
     log_level: str
 
-    # Zitadel
-    zitadel_app_secret: dict
-    zitadel_url: str
-    zitadel_introspection_url: str
-    zitadel_org_id: str
-    zitadel_admin_role: str
+    # OIDC
+    oidc_issuer: str
+    oidc_client_id: str
+    oidc_admin_entitlement: str
 
     matrix_user: str
     matrix_password: str
@@ -94,17 +92,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.log_level = get_or_none("LOG_LEVEL") or "INFO"
 
-        zitadel_secret_file = get_or_none("ZITADEL_SECRET_FILE")
-        if zitadel_secret_file:
-            with open(zitadel_secret_file, "r", encoding="utf-8") as f:
-                self.zitadel_app_secret = json.load(f)
-        else:
-            self.zitadel_app_secret = json.loads(get_or_raise("ZITADEL_APP_SECRET"))
-
-        self.zitadel_url = get_or_raise("ZITADEL_URL")
-        self.zitadel_introspection_url = get_or_raise("ZITADEL_INTROSPECTION_URL")
-        self.zitadel_org_id = get_or_raise("ZITADEL_ORG_ID")
-        self.zitadel_admin_role = get_or_raise("ZITADEL_ADMIN_ROLE")
+        self.oidc_issuer = get_or_raise("OIDC_ISSUER")
+        self.oidc_client_id = get_or_raise("OIDC_CLIENT_ID")
+        self.oidc_admin_entitlement = get_or_raise("OIDC_ADMIN_ENTITLEMENT")
 
         self.db_uri = get_or_raise("DB_URI")
         self.db_name = get_or_raise("DB_NAME")
