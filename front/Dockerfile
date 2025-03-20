@@ -15,7 +15,7 @@ ARG mode
 RUN npm run build -- --mode $mode
 
 FROM caddy:2.9
-RUN rm -rfd /usr/share/caddy
+RUN rm -rf /usr/share/caddy
 COPY --from=sadh-front-build-step /app/dist /usr/share/caddy
 
 COPY Caddyfile /etc/caddy/Caddyfile
