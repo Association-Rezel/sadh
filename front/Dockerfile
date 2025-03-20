@@ -14,14 +14,9 @@ COPY . /app
 ARG mode
 RUN npm run build -- --mode $mode
 
-FROM nginx
-RUN rm -rfd /usr/share/nginx/html
-COPY --from=sadh-front-build-step /app/dist /usr/share/nginx/html
+FROM caddy:2.9
+COPY --from=sadh-front-build-step /app/dist /usr/share/caddy
 
-RUN sed -i 's/index  index.html index.htm;/index  index.html index.htm;\n        try_files $uri $uri\/ $uri.html \/index.html;/g' /etc/nginx/conf.d/default.conf
+COPY Caddyfile /etc/caddy/Caddyfile
 
 EXPOSE 80
-
-STOPSIGNAL SIGTERM
-
-CMD ["nginx", "-g", "daemon off;"]

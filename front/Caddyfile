@@ -1,0 +1,11 @@
+:80 {
+	# Dossier racine pour les fichiers statiques
+	root * /usr/share/caddy
+
+	# Tente de servir le fichier correspondant à l’URL demandée.
+	# S’il n’existe pas, redirige vers /index.html
+	try_files {path} {path}/ /index.html
+
+	# Active le serveur de fichiers
+	file_server
+}
