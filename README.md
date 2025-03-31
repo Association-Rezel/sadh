@@ -39,7 +39,6 @@ make install # Pour installer toutes les dépendances python et node
 ## Variables d'environnement et secrets
 * Créez un fichier `.env.dev.local` dans le dossier `front/` et demandez son contenu à un membre de l'équipe.
 * Créez un fichier `.env.local` dans le dossier `back/` et demandez son contenu à un membre de l'équipe.
-* Créez un fichier `zitadel_secret.json` dans le dossier `back/` et demandez son contenu à un membre de l'équipe.
 
 ## Lancer le projet en local
 Ouvrir un premier shell et tapez :
