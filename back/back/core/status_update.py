@@ -22,6 +22,7 @@ from back.messaging.mails import (
     send_mail_appointment_validated,
     send_mail_new_adherent_on_box,
     send_mail_no_more_wifi_on_box,
+    send_satisfaction_survey,
 )
 from back.messaging.matrix import send_matrix_message
 
@@ -328,6 +329,40 @@ class StatusUpdateManager:
             ],
         )
 
+        self.register_update(
+            MembershipType.FTTH,
+            MembershipStatus.ACTIVE,
+            MembershipStatus.PENDING_INACTIVE,
+            [],
+            [
+                StatusUpdateEffect(
+                    "Passage de l'adhésion à l'état PENDING_INACTIVE",
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.PENDING_INACTIVE
+                    ),
+                ),
+            ],
+        )
+
+        self.register_update(
+            MembershipType.FTTH,
+            MembershipStatus.PENDING_INACTIVE,
+            MembershipStatus.INACTIVE,
+            [],
+            [
+                StatusUpdateEffect(
+                    "Passage de l'adhésion à l'état INACTIVE",
+                    lambda user, db: _update_membership_status(
+                        db, user, MembershipStatus.INACTIVE
+                    ),
+                ),
+                StatusUpdateEffect(
+                    "Envoi d'un questionnaire de satisfaction",
+                    lambda user, _: send_satisfaction_survey(user),
+                ),
+            ],
+        )
+
         ###############################################
         # WIFI
 
@@ -417,6 +452,10 @@ class StatusUpdateManager:
                 StatusUpdateEffect(
                     "Suppression du UNetProfile de l'adhérent",
                     _delete_unet_of_wifi_adherent,
+                ),
+                StatusUpdateEffect(
+                    "Envoi d'un questionnaire de satisfaction",
+                    lambda user, _: send_satisfaction_survey(user),
                 ),
             ],
         )
