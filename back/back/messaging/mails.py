@@ -203,3 +203,14 @@ def send_mail_no_more_wifi_on_box(user: User) -> None:
         user.email,
         html=True,
     )
+
+
+def send_satisfaction_survey(user: User) -> None:
+    _send_email(
+        "Rezel - Faites-nous savoir ce que vous pensez",
+        jinja2_emails_env.get_template("satisfaction_survey.html").render(
+            user=user,
+        ),
+        user.email,
+        html=True,
+    )
