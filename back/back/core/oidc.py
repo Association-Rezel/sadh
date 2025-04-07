@@ -1,4 +1,5 @@
 import time
+from typing import Tuple
 
 import requests
 from authlib.jose import JsonWebKey, JsonWebToken
@@ -33,7 +34,7 @@ class OIDCTokenValidator:
         response.raise_for_status()
         return response.json()
 
-    def _fetch_jwks(self) -> dict:
+    def _fetch_jwks(self) -> Tuple[dict, float]:
         """
         Récupère les clés publiques utilisées pour signer les JWT depuis le JWKS URI.
         """
