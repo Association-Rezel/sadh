@@ -15,6 +15,7 @@ from pymongo import ReturnDocument
 
 from back.core.dolibarr import create_dolibarr_user
 from back.core.hermes import get_box_from_user, get_users_on_box
+from back.core.ipam_logging import IpamLog, create_log
 from back.core.pon import get_ont_from_box
 from back.messaging.mails import (
     send_email_validated_ftth,
@@ -451,7 +452,7 @@ class StatusUpdateManager:
                 ),
                 StatusUpdateEffect(
                     "Suppression du UNetProfile de l'adhérent",
-                    _delete_unet_of_wifi_adherent,
+                    delete_unet_of_wifi_adherent,
                 ),
                 StatusUpdateEffect(
                     "Envoi d'un questionnaire de satisfaction",
@@ -530,7 +531,7 @@ async def _send_mail_if_no_more_wifi_on_box(
         send_mail_no_more_wifi_on_box((await get_users_on_box(db, box))[0])
 
 
-async def _delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) -> None:
+async def delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) -> None:
     if (
         not user.membership
         or not user.membership.unetid
@@ -543,15 +544,53 @@ async def _delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) ->
         raise ValueError("User has no box")
     box = Box.model_validate(boxdict)
 
-    await db.boxes.update_one(
-        {"mac": str(box.mac)},
-        {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
+    Box.model_validate(
+        await db.boxes.find_one_and_update(
+            {"mac": str(box.mac)},
+            {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
+            return_document=ReturnDocument.AFTER,
+        )
     )
 
-    await db.users.update_one(
+    await db.users.find_one_and_update(
         {"_id": str(user.id)},
         {"$unset": {"membership.unetid": ""}},
     )
+
+    # Log the deletion of the unet and freeing of the IP addresses and blocks
+    deleted_unet = next(
+        unet for unet in box.unets if unet.unet_id == user.membership.unetid
+    )
+    await create_log(
+        db,
+        IpamLog(
+            timestamp=datetime.now(),
+            source="sadh-back",
+            message=" ".join(
+                [
+                    f"Deleted Unet {user.membership.unetid} which had {deleted_unet.network.wan_ipv4.ip}",
+                    f"and {deleted_unet.network.ipv6_prefix} assigned.",
+                ]
+            ),
+        ),
+    )
+
+    main_unet_user = User.model_validate(
+        await db.users.find_one({"membership.unetid": box.main_unet_id})
+    )
+    if main_unet_user.membership and main_unet_user.membership.attached_wifi_adherents:
+        for attached_wifi_adherent in main_unet_user.membership.attached_wifi_adherents:
+            if attached_wifi_adherent.user_id == user.id:
+                attached_wifi_adherent.to_date = datetime.today()
+
+        await db.users.find_one_and_update(
+            {"_id": str(main_unet_user.id)},
+            {
+                "$set": {
+                    "membership.attached_wifi_adherents": main_unet_user.membership.attached_wifi_adherents
+                }
+            },
+        )
 
 
 async def _set_adhesion_date_today(user: User, db: AsyncIOMotorDatabase) -> User:

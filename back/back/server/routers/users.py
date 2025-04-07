@@ -35,7 +35,11 @@ from back.core.pon import (
     get_ontinfo_from_box,
     register_ont_for_new_ftth_adh,
 )
-from back.core.status_update import StatusUpdateInfo, StatusUpdateManager
+from back.core.status_update import (
+    StatusUpdateInfo,
+    StatusUpdateManager,
+    delete_unet_of_wifi_adherent,
+)
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import get_db
 from back.mongodb.pon_com_models import ONTInfo, RegisterONT
@@ -570,53 +574,9 @@ async def _user_delete_unet(
             status_code=400, detail="Cannot delete the main unet of a box"
         )
 
-    updated_box = Box.model_validate(
-        await db.boxes.find_one_and_update(
-            {"mac": str(box.mac)},
-            {"$pull": {"unets": {"unet_id": user.membership.unetid}}},
-            return_document=ReturnDocument.AFTER,
-        )
-    )
+    await delete_unet_of_wifi_adherent(user, db)
 
-    await db.users.find_one_and_update(
-        {"_id": str(user.id)},
-        {"$unset": {"membership.unetid": ""}},
-    )
-
-    # Log the deletion of the unet and freeing of the IP addresses and blocks
-    deleted_unet = next(
-        unet for unet in box.unets if unet.unet_id == user.membership.unetid
-    )
-    await create_log(
-        db,
-        IpamLog(
-            timestamp=datetime.now(),
-            source="sadh-back",
-            message=" ".join(
-                [
-                    f"Deleted Unet {user.membership.unetid} which had {deleted_unet.network.wan_ipv4.ip}",
-                    f"and {deleted_unet.network.ipv6_prefix} assigned.",
-                ]
-            ),
-        ),
-    )
-
-    main_unet_user = User.model_validate(
-        await db.users.find_one({"membership.unetid": box.main_unet_id})
-    )
-    if main_unet_user.membership and main_unet_user.membership.attached_wifi_adherents:
-        for attached_wifi_adherent in main_unet_user.membership.attached_wifi_adherents:
-            if attached_wifi_adherent.user_id == user.id:
-                attached_wifi_adherent.to_date = datetime.today()
-
-        await db.users.find_one_and_update(
-            {"_id": str(main_unet_user.id)},
-            {
-                "$set": {
-                    "membership.attached_wifi_adherents": main_unet_user.membership.attached_wifi_adherents
-                }
-            },
-        )
+    updated_box = Box.model_validate(await db.boxes.find_one({"mac": str(box.mac)}))
 
     return updated_box
 
