@@ -119,8 +119,12 @@ def _update_field_in_draft(
         "Content-Type": "application/json",
     }
 
+    # Ajout obligatoire de la clé discriminante 'type': 'text'
+    field_meta["type"] = "text"
+
     body = {
         "recipientId": recipient_id,
+        "type": "TEXT",
         "fieldMeta": field_meta,
     }
 
