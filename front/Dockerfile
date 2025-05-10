@@ -1,4 +1,4 @@
-FROM node:18 as sadh-front-build-step
+FROM node:22 as sadh-front-build-step
 
 RUN mkdir -p /app
 RUN npm cache clear --force
@@ -14,7 +14,7 @@ COPY . /app
 ARG mode
 RUN npm run build -- --mode $mode
 
-FROM caddy:2.9
+FROM caddy:2.10
 RUN rm -rf /usr/share/caddy
 COPY --from=sadh-front-build-step /app/dist /usr/share/caddy
 
