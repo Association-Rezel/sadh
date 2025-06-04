@@ -6,11 +6,13 @@ import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
 import 'react-phone-number-input/style.css'
 import { useContext, useEffect } from "react";
 import { AppStateContext } from "../../utils/AppStateContext";
+import { validateIBAN } from "ngx-iban-validator/dist/iban.validator";
 
 type FormValues = {
     residence: string;
     appartement_id: string;
     phone_number: string;
+    iban: string;
     paymentMethodFirstMonth: string;
     paymentMethodDeposit: string;
 };
@@ -28,6 +30,7 @@ export default function FTTHMembershipForm() {
             residence: "",
             appartement_id: "",
             phone_number: "",
+            iban: "",
             paymentMethodFirstMonth: "",
             paymentMethodDeposit: "",
         }
@@ -40,6 +43,7 @@ export default function FTTHMembershipForm() {
             residence: appState.user?.membership?.address.residence,
             appartement_id: appState.user?.membership?.address.appartement_id,
             phone_number: appState.user?.phone_number,
+            iban: appState.user?.iban,
         });
 
     }, [appState.user]);
@@ -53,6 +57,7 @@ export default function FTTHMembershipForm() {
                     appartement_id: event.appartement_id,
                 },
                 phone_number: event.phone_number,
+                iban: event.iban,
                 payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
                 payment_method_deposit: PaymentMethod[event.paymentMethodDeposit],
             });
@@ -119,6 +124,51 @@ export default function FTTHMembershipForm() {
                                 )}
                             />
                         </div>
+                    </div>
+                    <div className="flex flex-col items-start gap-2 mt-4">
+                        <label className="block" htmlFor="iban">IBAN *</label>
+                        <Controller
+                            name="iban"
+                            control={control}
+                            rules={{
+                                validate: (value) => {
+                                    const validation = validateIBAN({ value });
+                                    if (validation?.ibanInvalid) {
+                                        if (validation.error?.countryUnsupported) {
+                                            return "Pays non supporté pour l'IBAN";
+                                        }
+                                        if (validation.error?.codeLengthInvalid) {
+                                            return "Longueur de l'IBAN invalide";
+                                        }
+                                        if (validation.error?.patternInvalid) {
+                                            return "Format de l'IBAN invalide";
+                                        }
+                                    }
+                                    return true; // IBAN valide
+                                }
+                            }}
+                            render={({ field: { onChange, value }, fieldState: { error } }) => (
+                                <>
+                                    <TextField
+                                        id="iban"
+                                        variant="standard"
+                                        placeholder="Entrez votre IBAN"
+                                        required
+                                        value={value}
+                                        onChange={(e) => onChange(e.target.value.replace(/\s+/g, ""))}
+                                        error={!!error}
+                                        helperText={error ? error.message : ""}
+                                        inputProps={{
+                                            style: { width: "30ch" }
+                                        }}
+                                    />
+                                </>
+                            )}
+                        />
+                        <Typography variant="body2" color="text.secondary" align="left">
+                            Cet IBAN nous servira à effectuer des remboursements partiels en cas de partage de votre lien fibre <br />
+                            (voir contrat et réglement intérieur à l'étape suivante), et pour rembourser votre caution à la fin de votre adhésion.
+                        </Typography>
                     </div>
                     <div className="mt-16 mb-8">
                         <Typography variant="h5" color="text.primary" align="left">

@@ -20,7 +20,7 @@ export default function UserSection({ user }: { user: User }) {
             </Typography>
             <Typography variant="body1" align="center" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <div className="flex flex-row gap-8">
-                    <strong>{user.email} - {user.phone_number ? user.phone_number : "NO PHONE NUMBER"}</strong>
+                    <strong>{user.email} - {user.phone_number ? user.phone_number : "NO PHONE NUMBER"} - {user.iban ? user.iban : "NO IBAN"}</strong>
                     <a href={`https://treso.rezel.net/adherents/card.php?rowid=${user.dolibarr_id}`} target="_blank" rel="noreferrer">
                         Dolibarr ID : {user.dolibarr_id}
                     </a>

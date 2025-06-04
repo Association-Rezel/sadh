@@ -106,6 +106,7 @@ export interface User {
     id: string;
     email: string;
     phone_number?: string;
+    iban?: string;
     first_name: string;
     last_name: string;
     membership?: Membership;
@@ -119,6 +120,7 @@ export interface MembershipRequest {
     address: Address;
     ssid?: string;
     phone_number?: string;
+    iban?: string;
     payment_method_first_month: PaymentMethod;
     payment_method_deposit?: PaymentMethod;
 }

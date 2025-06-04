@@ -1,6 +1,6 @@
 from typing import Optional, Self
 
-from common_models.base import PortableDatetime, RezelBaseModel
+from common_models.base import PortableDatetime, PortableIBAN, RezelBaseModel
 from common_models.user_models import (
     Address,
     Appointment,
@@ -37,6 +37,7 @@ class MembershipUpdate(RezelBaseModel):
 
 class UserUpdate(RezelBaseModel):
     phone_number: Optional[str] = Field(None)
+    iban: Optional[PortableIBAN] = Field(None)
     membership: Optional[Membership] = Field(None)
     availability_slots: Optional[set[AppointmentSlot]] = Field(None)
 
@@ -45,6 +46,7 @@ class MembershipRequest(RezelBaseModel):
     type: MembershipType = Field(...)
     ssid: Optional[str] = Field(None)
     phone_number: Optional[str] = Field(None)
+    iban: Optional[PortableIBAN] = Field(None)
     address: Address = Field(...)
     payment_method_first_month: PaymentMethod = Field(...)
     payment_method_deposit: Optional[str] = Field(None)
@@ -52,13 +54,20 @@ class MembershipRequest(RezelBaseModel):
     @model_validator(mode="after")
     def _validate(self) -> Self:
         if self.type == MembershipType.FTTH:
+
             if self.phone_number is None:
                 raise ValueError("phone_number is required for FTTH membership")
+
+            if self.iban is None:
+                raise ValueError("iban is required for FTTH membership")
+
             if self.payment_method_deposit is None:
                 raise ValueError(
                     "payment_method_deposit is required for FTTH membership"
                 )
+
         elif self.type == MembershipType.WIFI:
             if self.ssid is None:
                 raise ValueError("ssid is required for WIFI membership")
+
         return self

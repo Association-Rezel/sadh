@@ -87,6 +87,7 @@ async def _me_create_membership_request(
             {
                 "$set": {
                     "phone_number": request.phone_number,
+                    "iban": request.iban,
                     "membership.type": request.type,
                     "membership.ref_commande": f"{request.address.residence.name}-{request.address.appartement_id}-{datetime.today().strftime('%Y%m%d')}-1",
                     "membership.address": request.address.model_dump(mode="json"),
