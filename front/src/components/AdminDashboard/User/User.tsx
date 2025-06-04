@@ -3,6 +3,7 @@ import MembershipSection from "./MembershipSection";
 import UserSection from "./UserSection";
 import ONTSection from "./ONTSection";
 import UnetSection from "./UnetSection";
+import IbanSection from "./IBANSection";
 import { useEffect, useState } from "react";
 import { Api } from "../../../utils/Api";
 import { Membership, MembershipType, User } from "../../../utils/types/types";
@@ -96,6 +97,7 @@ function UserComponent() {
                                 <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
                                 <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
                                 <InteropSection registerToMembershipUpdateForm={register} user={user} />
+                                <IbanSection user={user} setUser={setUser} />
                                 <PartialRefundSection user={user} setUser={setUser} />
                             </>
                         )}
