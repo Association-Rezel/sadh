@@ -1,10 +1,23 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { OIDCContext } from "../../utils/OIDCContext"; 
 import { Button, Typography } from "@mui/material";
 import logoRezel from "../../ressources/img/cotcot.svg"
 
 export default function LoginPage() {
     let oidcAuth = useContext(OIDCContext);
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.pathname === "/signup") {
+            oidcAuth.userManager.signinRedirect({ prompt: "create" });
+        } else if (location.pathname === "/login") {
+            oidcAuth.userManager.signinRedirect();
+        }
+    }, [location, oidcAuth]);
+    if (location.pathname === "/login" || location.pathname === "/signup") {
+        return null;
+    }
 
     return (
         <div className="flex flex-col items-center justify-center h-screen gap-10">
