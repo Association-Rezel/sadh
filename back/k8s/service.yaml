@@ -5,10 +5,9 @@ metadata:
   name: sadh-back-service
   namespace: default
   annotations:
-    kube-vip.io/loadbalancerIPs: 137.194.15.36,2a09:6847:fa10:2270::1536
+    kube-vip.io/loadbalancerIPs: 137.194.15.36
 spec:
   type: LoadBalancer
-  ipFamilyPolicy: RequireDualStack
   selector:
     app: sadh
     tier: back
@@ -24,10 +23,9 @@ metadata:
   name: sadh-back-service
   namespace: dev
   annotations:
-    kube-vip.io/loadbalancerIPs: 137.194.15.36,2a09:6847:fa10:2270::1536
+    kube-vip.io/loadbalancerIPs: 137.194.15.36
 spec:
   type: LoadBalancer
-  ipFamilyPolicy: RequireDualStack
   selector:
     app: sadh
     tier: back
