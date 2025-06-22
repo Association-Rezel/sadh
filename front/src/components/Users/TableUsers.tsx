@@ -14,9 +14,11 @@ import FirstPageIcon from "@mui/icons-material/FirstPage";
 import KeyboardArrowLeft from "@mui/icons-material/KeyboardArrowLeft";
 import KeyboardArrowRight from "@mui/icons-material/KeyboardArrowRight";
 import LastPageIcon from "@mui/icons-material/LastPage";
-import { DepositStatus, MembershipStatus, User } from "../../utils/types/types";
+import { DepositStatus, MembershipStatus, MembershipType, User } from "../../utils/types/types";
 import { Link } from "react-router-dom";
 import MembershipTypeChip from "../utils/Utils";
+import { TableHead, TableSortLabel } from "@mui/material";
+import SelectableTableCell from "../utils/SelectableTableCell";
 
 interface TablePaginationActionsProps {
     count: number;
@@ -72,17 +74,39 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
 }
 
 export function TableUsers({ users,
+    tableHead = false,
     rowsPerPageOptions = [5, 10, 25, { label: "All", value: -1 }],
     rowsPerPageDefault = 5 }: {
         users: User[],
+        tableHead?: boolean,
         rowsPerPageOptions?: Array<number | { value: number; label: string }>,
         rowsPerPageDefault?: number
     }) {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(rowsPerPageDefault);
+    
+    const [shownUsers, setShownUsers] = React.useState<User[]>([]);
+
+    const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">("asc");
+
+    const possibleFieldsType = ["(Vide)", ...Object.values(MembershipType)] as string[];
+    const [selectedFieldsType, setSelectedFieldsType] = React.useState<string[]>(possibleFieldsType);
+    
+    const possibleFieldsStatus = ["(Vide)", ...Object.values(MembershipStatus).filter((status) => typeof status === "string")] as string[];
+    const defaultDisabledStatus = ["INACTIVE"];
+    const [selectedFieldsStatus, setSelectedFieldsStatus] = React.useState<string[]>(possibleFieldsStatus.filter((status) => !defaultDisabledStatus.includes(status)));
+
+    const [selectedFieldsDeposit, setSelectedFieldsDeposit] = React.useState<string[]>(["Oui", "Non"]);
+    const possibleFieldsDeposit = ["Oui", "Non"];
+
+    const [selectedFieldsFirstMonth, setSelectedFieldsFirstMonth] = React.useState<string[]>(["Oui", "Non"]);
+    const possibleFieldsFirstMonth = ["Oui", "Non"];
+
+    const [selectedFieldsContract, setSelectedFieldsContract] = React.useState<string[]>(["Oui", "Non"]);
+    const possibleFieldsContract = ["Oui", "Non"];
 
     // Avoid a layout jump when reaching the last page with empty rows.
-    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
+    const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - shownUsers.length) : 0;
 
     const handleChangePage = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
         setPage(newPage);
@@ -93,14 +117,80 @@ export function TableUsers({ users,
         setPage(0);
     };
 
+    const usersSorting = () => {
+        shownUsers.sort((a, b) => {
+            if (sortDirection === "asc") {
+                return a.first_name.localeCompare(b.first_name);
+            } else {
+                return b.first_name.localeCompare(a.first_name);
+            }
+        });
+    };
+
+    React.useEffect(() => {
+        usersSorting();
+    }, [sortDirection, shownUsers]);
+    usersSorting();
+
+    React.useEffect(() => {
+        if (!tableHead) {
+            setShownUsers(users);
+            return;
+        }
+        // Filter users based on selected fields
+        const filteredUsers = users.filter((user) => {
+            const typeMatch = selectedFieldsType.includes(user.membership?.type) || (selectedFieldsType.includes("(Vide)") && !user.membership?.type);
+            const statusMatch = selectedFieldsStatus.includes(MembershipStatus[user.membership?.status]) || (selectedFieldsStatus.includes("(Vide)") && !user.membership?.status);
+            const depositMatch = selectedFieldsDeposit.includes(user.membership?.deposit_status === DepositStatus.PAID ? "Oui" : "Non");
+            const firstMonthMatch = selectedFieldsFirstMonth.includes(user.membership?.paid_first_month ? "Oui" : "Non");
+            const contractMatch = selectedFieldsContract.includes(user.membership?.contract_signed ? "Oui" : "Non");
+
+            return typeMatch && statusMatch && depositMatch && firstMonthMatch && contractMatch;
+        });
+        setPage(0);
+        setShownUsers(filteredUsers);
+    }, [selectedFieldsType, selectedFieldsStatus, selectedFieldsDeposit, selectedFieldsFirstMonth, selectedFieldsContract, users]);
+
+
     return (
         <div id="table-user" style={{ margin: "0 20px" }}>
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
+                    {tableHead ?
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={true}
+                                        direction={sortDirection}
+                                        onClick={() => {
+                                            const newDirection = sortDirection === "asc" ? "desc" : "asc";
+                                            setSortDirection(newDirection);
+                                        }}
+                                        >Prénom Nom</TableSortLabel>
+                                </TableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsType} possibleFields={possibleFieldsType} onChange={setSelectedFieldsType}>
+                                    Type d'adhésion
+                                </SelectableTableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsStatus} possibleFields={possibleFieldsStatus} onChange={setSelectedFieldsStatus}>
+                                    Statut d'adhésion
+                                </SelectableTableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsDeposit} possibleFields={possibleFieldsDeposit} onChange={setSelectedFieldsDeposit}>
+                                    Caution payé
+                                </SelectableTableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsFirstMonth} possibleFields={possibleFieldsFirstMonth} onChange={setSelectedFieldsFirstMonth}>
+                                    1er mois payé
+                                </SelectableTableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsContract} possibleFields={possibleFieldsContract} onChange={setSelectedFieldsContract}>
+                                    Contrat signé
+                                </SelectableTableCell>
+                            </TableRow>
+                        </TableHead>
+                    : null}
                     <TableBody>
                         {(rowsPerPage > 0
-                            ? users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                            : users
+                            ? shownUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                            : shownUsers
                         ).map((user: User) => (
                             <TableRow key={user.id}>
                                 <TableCell component="th" scope="row">
@@ -136,7 +226,7 @@ export function TableUsers({ users,
                             <TablePagination
                                 rowsPerPageOptions={rowsPerPageOptions}
                                 colSpan={5}
-                                count={users.length}
+                                count={shownUsers.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
                                 SelectProps={{

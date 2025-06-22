@@ -76,7 +76,7 @@ export default function Users() {
                 fullWidth
                 sx={{ marginBottom: 2 }}
             />
-            <TableUsers users={filterUsers(users, Array.of(searchFilter))} rowsPerPageDefault={100} rowsPerPageOptions={[100, 500, 1000, { label: "All", value: -1 }]} />
+            <TableUsers users={filterUsers(users, Array.of(searchFilter))} tableHead={true} rowsPerPageDefault={100} rowsPerPageOptions={[100, 500, 1000, { label: "All", value: -1 }]} />
         </div>
     );
 }
