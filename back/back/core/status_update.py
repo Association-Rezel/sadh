@@ -587,7 +587,10 @@ async def delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) -> 
             {"_id": str(main_unet_user.id)},
             {
                 "$set": {
-                    "membership.attached_wifi_adherents": main_unet_user.membership.attached_wifi_adherents
+                    "membership.attached_wifi_adherents": [
+                        adh.model_dump(mode="json")
+                        for adh in main_unet_user.membership.attached_wifi_adherents
+                    ],
                 }
             },
         )
