@@ -36,7 +36,7 @@ function PasswordResetForm({ unet, setUnet }) {
       setPassword("");
       setInfo("Le mot de passe a bien été modifié, la modification sera effective à 6h du matin");
     } catch (apiError) {
-      setError(apiError.message || "Une erreur est survenue lors de la mise à jour du SSID");
+      setError(apiError.message || "Une erreur est survenue lors de la mise à jour du mot de passe");
     }
     setLoading(false);
   }
