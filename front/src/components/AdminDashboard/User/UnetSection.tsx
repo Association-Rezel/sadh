@@ -256,6 +256,28 @@ export default function UnetSection({
                             <Typography variant="h6" align="left" component="div" >
                                 Box
                             </Typography>
+                            <div style={{ margin: '0.5rem 0' }}>
+                                {box.ping_history && box.ping_history.length > 0 && (() => {
+                                    const lastPing = box.ping_history[0];
+                                    const lastSuccessfulPing = box.ping_history.find(p => p.success);
+
+                                    return (
+                                        <>
+                                            <strong>Ping fonctionnel</strong> : {
+                                                lastPing.success ?
+                                                    <Chip variant="outlined" color="success" label="Oui"/> :
+                                                    <Chip color="error" label="Non"/>
+                                            }
+                                            <br />
+                                            <strong>Dernier ping réussi</strong> : {
+                                                lastSuccessfulPing ?
+                                                    new Date(lastSuccessfulPing.timestamp * 1000).toLocaleString('fr-FR') :
+                                                    " Jamais"
+                                            }
+                                        </>
+                                    );
+                                })()}
+                            </div>
                             <Button
                                 onClick={() => navigator.clipboard.writeText(generateManagementIPv6(box?.mac))}
                                 startIcon={<ContentCopy />}

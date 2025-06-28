@@ -70,10 +70,16 @@ export interface WanVlan {
     ipv6_gateway: string;
 }
 
+export interface PingHistory {
+    timestamp: number;
+    success: boolean;
+}
+
 export interface Box {
     type: string;
     main_unet_id: string;
     mac: string;
     unets: UnetProfile[];
     wan_vlan: WanVlan[];
+    ping_history: PingHistory[];
 }
