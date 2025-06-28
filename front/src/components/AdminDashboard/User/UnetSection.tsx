@@ -269,7 +269,13 @@ export default function UnetSection({
                                 <TextField
                                     value={newMac}
                                     onChange={(e) => setNewMac(e.target.value)}
-                                /> : box.mac
+                                /> :
+                                <Button
+                                    onClick={() => navigator.clipboard.writeText(box.mac)}
+                                    startIcon={<ContentCopy />}
+                                    size="small"
+                                >{box.mac}
+                                </Button>
                             }
                             {isMainUnet && <IconButton onClick={() => setEditingMac(!editingMac)}><EditIcon /></IconButton>}
                             {editingMac && <ConfirmableButton
