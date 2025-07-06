@@ -93,7 +93,7 @@ deploybackend:
         envsubst < $file | tee back/k8s-envsubst/$(basename $file)
       done
     # Apply Kubernetes manifests
-    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl config use-context rezel/k8s-cluster:main-k8s-agent
     - kubectl apply -f back/k8s-envsubst/
     # Clean up
     - rm -rf back/k8s-envsubst
@@ -124,7 +124,7 @@ deployfrontend:
         envsubst < $file | tee front/k8s-envsubst/$(basename $file)
       done
     # Apply Kubernetes manifests
-    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl config use-context rezel/k8s-cluster:main-k8s-agent
     - kubectl apply -f front/k8s-envsubst/
     # Clean up
     - rm -rf front/k8s-envsubst
