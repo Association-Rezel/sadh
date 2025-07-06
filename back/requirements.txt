@@ -1,7 +1,7 @@
 # Index par défaut
 --index-url https://pypi.org/simple
 # Index personnalisé (common-models)
---extra-index-url https://gitlab.fai.rezel.net/api/v4/projects/56/packages/pypi/simple
+--extra-index-url https://gitlab.core.rezel.net/api/v4/projects/56/packages/pypi/simple
 uvicorn==0.32.0
 fastapi==0.115.5
 psycopg2-binary==2.9.10

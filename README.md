@@ -8,7 +8,7 @@ Ce repository contient l'interface de gestion du FAI.
 ## Ouvrir le projet sous VS Code
 Pour parcourir le code, ouvrez le workspace [VS-Code](https://code.visualstudio.com/insiders/) avec :
 ```bash
-git clone git@gitlab.fai.rezel.net:fai/sadh.git
+git clone git@gitlab.core.rezel.net:rezel/sadh.git
 cd sadh
 code .
 ```
