@@ -1,6 +1,5 @@
 """Environment definitions for the back-end."""
 
-import json
 from os import getenv
 
 from dotenv import load_dotenv
@@ -70,6 +69,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
     nix_url: str
 
     fai_email_address: str | None
+    sender_email_address: str | None
+    sender_email_address_password: str | None
 
     documenso_url: str
     documenso_token: str
@@ -108,6 +109,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.nix_url = get_or_raise("NIX_URL")
 
         self.fai_email_address = get_or_none("FAI_EMAIL_ADDRESS")
+        self.sender_email_address = get_or_none("SENDER_EMAIL_ADDRESS")
+        self.sender_email_password = get_or_none("SENDER_EMAIL_PASSWORD")
 
         self.documenso_url = get_or_raise("DOCUMENSO_URL")
 

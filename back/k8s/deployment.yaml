@@ -27,6 +27,7 @@ spec:
             MATRIX_PASSWORD="{{ .Data.data.matrix_password }}"
             DOCUMENSO_TOKEN="{{ .Data.data.documenso_api_token }}"
             DOLIBARR_API_TOKEN="{{ .Data.data.dolibarr_api_token }}"
+            SENDER_EMAIL_PASSWORD="{{ .Data.data.sender_email_password }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa
