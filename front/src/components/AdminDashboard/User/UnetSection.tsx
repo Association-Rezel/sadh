@@ -258,11 +258,19 @@ export default function UnetSection({
                             </Typography>
                             <div style={{ margin: '0.5rem 0' }}>
                                 {box.ping_history && box.ping_history.length > 0 && (() => {
-                                    const lastPing = box.ping_history[0];
+                                    const lastPing = box.ping_history[0]; // Le ping le plus récent
                                     const lastSuccessfulPing = box.ping_history.find(p => p.success);
+                                    const lastPingDate = new Date(lastPing.timestamp * 1000);
+                                    const isDataObsolete = new Date().getTime() - lastPingDate.getTime() > 6 * 60 * 60 * 1000;
 
                                     return (
                                         <>
+                                            {isDataObsolete && (
+                                                <Alert severity="warning" sx={{ mb: 2 }}>
+                                                    Attention : La supervision semble obsolète. La dernière donnée date du {lastPingDate.toLocaleString('fr-FR')}.
+                                                </Alert>
+                                            )}
+
                                             <strong>Ping fonctionnel</strong> : {
                                                 lastPing.success ?
                                                     <Chip variant="outlined" color="success" label="Oui"/> :
