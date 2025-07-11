@@ -61,9 +61,11 @@ def _send_email(
                         f"attachment; filename={attachment.split('/')[-1]}",
                     )
                     message.attach(part)
-        with smtplib.SMTP("smtp.rezel.net", 25) as server:
+        with smtplib.SMTP("mail.rezel.net", 587) as server:
+            server.starttls()
+            server.login(ENV.sender_email_address, ENV.sender_email_password)
             server.sendmail(
-                "fai@rezel.net", [to, bcc] if bcc else to, message.as_string()
+                ENV.fai_email_address, [to, bcc] if bcc else to, message.as_string()
             )
     except Exception as e:
         send_matrix_message(
