@@ -168,62 +168,74 @@ export default function ONTSection(
                         <Typography variant="h6" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                             Données opérationnelles
                         </Typography>
-                        {ont.configured_in_olt == null && 
-                        <Alert severity="warning">
-                            Aucune donnée remontée par net-adh-scraper. 
-                            Soit l'ONT n'est pas enregistré dans l'OLT, 
-                            soit il faut attendre la prochaine éxécution
-                            de net-adh-scraper (quelques minutes).
-                        </Alert>}
-                        {ont.configured_in_olt != null && !ont.configured_in_olt && 
-                        <Alert severity="error">
-                            L'ONT n'est pas enrgistré dans l'OLT. 
-                            Vous pouvez forcer l'enregistrement ci-dessous.
-                        </Alert>}
-                        {ont.configured_in_olt && (
-                            <>
-                                au {new Date(ont.operational_data.last_fetched * 1000).toLocaleDateString(navigator.language, { hour: 'numeric', minute: 'numeric' })}<br />
-                                <br />
-                                <strong>Etat administratif</strong> : {ont.operational_data.admin_status ?
-                                    <Chip variant="outlined" color="success" label="Activé" />
-                                    : <Chip color="error" label="Désactivé" />
-                                }
-                                <br />
-                                {ont.operational_data?.admin_status && (
-                                    <>
-                                        <strong>Réception du signal</strong> : {
-                                            ont.operational_data.operational_status ?
-                                                <Chip variant="outlined" color="success" label="Oui" />
-                                                : <Chip color="error" label="Non" />
-                                        }
-                                        <br />
-                                        <strong>Dernier signal reçu</strong> : {
-                                            ont.operational_data.last_operational_up ?
-                                                new Date(ont.operational_data.last_operational_up * 1000).toLocaleDateString(navigator.language, { hour: 'numeric', minute: 'numeric' })
-                                                : "Jamais"
-                                        }<br />
-                                        <strong>Réception signal (dBm)</strong> : {ont.operational_data.dbm_level}<br />
-                                        <strong>Distance estimée</strong> : {ont.operational_data.estimation_distance} km<br />
-                                        <strong>OLT path</strong> : {ont.operational_data.path} <br />
-                                    </>
-                                )}
-                                {!ont.operational_data?.admin_status &&
-                                    <Alert severity="warning">
-                                        L'ONT est désactivé administrativement dans l'OLT.
-                                        Pour ré-activer, vous pouvez forcer le ré-enregistrement ci-dessous
-                                    </Alert>}
-                                <br />
-                                {!ont.operational_data && <Chip color="error" label="Erreur. Etat innatendu (pas de données opérationelles)." />}
-                            </>
-                        )}
+                        {ont.configured_in_olt == null &&
+                            <Alert severity="warning">
+                                Aucune donnée remontée par net-adh-scraper.
+                                Soit l'ONT n'est pas enregistré dans l'OLT,
+                                soit il faut attendre la prochaine éxécution
+                                de net-adh-scraper (quelques minutes).
+                            </Alert>}
+                        {ont.configured_in_olt != null && !ont.configured_in_olt &&
+                            <Alert severity="error">
+                                L'ONT n'est pas enregistré dans l'OLT.
+                                Vous pouvez forcer l'enregistrement ci-dessous.
+                            </Alert>}
+                        {ont.configured_in_olt && (() => {
+                            const lastFetchedDate = new Date(ont.operational_data.last_fetched * 1000);
+                            const isDataObsolete = new Date().getTime() - lastFetchedDate.getTime() > 6 * 60 * 60 * 1000;
+
+                            return (
+                                <>
+                                    {/* Alerte qui s'affiche si les données sont vieilles de plus de 6h */}
+                                    {isDataObsolete && (
+                                        <Alert severity="warning" sx={{ my: 2 }}>
+                                            Attention : La supervision semble obsolète. La dernière mise à jour des données date du {lastFetchedDate.toLocaleString('fr-FR')}.
+                                        </Alert>
+                                    )}
+
+                                    au {lastFetchedDate.toLocaleDateString(navigator.language, { hour: 'numeric', minute: 'numeric' })}<br />
+                                    <br />
+                                    <strong>Etat administratif</strong> : {ont.operational_data.admin_status ?
+                                        <Chip variant="outlined" color="success" label="Activé" />
+                                        : <Chip color="error" label="Désactivé" />
+                                    }
+                                    <br />
+                                    {ont.operational_data?.admin_status && (
+                                        <>
+                                            <strong>Réception du signal</strong> : {
+                                                ont.operational_data.operational_status ?
+                                                    <Chip variant="outlined" color="success" label="Oui" />
+                                                    : <Chip color="error" label="Non" />
+                                            }
+                                            <br />
+                                            <strong>Dernier signal reçu</strong> : {
+                                                ont.operational_data.last_operational_up ?
+                                                    new Date(ont.operational_data.last_operational_up * 1000).toLocaleDateString(navigator.language, { hour: 'numeric', minute: 'numeric' })
+                                                    : "Jamais"
+                                            }<br />
+                                            <strong>Réception signal (dBm)</strong> : {ont.operational_data.dbm_level}<br />
+                                            <strong>Distance estimée</strong> : {ont.operational_data.estimation_distance} km<br />
+                                            <strong>OLT path</strong> : {ont.operational_data.path} <br />
+                                        </>
+                                    )}
+                                    {!ont.operational_data?.admin_status &&
+                                        <Alert severity="warning">
+                                            L'ONT est désactivé administrativement dans l'OLT.
+                                            Pour ré-activer, vous pouvez forcer le ré-enregistrement ci-dessous
+                                        </Alert>}
+                                    <br />
+                                    {!ont.operational_data && <Chip color="error" label="Erreur. Etat innatendu (pas de données opérationelles)." />}
+                                </>
+                            )
+                        })()}
                         <ConfirmableButton
                             variant="text"
                             buttonColor="error"
                             onConfirm={onDelete}
                             startIcon={<TrashIcon />}
                             confirmationText="Le déprovisionning de l'ONT est une action irreversible.
-                                    Si vous souhaitez réutiliser ses informations, pensez à les notez au préalable.
-                                    (numéro de série, position au PM, etc...)"
+                                     Si vous souhaitez réutiliser ses informations, pensez à les notez au préalable.
+                                     (numéro de série, position au PM, etc...)"
                         >
                             Supprimer l'ONT
                         </ConfirmableButton>
