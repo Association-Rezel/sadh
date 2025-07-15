@@ -38,6 +38,7 @@ async def create_dolibarr_user(
     else:
         typeid = TYPE_ADHERENT_WIFI
         cotisation = 10
+    user_fai_url = f"https://fai.rezel.net/admin/users/{user.id}"
     methode_payement1 = "- par virement bancaire, voici notre RIB : IBAN : FR76 3000 4033 6400 0100 0660 667, domiciliation : BNP Paribas, BIC : BNPAFRPPXXX"
     methode_payement2 = "- en espèce ou chèque à notre local, salle 0A206 à Télécom Paris (au fond du couloir des associations, côté LudoTech/Robotics/Forum/BDS), 19 Pl. Marguerite Perey, 91120 Palaiseau"
     data = {
@@ -46,6 +47,7 @@ async def create_dolibarr_user(
         "lastname": user.last_name,
         "firstname": user.first_name,
         "email": user.email,
+        "url": user_fai_url,
         "array_options": {
             "options_cotisation": cotisation,
             "options_methode_payement1": methode_payement1,
