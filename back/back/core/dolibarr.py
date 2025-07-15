@@ -38,7 +38,8 @@ async def create_dolibarr_user(
     else:
         typeid = TYPE_ADHERENT_WIFI
         cotisation = 10
-    methode_payement = "- par virement bancaire, voici notre RIB : <br><br> IBAN : FR76 3000 4033 6400 0100 0660 667<br> Domiciliation : BNP Paribas <br> BIC : BNPAFRPPXXX<br><br>- en espèce ou chèque à notre local, salle 0A206 à Télécom Paris (au fond du couloir des associations, côté LudoTech/Robotics/Forum/BDS), 19 Pl. Marguerite Perey, 91120 Palaiseau.<br>"
+    methode_payement1 = "- par virement bancaire, voici notre RIB : IBAN : FR76 3000 4033 6400 0100 0660 667, domiciliation : BNP Paribas, BIC : BNPAFRPPXXX"
+    methode_payement2 = "- en espèce ou chèque à notre local, salle 0A206 à Télécom Paris (au fond du couloir des associations, côté LudoTech/Robotics/Forum/BDS), 19 Pl. Marguerite Perey, 91120 Palaiseau"
     data = {
         "morphy": "phy",
         "typeid": typeid,
@@ -47,7 +48,8 @@ async def create_dolibarr_user(
         "email": user.email,
         "array_options": {
             "options_cotisation": cotisation,
-            "options_methode_payement": methode_payement,
+            "options_methode_payement1": methode_payement1,
+            "options_methode_payement2": methode_payement2,
         },
     }
 
