@@ -13,6 +13,7 @@ from common_models.user_models import (
     User,
 )
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
@@ -770,4 +771,30 @@ async def _user_transfer_devices(
                 ]
             ),
         ),
+    )
+
+
+@router.post(
+    "/{user_id}/pay-user-partial-refunds",
+    dependencies=[must_be_sadh_admin],
+)
+async def _pay_user_refunds(
+    user: User = get_user_from_user_id,
+    db: AsyncIOMotorDatabase = get_db,
+) -> JSONResponse:
+    result = await db.partial_refunds.update_many(
+        {"user_id": str(user.id), "paid": False},
+        {"$set": {"paid": True}},
+    )
+    if result.modified_count == 0:
+        return JSONResponse(
+            {
+                "message": "No refunds found for this user or all refunds are already paid"
+            },
+            status_code=404,
+        )
+    return JSONResponse(
+        {
+            "message": f"{result.modified_count} refunds marked as paid for user {user_id}"
+        }
     )
