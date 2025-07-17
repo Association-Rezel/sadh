@@ -14,6 +14,7 @@ export default function PartialRefunds() {
     const [users, setUsers] = useState<User[] | null>(null);
     const [loading, setLoading] = useState<boolean>(false)
     const [computeMessage, setComputeMessage] = useState<string>("")
+    const [showPaid, setShowPaid] = useState<boolean>(false);
 
     useEffect(() => {
         Api.fetchAllPartialRefunds().then(setPartialRefunds).catch(alert);
@@ -83,11 +84,6 @@ export default function PartialRefunds() {
                     </List>
                 </Alert>
             }
-
-
-            <h2>
-                A traiter
-            </h2>
             <Alert severity="info">
                 {users && partialRefunds && partialRefunds.filter(p => !p.paid && p.wifi_adherents.length === 0).length || <CircularProgress />} cartes sont masquées
                 car elles concernent des mois d'adhésions FTTH avec aucun adhérent Wi-Fi à rembourser.
@@ -96,6 +92,34 @@ export default function PartialRefunds() {
                 Les cartes à traiter sont susceptibles d'être supprimées et recalculées automatiquement
                 lors d'un nouveau calcul des remboursements partiels (Bouton tout en haut)
             </Alert>
+            <h2>
+                Montant total des remboursements partiels par adhérent
+            </h2>
+            <div className="grid gap-6 2xl:grid-cols-2 place-items-center">
+                {users && partialRefunds && users
+                    .filter(user =>
+                        partialRefunds.some(refund => refund.user_id === user.id && !refund.paid && refund.wifi_adherents.length > 0)
+                    )
+                    .map(user => {
+                        const remainingRefund = partialRefunds
+                            .filter(refund => refund.user_id === user.id && !refund.paid && refund.wifi_adherents.length > 0)
+                            .reduce((sum, refund) => sum + refund.refunded_amount, 0);
+
+                        return (
+                            <div key={user.id} className="xl:min-w-[35rem]">
+                                <UserPartialRefunds
+                                    user={user}
+                                    remainingRefund={remainingRefund}
+                                    setPartialRefunds={setPartialRefunds}
+                                />
+                            </div>
+                        );
+                    })
+                }
+            </div>
+            <h2>
+                Détail des remboursements partiels
+            </h2>
             <div className="grid gap-6 2xl:grid-cols-2 place-items-center">
                 {users && partialRefunds && partialRefunds.filter(p => !p.paid && p.wifi_adherents.length > 0).map((partialRefund) =>
                     <div key={partialRefund.id} className="xl:min-w-[35rem]">
@@ -109,22 +133,27 @@ export default function PartialRefunds() {
                     </div>
                 )}
             </div>
-            <h2>
-                Traité
+            <h2
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowPaid(prev => !prev)}
+            >
+                Payés
             </h2>
-            <div className="grid gap-6 2xl:grid-cols-2 place-items-center">
-                {users && partialRefunds && partialRefunds.filter(p => p.paid && p.wifi_adherents.length > 0).map((partialRefund) =>
-                    <div key={partialRefund.id} className="xl:min-w-[35rem]">
-                        <PartialRefundCard
-                            users={users}
-                            partialRefund={partialRefund}
-                            setPartialRefund={(newP: PartialRefund) => setPartialRefunds(partialRefunds.map(p => p.id === partialRefund.id ? newP : p))}
-                            deletePartialRefund={() => setPartialRefunds(partialRefunds.filter(p => p.id !== partialRefund.id))}
-                            user={users.find(user => user.id === partialRefund.user_id)}
-                        />
-                    </div>
-                )}
-            </div>
+            {showPaid && (
+                <div className="grid gap-6 2xl:grid-cols-2 place-items-center">
+                    {users && partialRefunds && partialRefunds.filter(p => p.paid && p.wifi_adherents.length > 0).map((partialRefund) =>
+                        <div key={partialRefund.id} className="xl:min-w-[35rem]">
+                            <PartialRefundCard
+                                users={users}
+                                partialRefund={partialRefund}
+                                setPartialRefund={(newP: PartialRefund) => setPartialRefunds(partialRefunds.map(p => p.id === partialRefund.id ? newP : p))}
+                                deletePartialRefund={() => setPartialRefunds(partialRefunds.filter(p => p.id !== partialRefund.id))}
+                                user={users.find(user => user.id === partialRefund.user_id)}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -235,6 +264,44 @@ function PartialRefundCard({ users, partialRefund, setPartialRefund, deleteParti
     )
 }
 
+function UserPartialRefunds({ user, remainingRefund, setPartialRefunds }: { user: User, remainingRefund: number, setPartialRefunds: (p: PartialRefund[]) => void, }) {
+
+
+    const onSubmitPaid = async (user_id: string) => {
+        await Api.payUserPartialRefunds(user_id).catch(alert);
+        await Api.fetchAllPartialRefunds().then(setPartialRefunds).catch(alert);
+    }
+    return (
+        <Card>
+            <CardContent>
+                <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+                    <Typography
+                        variant="body1"
+                        sx={{ fontWeight: "bold", flexGrow: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                        title={`${user.first_name} ${user.last_name}`}
+                    >
+                        {user.first_name} {user.last_name}
+                    </Typography>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                        <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                            {remainingRefund} €
+                        </Typography>
+                        <Button
+                            variant="contained"
+                            color="success"
+                            startIcon={<Check />}
+                            onClick={() => { onSubmitPaid(user.id) }}
+                            disabled={remainingRefund === 0}
+                            sx={{ minWidth: 100 }}
+                        >
+                            Payé !
+                        </Button>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
 function findConflictingRefunds(partialRefunds: PartialRefund[], users: User[]) {
     const conflicts: User[] = [];
 

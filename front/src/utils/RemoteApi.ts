@@ -288,6 +288,10 @@ export class RemoteApi implements ApiInterface {
         return this.parseUser(await this.myAuthenticatedRequest(`/documenso/refresh/${user_id}`, null, "POST"));
     }
 
+    async payUserPartialRefunds(user_id: string): Promise<void> {
+        await this.myAuthenticatedRequest(`/users/${user_id}/pay-user-partial-refunds`, null, "POST");
+    }
+
     async deleteONT(serial_number: string): Promise<ONTInfo> {
         return await this.myAuthenticatedRequest("/devices/ont/" + serial_number, null, "DELETE");
     }

@@ -239,4 +239,5 @@ export interface ApiInterface {
     updatePartialRefund(partial_refund: PartialRefund): Promise<PartialRefund>;
     computePartialRefunds(): Promise<object>;
     deletePartialRefund(partial_refund_id: string): Promise<void>;
+    payUserPartialRefunds(user_id: string): Promise<void>;
 }
