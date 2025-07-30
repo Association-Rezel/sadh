@@ -4,15 +4,13 @@ import pytz
 import requests
 from common_models.hermes_models import Box, UnetProfile
 from common_models.user_models import User
-from fastapi import HTTPException
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from fastapi import APIRouter, Depends, HTTPException
 
 from back.env import ENV
-from back.mongodb.db import get_db
-from back.server.dependencies import get_user_me, must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.mongodb.db import GetDatabase
+from back.server.dependencies import RequireCurrentUser, must_be_admin
 
-router = ROUTEURS.new("net")
+router = APIRouter(prefix="/net", tags=["net"])
 
 
 @router.get(
@@ -20,7 +18,7 @@ router = ROUTEURS.new("net")
     response_model=list[str],
 )
 async def _list_ssids(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ):
     """List all SSIDS."""
 
@@ -41,8 +39,8 @@ async def _list_ssids(
 )
 async def _validate_ssid(
     ssid: str,
-    user: User = get_user_me,
-    db: AsyncIOMotorDatabase = get_db,
+    user: RequireCurrentUser,
+    db: GetDatabase,
 ) -> bool:
     """Check if the SSID is not already used."""
 
@@ -64,7 +62,9 @@ async def _validate_ssid(
 
 
 @router.get(
-    "/get-all-ont-summary", response_model=str, dependencies=[must_be_sadh_admin]
+    "/get-all-ont-summary",
+    response_model=str,
+    dependencies=[Depends(must_be_admin)],
 )
 def get_all_ont_summary():
     """Get all ONT summary from Charon"""
@@ -83,12 +83,12 @@ def get_all_ont_summary():
 @router.post(
     "/transfer-unet/{unet_id}/to/{mac}",
     response_model=UnetProfile,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _transfer_unet(
     unet_id: str,
     mac: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ):
     """Transfer a unet to a new box."""
 

@@ -1,10 +1,9 @@
 import { Typography } from "@mui/material";
-import { Appointment, AppointmentSlot, User } from "../../utils/types/types";
-import { useContext } from "react";
-import { AppStateContext } from "../../utils/AppStateContext";
+import { useAuthContext } from "../../pages/auth/AuthContext";
+import { Appointment, AppointmentSlot } from "../../utils/types/types";
 
 export default function AppointmentSlotList() {
-    const { appState } = useContext(AppStateContext);
+    const { user } = useAuthContext();
     // Pour l'instant on ne gère que :
     // - 1 rendez-vous validé
     // - Plusieurs rendez-vous en attente
@@ -12,14 +11,14 @@ export default function AppointmentSlotList() {
     return (
         <div className="mt-10 flex flex-col items-center">
             <Typography variant="h2">Rendez-vous</Typography>
-            { appState.user.membership.appointment &&
-                <ValidatedAppointment appointment={appState.user.membership.appointment} />}
-            {!appState.user.membership.appointment && (
+            { user.membership.appointment &&
+                <ValidatedAppointment appointment={user.membership.appointment} />}
+            {!user.membership.appointment && (
                 <>
                     <Typography variant="body1" align="center">
                         Ton rendez-vous pour le raccordement à la fibre n'a pas encore été validé. Tu as indiqué les disponibilités suivantes :
                     </Typography>
-                    {appState.user.availability_slots.map((slot) => <AvailabilitySlot key={slot.start.getTime() + '.' + slot.end.getTime()} slot={slot} />)}
+                    {user.availability_slots.map((slot) => <AvailabilitySlot key={slot.start.getTime() + '.' + slot.end.getTime()} slot={slot} />)}
                     <Typography variant="body1" align="center">
                         Si tu souhaites modifier tes disponibilités, merci d'envoyer un mail au plus vite à fai@rezel.net
                     </Typography>

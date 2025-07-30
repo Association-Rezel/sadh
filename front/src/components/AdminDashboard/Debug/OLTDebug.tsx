@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 
 export default function OLTDebug() {
     const [debugInfo, setDebugInfo] = useState<string>(null);

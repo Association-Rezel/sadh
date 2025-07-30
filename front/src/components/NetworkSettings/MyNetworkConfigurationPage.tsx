@@ -1,34 +1,33 @@
-import { Divider, Stack, TextField, FormControl, InputLabel, Select, MenuItem, Button, Tooltip } from "@mui/material";
+import { Button, Divider, Stack, Tooltip } from "@mui/material";
 
-import React, { useEffect } from "react";
-import { useContext, useState } from "react";
-import { AppStateContext } from "../../utils/AppStateContext";
-import { Api } from "../../utils/Api";
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import React, { useEffect, useState } from "react";
+import Api from "../../utils/Api";
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DoneIcon from '@mui/icons-material/Done';
 
 import ConfirmableButton from "../utils/ConfirmableButton";
+import { AddDNSForm } from "./DNSForm";
+import { AddIPv4RedirectionForm, AddIPv6OpeningForm } from "./FirewallForm";
 import PasswordResetForm from "./PasswordResetForm";
 import SsidResetForm from "./SSIDResetForm";
-import { AddIPv4RedirectionForm, AddIPv6OpeningForm } from "./FirewallForm";
-import { AddDNSForm } from "./DNSForm";
 
-import ImgUrl from "/src/ressources/img/router.png"
+import { useAuthContext } from "../../pages/auth/AuthContext";
 import { UnetProfile } from "../../utils/types/hermes_types";
+import ImgUrl from "/src/ressources/img/router.png";
 
 
 export default function MyNetworkConfigurationPage() {
-    const { appState } = useContext(AppStateContext);
+    const { user } = useAuthContext();
 
     const [unet, setUnet] = useState<UnetProfile | null>(null);
 
     React.useEffect(() => {
         Api.fetchMyUnet().then(setUnet);
 
-    }, [appState.user.id]);
+    }, [user.id]);
 
     if (unet === null) return <div>Chargement...</div>;
 

@@ -1,21 +1,20 @@
-import { useContext, useEffect, useState } from "react";
 import AppointmentSelection from "../../components/Appointment/AppointmentSelection";
-import { Api } from "../../utils/Api";
-import { Appointment, AppointmentSlot, MembershipStatus, User } from "../../utils/types/types";
 import AppointmentSlotList from "../../components/Appointment/AppointmentSlotList";
-import { AppStateContext } from "../../utils/AppStateContext";
+import Api from "../../utils/Api";
+import { AppointmentSlot, User } from "../../utils/types/types";
+import { useAuthContext } from "../auth/AuthContext";
 
 export default function PageAppointment() {
-    const { appState, updateAppState } = useContext(AppStateContext);
+    const { user, setUser } = useAuthContext();
 
     const onSubmitSelection = (selectedSlots: AppointmentSlot[]) => {
         Api.updateMyAvailabilities(selectedSlots).then((user: User) => {
-            updateAppState({ user: {...user} });
+            setUser({ ...user });
         }).catch((error) => {
             alert("Erreur lors de l'envoi des créneaux. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
         });
     }
-    if (!appState.user.membership.appointment && appState.user.availability_slots.length === 0) {
+    if (!user.membership.appointment && user.availability_slots.length === 0) {
         return <AppointmentSelection onSubmitSelection={onSubmitSelection} />;
     } else {
         return <AppointmentSlotList />;

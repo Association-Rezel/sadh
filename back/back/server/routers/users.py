@@ -12,9 +12,8 @@ from common_models.user_models import (
     MembershipType,
     User,
 )
-from fastapi import HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
 from back.core.charon import register_ont_in_olt
@@ -36,43 +35,46 @@ from back.core.pon import (
     get_ontinfo_from_box,
     register_ont_for_new_ftth_adh,
 )
-from back.core.status_update import (
-    StatusUpdateInfo,
-    StatusUpdateManager,
-    delete_unet_of_wifi_adherent,
-)
+from back.core.status_update import StatusUpdateInfo, delete_unet_of_wifi_adherent
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.db import get_db
+from back.mongodb.db import GetDatabase
 from back.mongodb.pon_com_models import ONTInfo, RegisterONT
-from back.mongodb.user_com_models import MembershipRequest, MembershipUpdate, UserUpdate
-from back.server.dependencies import (
-    get_box,
-    get_box_from_user_id,
-    get_my_box,
-    get_status_update_manager,
-    get_user_from_user_id,
-    get_user_me,
-    must_be_sadh_admin,
+from back.mongodb.user_com_models import (
+    AuthStatusResponse,
+    MembershipRequest,
+    MembershipUpdate,
+    UserUpdate,
 )
-from back.utils.router_manager import ROUTEURS
+from back.server.dependencies import (
+    BoxFromUserInPath,
+    OptionalCurrentUser,
+    OptionalCurrentUserBox,
+    RequireCurrentUser,
+    StatusUpdateManagerDep,
+    UserFromPath,
+    get_box,
+    must_be_admin,
+)
 
-router = ROUTEURS.new("users")
+router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/me", response_model=User)
+@router.get("/me", response_model=AuthStatusResponse)
 def _me(
-    user: User = get_user_me,
-) -> User:
+    user: OptionalCurrentUser,
+) -> AuthStatusResponse:
     """Get the current user's identity."""
+    if not user:
+        return AuthStatusResponse(logged_in=False, user=None)
     user.redact_for_non_admin()
-    return user
+    return AuthStatusResponse(logged_in=True, user=user)
 
 
 @router.post("/me/membershipRequest", status_code=201, response_model=User)
 async def _me_create_membership_request(
     request: MembershipRequest,
-    user: User = get_user_me,
-    db: AsyncIOMotorDatabase = get_db,
+    user: RequireCurrentUser,
+    db: GetDatabase,
 ) -> User:
     """Request a membership."""
     if user.membership:
@@ -151,8 +153,8 @@ async def _me_create_membership_request(
 @router.post("/me/availability", response_model=User)
 async def _me_add_availability_slots(
     slots: list[AppointmentSlot],
-    user: User = get_user_me,
-    db: AsyncIOMotorDatabase = get_db,
+    user: RequireCurrentUser,
+    db: GetDatabase,
 ) -> User:
     userdict = await db.users.find_one_and_update(
         {"_id": str(user.id)},
@@ -179,8 +181,8 @@ async def _me_add_availability_slots(
 
 @router.get("/me/unet", dependencies=[], response_model=UnetProfile)
 async def _user_get_unet(
-    user: User = get_user_me,
-    db: AsyncIOMotorDatabase = get_db,
+    user: RequireCurrentUser,
+    db: GetDatabase,
 ) -> UnetProfile:
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
@@ -204,9 +206,9 @@ async def _user_get_unet(
 @router.patch("/me/unet", dependencies=[], response_model=UnetProfile)
 async def _user_update_unet(
     new_unet: UnetProfile,
-    user: User = get_user_me,
-    box: Box = get_my_box,
-    db: AsyncIOMotorDatabase = get_db,
+    user: RequireCurrentUser,
+    box: OptionalCurrentUserBox,
+    db: GetDatabase,
 ) -> UnetProfile:
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
@@ -218,6 +220,8 @@ async def _user_update_unet(
         raise HTTPException(
             status_code=400, detail="Unet ID does not match user's unetid"
         )
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
 
     # check SSID
     if not new_unet.wifi.ssid.startswith("Rezel-"):
@@ -281,26 +285,38 @@ async def _user_update_unet(
 ### ADMIN
 
 
-@router.get("/", dependencies=[must_be_sadh_admin], response_model=list[User])
+@router.get(
+    "/",
+    dependencies=[Depends(must_be_admin)],
+    response_model=list[User],
+)
 async def _get_users(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> list[User]:
     """Get all users."""
     return await db.users.find().to_list(None)
 
 
-@router.get("/{user_id}", dependencies=[must_be_sadh_admin], response_model=User)
+@router.get(
+    "/{user_id}",
+    dependencies=[Depends(must_be_admin)],
+    response_model=User,
+)
 async def _user_get(
-    user: User = get_user_from_user_id,
+    user: UserFromPath,
 ) -> User:
     return user
 
 
-@router.patch("/{user_id}", dependencies=[must_be_sadh_admin], response_model=User)
+@router.patch(
+    "/{user_id}",
+    dependencies=[Depends(must_be_admin)],
+    response_model=User,
+)
 async def _user_update(
     user_id: str,
     update: UserUpdate,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> User:
     # mode="json" is used to avoid issues with sets
     # see https://github.com/pydantic/pydantic/issues/8016#issuecomment-1794530831
@@ -315,13 +331,15 @@ async def _user_update(
 
 
 @router.patch(
-    "/{user_id}/membership", dependencies=[must_be_sadh_admin], response_model=User
+    "/{user_id}/membership",
+    dependencies=[Depends(must_be_admin)],
+    response_model=User,
 )
 async def _user_update_membership(
     user_id: str,
     update: MembershipUpdate,
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
 ) -> User:
     """Edit the user's membership."""
     if not user.membership:
@@ -347,13 +365,15 @@ async def _user_update_membership(
 
 
 @router.delete(
-    "/{user_id}/membership", dependencies=[must_be_sadh_admin], response_model=User
+    "/{user_id}/membership",
+    dependencies=[Depends(must_be_admin)],
+    response_model=User,
 )
 async def _user_delete_membership(
     user_id: str,
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
-    box: Box | None = get_box_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
+    box: BoxFromUserInPath,
 ) -> User:
     """Delete the user's membership."""
     if not user.membership:
@@ -382,10 +402,13 @@ async def _user_delete_membership(
     return User.model_validate(userdict)
 
 
-@router.get("/{user_id}/ont", dependencies=[must_be_sadh_admin])
+@router.get(
+    "/{user_id}/ont",
+    dependencies=[Depends(must_be_admin)],
+)
 async def _user_get_ont(
-    db: AsyncIOMotorDatabase = get_db,
-    box: Box | None = get_box_from_user_id,
+    db: GetDatabase,
+    box: BoxFromUserInPath,
 ) -> ONTInfo:
     if not box:
         raise HTTPException(
@@ -404,11 +427,14 @@ async def _user_get_ont(
     return ont_info
 
 
-@router.post("/{user_id}/ont", dependencies=[must_be_sadh_admin])
+@router.post(
+    "/{user_id}/ont",
+    dependencies=[Depends(must_be_admin)],
+)
 async def _user_register_ont(
     register: RegisterONT,
-    db: AsyncIOMotorDatabase = get_db,
-    box: Box | None = get_box_from_user_id,
+    db: GetDatabase,
+    box: BoxFromUserInPath,
 ) -> ONTInfo:
     if not box:
         raise HTTPException(
@@ -432,10 +458,14 @@ async def _user_register_ont(
     return ont_info
 
 
-@router.get("/{user_id}/box", dependencies=[must_be_sadh_admin], response_model=Box)
+@router.get(
+    "/{user_id}/box",
+    dependencies=[Depends(must_be_admin)],
+    response_model=Box,
+)
 async def _user_get_box(
-    user: User = get_user_from_user_id,
-    box: Box | None = get_box_from_user_id,
+    user: UserFromPath,
+    box: BoxFromUserInPath,
 ) -> Box:
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
@@ -449,13 +479,17 @@ async def _user_get_box(
     return box
 
 
-@router.post("/{user_id}/box", dependencies=[must_be_sadh_admin], response_model=Box)
+@router.post(
+    "/{user_id}/box",
+    dependencies=[Depends(must_be_admin)],
+    response_model=Box,
+)
 async def _user_register_box(
     box_type: str,
     telecomian: bool,
     mac_address: str,
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
 ) -> Box:
     if not user.membership or user.membership.unetid:
         raise HTTPException(
@@ -495,12 +529,16 @@ async def _user_register_box(
     return new_box
 
 
-@router.post("/{user_id}/unet", dependencies=[must_be_sadh_admin], response_model=Box)
+@router.post(
+    "/{user_id}/unet",
+    dependencies=[Depends(must_be_admin)],
+    response_model=Box,
+)
 async def _user_register_unet(
     telecomian: bool,
     mac_address: str,
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
 ) -> Box:
     if not user.membership or user.membership.unetid:
         raise HTTPException(
@@ -556,11 +594,15 @@ async def _user_register_unet(
     return box
 
 
-@router.delete("/{user_id}/unet", dependencies=[must_be_sadh_admin], response_model=Box)
+@router.delete(
+    "/{user_id}/unet",
+    dependencies=[Depends(must_be_admin)],
+    response_model=Box,
+)
 async def _user_delete_unet(
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
-    box: Box | None = get_box_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
+    box: BoxFromUserInPath,
 ) -> Box:
     if not box:
         raise HTTPException(status_code=404, detail="No box found for this user")
@@ -585,13 +627,13 @@ async def _user_delete_unet(
 
 @router.get(
     "/{user_id}/next-membership-status",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
     response_model=StatusUpdateInfo,
 )
 async def _user_get_next_membership_status(
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
-    status_update_manager: StatusUpdateManager = get_status_update_manager,
+    db: GetDatabase,
+    user: UserFromPath,
+    status_update_manager: StatusUpdateManagerDep,
 ) -> StatusUpdateInfo:
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
@@ -612,14 +654,14 @@ async def _user_get_next_membership_status(
 
 @router.post(
     "/{user_id}/next-membership-status",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
     response_model=User,
 )
 async def _user_update_membership_status(
     next_status: MembershipStatus,
-    user: User = get_user_from_user_id,
-    db: AsyncIOMotorDatabase = get_db,
-    status_update_manager: StatusUpdateManager = get_status_update_manager,
+    user: UserFromPath,
+    db: GetDatabase,
+    status_update_manager: StatusUpdateManagerDep,
 ) -> User:
     if not user.membership:
         raise HTTPException(status_code=400, detail="User has no membership")
@@ -649,12 +691,12 @@ async def _user_update_membership_status(
 
 @router.post(
     "/{user_id}/generate_new_contract",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
     response_model=User,
 )
 async def _user_generate_new_contract(
-    user: User = get_user_from_user_id,
-    db: AsyncIOMotorDatabase = get_db,
+    user: UserFromPath,
+    db: GetDatabase,
 ) -> User:
     """
     Generate a new contract for the user.
@@ -710,14 +752,14 @@ async def _user_generate_new_contract(
 
 @router.post(
     "/{user_id}/transfer-devices",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
     response_model=None,
 )
 async def _user_transfer_devices(
     target_user_id: str,
-    db: AsyncIOMotorDatabase = get_db,
-    user: User = get_user_from_user_id,
-    box: Box = get_box_from_user_id,
+    db: GetDatabase,
+    user: UserFromPath,
+    box: BoxFromUserInPath,
 ) -> None:
     """
     Transfer all devices from one user to another.
@@ -776,11 +818,11 @@ async def _user_transfer_devices(
 
 @router.post(
     "/{user_id}/pay-user-partial-refunds",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _pay_user_refunds(
-    user: User = get_user_from_user_id,
-    db: AsyncIOMotorDatabase = get_db,
+    user: UserFromPath,
+    db: GetDatabase,
 ) -> JSONResponse:
     result = await db.partial_refunds.update_many(
         {"user_id": str(user.id), "paid": False},
@@ -795,6 +837,6 @@ async def _pay_user_refunds(
         )
     return JSONResponse(
         {
-            "message": f"{result.modified_count} refunds marked as paid for user {user_id}"
+            "message": f"{result.modified_count} refunds marked as paid for {user.first_name}"
         }
     )

@@ -8,44 +8,39 @@ import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 import AccountDashboard from "./components/AccountDashboard/AccountDashboard";
 import Users from "./components/Users/Users";
 import CalendarComponent from "./components/Calendar/Calendar";
-import { AppState, AppStateContext, AppStateWrapper } from "./utils/AppStateContext";
-import { useContext } from "react";
 import UserComponent from "./components/AdminDashboard/User/User";
 import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
-import PageSettings from "./pages/account/PageNetworkSettings";
-import LoginPage from "./pages/auth/LoginPage";
-import LoginCallback from "./pages/auth/LoginCallback";
-import LogoutPage from "./pages/auth/LogoutPage";
 import { CircularProgress } from "@mui/material";
 import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
 import PageNetworkSettings from "./pages/account/PageNetworkSettings";
 import PartialRefunds from "./components/PartialRefunds/PartialRefunds";
-import { OIDCContext, OIDCContextWrapper } from "./utils/OIDCContext";
+import { ToastContainer } from "react-toastify";
+import AuthCallbackErrorPage from "./pages/auth/AuthCallbackErrorPage";
+import { AuthProvider, useAuthContext } from "./pages/auth/AuthContext";
+import LoginOrSignupPage from "./pages/auth/LoginOrSignupPage";
+import { AdminLoginRedirect, LoginRedirect } from "./pages/auth/AuthRedirect";
 
 function AppRouter() {
-    const { appState } = useContext(AppStateContext);
+    const { user, admin, isLoading } = useAuthContext();
 
-    if (!appState.loaded) {
+    if (isLoading) {
         return <div className="flex justify-center items-center h-screen">
             <CircularProgress />
-        </div>
+        </div>;
     }
 
     return <BrowserRouter>
         <Routes>
             <Route path="/">
                 <Route index element={<Index />} />
-                <Route path="login" Component={LoginPage} />
-                <Route path="logout" Component={LogoutPage} />
-                <Route path="loginCallback" Component={LoginCallback} />
-                <Route path="adherer/*" Component={appState.user ? BecomeMember : LoginPage} />
-                <Route path="signup" Component={LoginPage} />
+                <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
+                <Route path="adherer/*" Component={user ? BecomeMember : LoginOrSignupPage} />
 
-                {accountRoute({ appState })}
+                {accountRoute({ user })}
 
-                {appState.user && appState.admin && (
+                {admin ? (
                     <Route path="admin" element={<AdminDashboard />}>
                         <Route index Component={PageAdmin} />
                         <Route path="calendar" Component={CalendarComponent} />
@@ -55,27 +50,33 @@ function AppRouter() {
                         <Route path="logs-ipam" Component={IpamLogs} />
                         <Route path="partial-refunds" Component={PartialRefunds} />
                     </Route>
+                ): (
+                    <Route path="admin/*" element={<AdminLoginRedirect />} />
                 )}
 
                 <Route path="appointment" element={<Navigate to="/account/appointment" />} />
                 <Route path="*" Component={Page404} />
             </Route>
         </Routes>
+        <ToastContainer
+            autoClose={3000}
+            position='top-right'
+            pauseOnFocusLoss={false}
+            hideProgressBar
+        />
     </BrowserRouter>
 }
 
 function App() {
     return (
-        <OIDCContextWrapper>
-            <AppStateWrapper>
-                <AppRouter />
-            </AppStateWrapper>
-        </OIDCContextWrapper>
+        <AuthProvider>
+            <AppRouter />
+        </AuthProvider>
 
     );
 }
 
-function accountRoute({ appState }: { appState: AppState }) {
+function accountRoute({ user }: { user?: any } = {}) {
     const appointmentRoute = (
         <Route path="appointment" Component={PageAppointment} />
     );
@@ -86,14 +87,14 @@ function accountRoute({ appState }: { appState: AppState }) {
         <Route path="bank-settings" element={<PageNetworkSettings />} />
     );
 
-    if (!appState.user) {
-        return <Route path="account" element={<Navigate to="/login" />} />
+    if (!user) {
+        return <Route path="account" element={<LoginRedirect/>} />
     }
-    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(appState.user.membership?.status)) {
-        if (appState.user.membership?.type == MembershipType.FTTH) {
-            if (appState.user.membership?.unetid) {
+    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(user.membership?.status)) {
+        if (user.membership?.type == MembershipType.FTTH) {
+            if (user.membership?.unetid) {
                 return (
-                    <Route path="account" element={<AccountDashboard appState={appState} />}>
+                    <Route path="account" element={<AccountDashboard />}>
                         {appointmentRoute}
                         {networkSettingsRoute}
                         {bankSettingsRoute}
@@ -101,26 +102,26 @@ function accountRoute({ appState }: { appState: AppState }) {
                 )
             } else {
                 return (
-                    <Route path="account" element={<AccountDashboard appState={appState} />}>
+                    <Route path="account" element={<AccountDashboard />}>
                         {appointmentRoute}
                     </Route>
                 )
             }
         } else { // WIFI
             return (
-                <Route path="account" element={<AccountDashboard appState={appState} />}>
+                <Route path="account" element={<AccountDashboard />}>
                     {networkSettingsRoute}
                 </Route>
             )
         }
     }
 
-    else if (appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {
+    else if (user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {
         return <Route path="account" element={<Navigate to="/adherer" />} />
     }
 
     else {
-        return <Route path="account" element={<Navigate to="/login" />} />
+        return <Route path="account" element={<LoginRedirect />} />
     }
 }
 

@@ -1,13 +1,12 @@
-import { useContext, useEffect, useState } from "react";
-import { Button, CircularProgress, Collapse, MenuItem, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography } from "@mui/material";
-import { Api } from "../../../utils/Api";
-import dayjs, { Dayjs } from 'dayjs';
-import { IpamLog } from "../../../utils/types/log_types";
-import { Controller, useForm } from "react-hook-form";
-import { AppStateContext } from "../../../utils/AppStateContext";
-import { DatePicker, DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { Button, CircularProgress, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Transition, TransitionGroup } from 'react-transition-group';
+import dayjs, { Dayjs } from 'dayjs';
+import { useContext, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import Api from "../../../utils/Api";
+import { IpamLog } from "../../../utils/types/log_types";
+import { useAuthContext } from "../../../pages/auth/AuthContext";
 
 type CreateLogForm = {
     message: string;
@@ -26,14 +25,14 @@ export default function IpamLogs() {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(50);
 
-    const { appState } = useContext(AppStateContext);
+    const { user } = useAuthContext();
 
     const filteredLogs = logs?.filter(log => log.message.includes(currentSearchString));
 
     const createLogForm = useForm<CreateLogForm>({
         defaultValues: {
             message: "",
-            source: "manual (" + appState?.user?.first_name + " " + appState?.user?.last_name + ")"
+            source: "manual (" + user?.first_name + " " + user?.last_name + ")"
         }
     });
 

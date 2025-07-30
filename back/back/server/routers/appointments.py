@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from common_models.user_models import AppointmentSlot
+from fastapi import APIRouter
 
 from back.core.appointments import get_week_appointment_slots
-from back.utils.router_manager import ROUTEURS
 
-router = ROUTEURS.new("appointments")
+router = APIRouter(prefix="/appointments", tags=["appointments"])
 
 
 @router.get("/weekSlots", response_model=list[list[AppointmentSlot]])

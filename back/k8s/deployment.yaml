@@ -28,6 +28,9 @@ spec:
             DOCUMENSO_TOKEN="{{ .Data.data.documenso_api_token }}"
             DOLIBARR_API_TOKEN="{{ .Data.data.dolibarr_api_token }}"
             SENDER_EMAIL_PASSWORD="{{ .Data.data.sender_email_password }}"
+            STARLETTE_SESSION_SECRET="{{ .Data.data.starlette_session_secret }}"
+            OIDC_CLIENT_SECRET="{{ .Data.data.oidc_client_secret }}"
+            OIDC_ADMIN_CLIENT_SECRET="{{ .Data.data.oidc_admin_client_secret }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa

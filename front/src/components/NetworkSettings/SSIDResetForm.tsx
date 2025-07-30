@@ -1,7 +1,7 @@
 import { Stack, TextField, Button, InputAdornment, CircularProgress } from "@mui/material";
 import React from "react";
 import { useState } from 'react';
-import { Api } from "../../utils/Api";
+import Api from "../../utils/Api";
 
 
 export default function SsidResetForm({ unet, setUnet }) {

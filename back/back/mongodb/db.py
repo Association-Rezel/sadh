@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
@@ -10,12 +10,17 @@ database: Optional[AsyncIOMotorDatabase] = None
 db_client: Optional[AsyncIOMotorClient] = None
 
 
-@Depends
-def get_db() -> AsyncIOMotorDatabase:
+def get_database() -> AsyncIOMotorDatabase:
     if database is None:
         raise ValueError("Database is not connected.")
 
     return database
+
+
+GetDatabase = Annotated[
+    AsyncIOMotorDatabase,
+    Depends(get_database),
+]
 
 
 def init_db():

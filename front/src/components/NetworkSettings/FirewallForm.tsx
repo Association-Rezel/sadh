@@ -4,7 +4,7 @@ import { Stack, TextField, FormControl, FormHelperText, InputLabel, Select, Menu
 import AddIcon from '@mui/icons-material/Add';
 
 import PopupForm from "../utils/PopupForm";
-import { Api } from "../../utils/Api";
+import Api from "../../utils/Api";
 import { UnetProfile } from "../../utils/types/hermes_types";
 
 export function AddIPv4RedirectionForm({ unet, setUnet }: { unet: UnetProfile, setUnet: (value: UnetProfile) => void }) {

@@ -5,7 +5,7 @@ import ONTSection from "./ONTSection";
 import UnetSection from "./UnetSection";
 import IbanSection from "./IBANSection";
 import { useEffect, useState } from "react";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import { Membership, MembershipType, User } from "../../../utils/types/types";
 import { SubmitHandler, useForm } from "react-hook-form"
 import AppointmentSection from "./AppointmentSection";

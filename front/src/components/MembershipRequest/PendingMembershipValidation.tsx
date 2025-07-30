@@ -1,12 +1,10 @@
-import { useContext } from "react";
-import { DepositStatus, MembershipStatus, MembershipType, PaymentMethod, User } from "../../utils/types/types";
-import { AppStateContext } from "../../utils/AppStateContext";
-import { Alert, Button, Typography } from "@mui/material";
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PendingIcon from '@mui/icons-material/Pending';
-import DownloadIcon from '@mui/icons-material/Download';
-import { Config } from "../../utils/Config";
 import { Launch } from "@mui/icons-material";
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import DownloadIcon from '@mui/icons-material/Download';
+import PendingIcon from '@mui/icons-material/Pending';
+import { Alert, Button, Typography } from "@mui/material";
+import { useAuthContext } from "../../pages/auth/AuthContext";
+import { DepositStatus, MembershipType, PaymentMethod, User } from "../../utils/types/types";
 
 export default function PendingMembershipValidation({ user }: { user: User }): JSX.Element {
     if (user.membership.type === MembershipType.FTTH) {
@@ -22,7 +20,7 @@ export default function PendingMembershipValidation({ user }: { user: User }): J
 }
 
 export function FTTHPendingMembershipValidation(): JSX.Element {
-    let { appState } = useContext(AppStateContext);
+    let { user } = useAuthContext();
 
     return (
         <>
@@ -31,26 +29,26 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
             </Typography>
             <div className="flex flex-col gap-8">
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {appState.user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    {user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Contrat de fourniture de service
                     </span>
                 </Typography>
-                <ContractSignatureInfo user={appState.user} />
+                <ContractSignatureInfo user={user} />
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {appState.user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    {user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Caution 50€
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.DEPOSIT} method={appState.user.membership.init.payment_method_deposit} paid={appState.user.membership.deposit_status === DepositStatus.PAID} />
+                <PaymentInfo type={PaymentType.DEPOSIT} method={user.membership.init.payment_method_deposit} paid={user.membership.deposit_status === DepositStatus.PAID} />
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {appState.user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    {user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Première cotisation 20€ (puis 20€/mois)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.MEMBERSHIP} method={appState.user.membership.init.payment_method_first_month} paid={appState.user.membership.paid_first_month} />
+                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_first_month} paid={user.membership.paid_first_month} />
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     Et ensuite ?
                 </Typography>
@@ -73,7 +71,7 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
 }
 
 export function WifiPendingMembershipValidation(): JSX.Element {
-    let { appState } = useContext(AppStateContext);
+    let { user } = useAuthContext();
 
     return (
         <>
@@ -82,12 +80,12 @@ export function WifiPendingMembershipValidation(): JSX.Element {
             </Typography>
             <div className="flex flex-col gap-8">
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {appState.user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    {user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Contrat de fourniture de service
                     </span>
                 </Typography>
-                <ContractSignatureInfo user={appState.user} />
+                <ContractSignatureInfo user={user} />
                 <div className="flex flex-col gap-4 items-start">
                     <Typography variant="body1" color="text.secondary" component="p" align="left">
                         En adhérant à rezel, tu t'engages à respecter le règlement intérieur de l'association.
@@ -102,12 +100,12 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                     </div>
                 </div>
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {appState.user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                    {user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
                         Première cotisation 10€ (puis 10€/mois)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.MEMBERSHIP} method={appState.user.membership.init.payment_method_first_month} paid={appState.user.membership.paid_first_month} />
+                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_first_month} paid={user.membership.paid_first_month} />
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     Et ensuite ?
                 </Typography>

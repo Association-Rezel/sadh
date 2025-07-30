@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { Alert, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, Select, Stack, TextField, Tooltip, Typography, Box } from "@mui/material";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import { MembershipType, User } from "../../../utils/types/types";
 import { Controller, set, useForm } from "react-hook-form";
 import TrashIcon from '@mui/icons-material/Delete';

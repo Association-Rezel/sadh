@@ -1,21 +1,19 @@
 from common_models.user_models import User
-from fastapi import HTTPException
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from fastapi import APIRouter, Depends, HTTPException
 from pymongo import ReturnDocument
 
 from back.core.documenso import is_document_signed_by_adherent
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.db import get_db
-from back.server.dependencies import get_user_from_user_id, must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.mongodb.db import GetDatabase
+from back.server.dependencies import UserFromPath, must_be_admin
 
-router = ROUTEURS.new("documenso")
+router = APIRouter(prefix="/documenso", tags=["documenso"])
 
 
 @router.post("/signed")
 async def _documenso_webhook(
     webhook_data: dict,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> None:
     """
     Receive a webhook from documenso. See https://docs.documenso.com/developers/webhooks.
@@ -74,12 +72,12 @@ async def _documenso_webhook(
 
 @router.post(
     "/refresh/{user_id}",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
     response_model=User,
 )
 async def _refresh_user(
-    user: User = get_user_from_user_id,
-    db: AsyncIOMotorDatabase = get_db,
+    user: UserFromPath,
+    db: GetDatabase,
 ):
     """
     Refresh the user's contract_signed field.

@@ -12,8 +12,11 @@ from common_models.user_models import (
     MembershipStatus,
     MembershipType,
     PaymentMethod,
+    User,
 )
 from pydantic import Field, model_validator
+
+from back.server.oidc import JWT
 
 
 class MembershipUpdate(RezelBaseModel):
@@ -70,4 +73,15 @@ class MembershipRequest(RezelBaseModel):
             if self.ssid is None:
                 raise ValueError("ssid is required for WIFI membership")
 
+        return self
+
+
+class AuthStatusResponse(RezelBaseModel):
+    logged_in: bool = Field(...)
+    user: Optional[User | JWT] = Field(None)
+
+    @model_validator(mode="after")
+    def _validate(self) -> Self:
+        if not self.logged_in and self.user is not None:
+            raise ValueError("If logged_in is false, user must be None")
         return self

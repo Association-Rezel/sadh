@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { MembershipType, User } from "../../utils/types/types";
 import { TableUsers } from "./TableUsers";
-import { Api } from "../../utils/Api";
+import Api from "../../utils/Api";
 import { UserFilter, filterUsers } from "../../filters/UserFilters";
 import { TextField } from "@mui/material";
 import { Box } from "../../utils/types/hermes_types";

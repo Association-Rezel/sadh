@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MembershipStatus, User, StatusUpdateInfo } from "../../../utils/types/types";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import { Button, Typography } from "@mui/material";
 import { Close, Check, AutoMode } from "@mui/icons-material";
 

@@ -5,8 +5,7 @@ from common_models.hermes_models import Box
 from common_models.log_models import IpamLog
 from common_models.pon_models import ONT
 from common_models.user_models import User
-from fastapi import HTTPException
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from fastapi import APIRouter, Depends, HTTPException
 from pymongo import ReturnDocument
 
 from back.core.charon import register_ont_in_olt
@@ -18,21 +17,20 @@ from back.core.pon import (
     get_ontinfo_from_serial_number,
 )
 from back.messaging.matrix import send_matrix_message
-from back.mongodb.db import get_db
+from back.mongodb.db import GetDatabase
 from back.mongodb.pon_com_models import ONTInfo
-from back.server.dependencies import get_box_from_mac_str, must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.server.dependencies import BoxFromMacStr, must_be_admin
 
-router = ROUTEURS.new("devices")
+router = APIRouter(prefix="/devices", tags=["devices"])
 
 
 @router.get(
     "/box",
     response_model=list[Box],
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _list_boxes(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> list[Box]:
     return [Box.model_validate(box) for box in await db.boxes.find().to_list(None)]
 
@@ -40,11 +38,11 @@ async def _list_boxes(
 @router.get(
     "/box/by_ssid/{ssid}",
     response_model=Box,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_box_by_ssid(
     ssid: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> Box:
     box_dict = await db.boxes.find_one(
         {"unets.wifi.ssid": re.compile(f"^{ssid}$", re.IGNORECASE)}
@@ -59,11 +57,11 @@ async def _get_box_by_ssid(
 @router.get(
     "/box/by_unet_id/{main_unet_id}",
     response_model=Box,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_box_by_unet_id(
     main_unet_id: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> Box:
     box_dict = await db.boxes.find_one({"main_unet_id": main_unet_id})
 
@@ -76,10 +74,10 @@ async def _get_box_by_unet_id(
 @router.get(
     "/box/by_mac/{mac}",
     response_model=Box,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_box_by_mac(
-    box: Box = get_box_from_mac_str,
+    box: BoxFromMacStr,
 ) -> Box:
     return box
 
@@ -87,11 +85,11 @@ async def _get_box_by_mac(
 @router.delete(
     "/box/{mac_str}",
     response_model=Box,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _delete_box_by_mac(
-    box: Box = get_box_from_mac_str,
-    db: AsyncIOMotorDatabase = get_db,
+    box: BoxFromMacStr,
+    db: GetDatabase,
 ) -> Box:
     if len(box.unets) > 1:
         raise HTTPException(
@@ -143,12 +141,12 @@ async def _delete_box_by_mac(
 @router.patch(
     "/box/{mac_str}/mac/{new_mac}",
     response_model=Box,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _update_box_mac(
     new_mac: str,
-    box: Box = get_box_from_mac_str,
-    db: AsyncIOMotorDatabase = get_db,
+    box: BoxFromMacStr,
+    db: GetDatabase,
 ) -> Box:
     """Replace the MAC address of a box."""
 
@@ -194,10 +192,10 @@ async def _update_box_mac(
 @router.get(
     "/ont",
     response_model=list[ONT],
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _list_onts(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> list[ONT]:
     return [
         ONT.model_validate(ont)
@@ -214,11 +212,11 @@ async def _list_onts(
 @router.get(
     "/ont/{serial_number}",
     response_model=ONTInfo,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_ont_by_serial_number(
     serial_number: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> ONTInfo:
     ont_info = await get_ontinfo_from_serial_number(db, serial_number)
 
@@ -231,11 +229,11 @@ async def _get_ont_by_serial_number(
 @router.delete(
     "/ont/{serial_number}",
     response_model=ONTInfo,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _delete_ont_by_serial_number(
     serial_number: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> ONTInfo:
     ont_info = await get_ontinfo_from_serial_number(db, serial_number)
 
@@ -261,12 +259,12 @@ async def _delete_ont_by_serial_number(
 @router.patch(
     "/ont/{serial_number}/box",
     response_model=ONTInfo,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _update_ont_box(
     new_mac: str,
     serial_number: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> ONTInfo:
     result = await db.pms.update_many(
         {},
@@ -309,10 +307,10 @@ async def _register_ont_in_olt(
 @router.get(
     "/box/{mac_str}/users",
     response_model=list[User],
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_users_on_box(
-    box: Box = get_box_from_mac_str,
-    db: AsyncIOMotorDatabase = get_db,
+    box: BoxFromMacStr,
+    db: GetDatabase,
 ) -> list[User]:
     return await get_users_on_box(db, box)

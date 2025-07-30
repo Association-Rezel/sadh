@@ -1,0 +1,24 @@
+# Caddyfile.dev - Development Reverse Proxy Configuration
+
+# Explicitly use http:// to prevent attempts at automatic HTTPS on port 80/443
+http://localhost:6100 {
+	log {
+		output discard
+	}
+
+	# Route /auth/* requests to the backend server, keeping the /auth prefix
+	handle /auth* {
+		reverse_proxy localhost:8040
+	}
+
+	# Route /api/* requests to the backend server, STRIPPING the /api prefix
+	handle_path /api/* {
+		reverse_proxy localhost:8040 {
+			header_down Location "^(https?://.*?)/(.*)$" "$1/api/$2"
+		}
+	}
+
+	handle {
+		reverse_proxy localhost:5173
+	}
+}

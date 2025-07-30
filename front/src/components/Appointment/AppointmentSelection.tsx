@@ -1,7 +1,7 @@
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import { Button, IconButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Api } from "../../utils/Api";
+import Api from "../../utils/Api";
 import { AppointmentSlot, isSameSlot } from "../../utils/types/types";
 import { default as AppointmentSlotComponent } from "./AppointmentSlot";
 

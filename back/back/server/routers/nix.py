@@ -1,17 +1,19 @@
 import re
 
 import requests
-from fastapi import Request, Response
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
 
 from back.env import ENV
-from back.server.dependencies import must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.server.dependencies import must_be_admin
 
-router = ROUTEURS.new("nix")
+router = APIRouter(prefix="/nix", tags=["nix"])
 
 
-@router.post("/{path:path}", dependencies=[must_be_sadh_admin])
+@router.post(
+    "/{path:path}",
+    dependencies=[Depends(must_be_admin)],
+)
 async def _reverse_proxy(
     request: Request,
 ):
