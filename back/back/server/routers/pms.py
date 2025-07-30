@@ -1,20 +1,19 @@
-from motor.motor_asyncio import AsyncIOMotorDatabase
+from fastapi import APIRouter, Depends
 
-from back.mongodb.db import get_db
+from back.mongodb.db import GetDatabase
 from back.mongodb.pon_com_models import PMInfo
-from back.server.dependencies import must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.server.dependencies import must_be_admin
 
-router = ROUTEURS.new("pms")
+router = APIRouter(prefix="/pms", tags=["pms"])
 
 
 @router.get(
     "/",
     response_model=list[PMInfo],
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _list_pms(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ):
     """List all PMs."""
     pm_list = await db.pms.find().to_list(None)

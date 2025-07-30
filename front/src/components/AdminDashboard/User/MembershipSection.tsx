@@ -18,7 +18,7 @@ import {
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import EditIcon from '@mui/icons-material/Edit';
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { MembershipStatus, Membership, User, DepositStatus, EquipmentStatus, MembershipType } from "../../../utils/types/types";
 import ConfirmableButton from "../../utils/ConfirmableButton"; // Import the new component

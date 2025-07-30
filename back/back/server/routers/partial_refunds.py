@@ -1,22 +1,21 @@
 from common_models.partial_refund import PartialRefund
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
-from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
 from back.core.partial_refunds import refresh_partial_refund_database
-from back.mongodb.db import get_db
-from back.server.dependencies import must_be_sadh_admin
-from back.utils.router_manager import ROUTEURS
+from back.mongodb.db import GetDatabase
+from back.server.dependencies import must_be_admin
 
-router = ROUTEURS.new("partial-refunds")
+router = APIRouter(prefix="/partial-refunds", tags=["partial-refunds"])
 
 
 @router.post(
     "/compute",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _generate_all_refunds(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> JSONResponse:
     failed_users = (await refresh_partial_refund_database(db)).failed_ftth_users
     message = ""
@@ -32,10 +31,10 @@ async def _generate_all_refunds(
 @router.get(
     "/",
     response_model=list[PartialRefund],
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _get_refunds(
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> list[PartialRefund]:
     return [
         PartialRefund.model_validate(refund)
@@ -46,11 +45,11 @@ async def _get_refunds(
 @router.patch(
     "/",
     response_model=PartialRefund,
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _update_refund(
     refund: PartialRefund,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> PartialRefund:
     return PartialRefund.model_validate(
         await db.partial_refunds.find_one_and_update(
@@ -63,11 +62,11 @@ async def _update_refund(
 
 @router.delete(
     "/{refund_id}",
-    dependencies=[must_be_sadh_admin],
+    dependencies=[Depends(must_be_admin)],
 )
 async def _delete_refund(
     refund_id: str,
-    db: AsyncIOMotorDatabase = get_db,
+    db: GetDatabase,
 ) -> JSONResponse:
     await db.partial_refunds.delete_one({"_id": refund_id})
     return JSONResponse({"message": "Refund deleted"})

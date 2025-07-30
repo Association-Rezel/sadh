@@ -54,7 +54,17 @@ class Env:  # pylint: disable=too-many-instance-attributes
     # OIDC
     oidc_issuer: str
     oidc_client_id: str
-    oidc_admin_entitlement: str
+    oidc_client_secret: str
+    oidc_redirect_uri: str
+
+    oidc_admin_issuer: str
+    oidc_admin_client_id: str
+    oidc_admin_client_secret: str
+    oidc_admin_redirect_uri: str
+    oidc_admin_required_entitlement: str
+
+    starlette_session_secret: str
+    session_expiration_time_seconds: int
 
     matrix_user: str
     matrix_password: str
@@ -95,7 +105,20 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.oidc_issuer = get_or_raise("OIDC_ISSUER")
         self.oidc_client_id = get_or_raise("OIDC_CLIENT_ID")
-        self.oidc_admin_entitlement = get_or_raise("OIDC_ADMIN_ENTITLEMENT")
+        self.oidc_client_secret = get_or_raise("OIDC_CLIENT_SECRET")
+        self.oidc_redirect_uri = get_or_raise("OIDC_REDIRECT_URI")
+
+        self.oidc_admin_issuer = get_or_raise("OIDC_ADMIN_ISSUER")
+        self.oidc_admin_client_id = get_or_raise("OIDC_ADMIN_CLIENT_ID")
+        self.oidc_admin_client_secret = get_or_raise("OIDC_ADMIN_CLIENT_SECRET")
+        self.oidc_admin_redirect_uri = get_or_raise("OIDC_ADMIN_REDIRECT_URI")
+        self.oidc_admin_required_entitlement = get_or_raise(
+            "OIDC_ADMIN_REQUIRED_ENTITLEMENT"
+        )
+        self.starlette_session_secret = get_or_raise("STARLETTE_SESSION_SECRET")
+        self.session_expiration_time_seconds = int(
+            get_or_default("SESSION_EXPIRATION_TIME_SECONDS", "3600")
+        )
 
         self.db_uri = get_or_raise("DB_URI")
         self.db_name = get_or_raise("DB_NAME")

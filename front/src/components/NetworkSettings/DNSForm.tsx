@@ -4,7 +4,7 @@ import { Stack, TextField, FormControl, FormHelperText, InputLabel, Select, Menu
 import AddIcon from '@mui/icons-material/Add';
 
 import PopupForm from "../utils/PopupForm";
-import { Api } from "../../utils/Api";
+import Api from "../../utils/Api";
 import { UnetProfile } from "../../utils/types/hermes_types";
 
 export function AddDNSForm({ unet, setUnet, type }: { unet: UnetProfile, setUnet: (value: UnetProfile) => void, type: 'ipv4' | 'ipv6' }) {

@@ -1,11 +1,10 @@
-import { Button, FormControlLabel, Typography, Checkbox, FormControl, InputLabel, Select, MenuItem, TextField, Radio, RadioGroup, FormLabel, FormHelperText, Alert, CircularProgress } from "@mui/material";
-import { MembershipType, PaymentMethod, Residence, User } from "../../utils/types/types";
-import { Api } from "../../utils/Api";
+import { Alert, Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
-import 'react-phone-number-input/style.css'
-import { useContext, useEffect, useState } from "react";
-import { AppStateContext } from "../../utils/AppStateContext";
+import 'react-phone-number-input/style.css';
+import { useAuthContext } from "../../pages/auth/AuthContext";
+import Api from "../../utils/Api";
+import { MembershipType, PaymentMethod, Residence } from "../../utils/types/types";
 
 type FormValues = {
     residence: string;
@@ -34,18 +33,18 @@ export default function WifiMembershipForm() {
         }
     });
 
-    const { appState, updateAppState } = useContext(AppStateContext);
+    const { user, setUser } = useAuthContext();
     const [allSSIDs, setAllSSIDs] = useState<string[]>([]);
     const [errorSSIDs, setErrorSSIDs] = useState<boolean>(false);
     const [loadingSSIDs, setLoadingSSIDs] = useState<boolean>(false);
 
     useEffect(() => {
         reset({
-            residence: appState.user?.membership?.address.residence,
-            appartement_id: appState.user?.membership?.address.appartement_id,
+            residence: user?.membership?.address.residence || "",
+            appartement_id: user?.membership?.address.appartement_id || "",
         });
 
-    }, [appState.user]);
+    }, [user]);
 
     useEffect(() => {
         Api.fetchAllSSIDs().then((ssids) => {
@@ -74,7 +73,7 @@ export default function WifiMembershipForm() {
                 },
                 payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
             });
-            updateAppState({ user: { ...user } });
+            setUser({ ...user });
         } catch (error) {
             alert(
                 "Erreur lors de la demande d'adhésion. Veuillez réessayer ultérieurement. Message d'erreur : " +

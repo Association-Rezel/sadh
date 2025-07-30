@@ -1,10 +1,10 @@
 import Pricing from "../components/Pricing/Pricing";
-import LoggedMenu from "../components/Menus/LoggedMenu";
+import MenuBar from "../components/Menus/MenuBar";
 
 export default () => {
     return (
         <>
-            <LoggedMenu />
+            <MenuBar />
             <Pricing />
         </>
     );

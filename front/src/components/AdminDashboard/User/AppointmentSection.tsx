@@ -1,6 +1,6 @@
 import { AppointmentSlot, AppointmentType, Membership, User, isSameSlot } from "../../../utils/types/types";
 import { Button, IconButton, TextField, Typography } from "@mui/material";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import { Check, Delete } from "@mui/icons-material";
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';

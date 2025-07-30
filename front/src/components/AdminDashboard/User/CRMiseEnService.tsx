@@ -5,7 +5,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import { CRMiseEnService, User } from '../../../utils/types/types';
 import { DialogActions, TextField } from '@mui/material';
-import { Api } from '../../../utils/Api';
+import Api from '../../../utils/Api';
 import dayjs from 'dayjs';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';

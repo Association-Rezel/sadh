@@ -4,7 +4,7 @@ import { Typography, Button, TableContainer, Paper, Table, TableHead, TableRow, 
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AttachedWifiAdherent, User } from '../../../../utils/types/types';
-import { Api } from '../../../../utils/Api';
+import Api from '../../../../utils/Api';
 import dayjs from 'dayjs';
 
 interface DayJSAwareAttachedWifiAdherent {

@@ -1,21 +1,20 @@
-import Container from "@mui/material/Container";
 import { CssBaseline, GlobalStyles, Typography } from "@mui/material";
-import { useContext } from "react";
+import Container from "@mui/material/Container";
 import React from "react";
-import { MembershipStatus, MembershipType } from "../../utils/types/types";
-import LoggedMenu from "../Menus/LoggedMenu";
-import { AppStateContext } from "../../utils/AppStateContext";
+import { Navigate } from "react-router-dom";
+import PageAppointment from "../../pages/appointment/PageAppointment";
+import { useAuthContext } from "../../pages/auth/AuthContext";
+import { MembershipStatus } from "../../utils/types/types";
+import MenuBar from "../Menus/MenuBar";
 import FTTHMembershipForm from "./FTTHMembershipForm";
 import PendingMembershipValidation from "./PendingMembershipValidation";
-import PageAppointment from "../../pages/appointment/PageAppointment";
 import WifiMembershipForm from "./WifiMembershipForm";
-import { Navigate } from "react-router-dom";
 
 
 function BecomeMember(): JSX.Element {
-    const { appState } = useContext(AppStateContext);
+    const { user } = useAuthContext();
 
-    if (appState.user?.membership && ![MembershipStatus.REQUEST_PENDING_VALIDATION, MembershipStatus.VALIDATED].includes(appState.user?.membership.status)) {
+    if (user?.membership && ![MembershipStatus.REQUEST_PENDING_VALIDATION, MembershipStatus.VALIDATED].includes(user?.membership.status)) {
         let content = {
             title: "Vous êtes déjà adhérent",
             text: "Retrouvez toutes les informations sur votre adhésion dans votre espace adhérent en cliquant sur \"Mon Compte\"."
@@ -23,7 +22,7 @@ function BecomeMember(): JSX.Element {
 
         return (
             <>
-                <LoggedMenu />
+                <MenuBar />
                 <React.Fragment>
                     <Container disableGutters maxWidth="sm" component="main" sx={{ pt: 8, pb: 6 }}>
                         <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
@@ -39,7 +38,7 @@ function BecomeMember(): JSX.Element {
     }
 
     let membershipForm = null;
-    if(appState.user && !appState.user.membership) {
+    if(user && !user.membership) {
         if(window.location.pathname.endsWith("ftth")) {
             membershipForm = <FTTHMembershipForm />;
         }
@@ -56,15 +55,15 @@ function BecomeMember(): JSX.Element {
             <GlobalStyles styles={{ ul: { margin: 0, padding: 0, listStyle: "none" } }} />
             <CssBaseline />
 
-            <LoggedMenu />
+            <MenuBar />
 
             <React.Fragment>
-                {appState.user?.membership?.status == MembershipStatus.VALIDATED && (
+                {user?.membership?.status == MembershipStatus.VALIDATED && (
                     <PageAppointment />
                 )}
                 <Container component="main" className="m-16">
-                    {appState.user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION && (
-                        <PendingMembershipValidation user={appState.user} />
+                    {user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION && (
+                        <PendingMembershipValidation user={user} />
                     )}
                     {membershipForm}
                 </Container>

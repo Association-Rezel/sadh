@@ -1,12 +1,12 @@
-import { Button, FormControlLabel, Typography, Checkbox, FormControl, InputLabel, Select, MenuItem, TextField, Radio, RadioGroup, FormLabel, FormHelperText, CircularProgress } from "@mui/material";
-import { MembershipType, PaymentMethod, Residence, User } from "../../utils/types/types";
-import { Api } from "../../utils/Api";
-import { Controller, useForm, useFormState } from "react-hook-form";
-import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input'
-import 'react-phone-number-input/style.css'
-import { useContext, useEffect } from "react";
-import { AppStateContext } from "../../utils/AppStateContext";
+import { Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
 import { validateIBAN } from "ngx-iban-validator/dist/iban.validator";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import { useAuthContext } from "../../pages/auth/AuthContext";
+import Api from "../../utils/Api";
+import { MembershipType, PaymentMethod, Residence } from "../../utils/types/types";
 
 type FormValues = {
     residence: string;
@@ -23,7 +23,6 @@ export default function FTTHMembershipForm() {
         handleSubmit,
         control,
         formState,
-        watch,
         reset,
     } = useForm<FormValues>({
         defaultValues: {
@@ -36,17 +35,17 @@ export default function FTTHMembershipForm() {
         }
     });
 
-    const { appState, updateAppState } = useContext(AppStateContext);
+    const { user, setUser } = useAuthContext();
 
     useEffect(() => {
         reset({
-            residence: appState.user?.membership?.address.residence,
-            appartement_id: appState.user?.membership?.address.appartement_id,
-            phone_number: appState.user?.phone_number,
-            iban: appState.user?.iban,
+            residence: user?.membership?.address.residence || "",
+            appartement_id: user?.membership?.address.appartement_id || "",
+            phone_number: user?.phone_number || "",
+            iban: user?.iban || "",
         });
 
-    }, [appState.user]);
+    }, [user]);
 
     const onSubmitMembership = async (event: FormValues) => {
         try {
@@ -61,7 +60,7 @@ export default function FTTHMembershipForm() {
                 payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
                 payment_method_deposit: PaymentMethod[event.paymentMethodDeposit],
             });
-            updateAppState({ user: { ...user } });
+            setUser({ ...user });
         } catch (error) {
             alert(
                 "Erreur lors de la demande d'adhésion. Veuillez réessayer ultérieurement. Message d'erreur : " +

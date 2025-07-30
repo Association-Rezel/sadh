@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { TableUsers } from "../../Users/TableUsers";
 import { MembershipStatus, MembershipType, User } from "../../../utils/types/types";
 import { StatusFilter, filterUsers, UserFilter } from "../../../filters/UserFilters";
-import { Api } from "../../../utils/Api";
+import Api from "../../../utils/Api";
 import { Typography } from "@mui/material";
 
 export default function Dashboards() {

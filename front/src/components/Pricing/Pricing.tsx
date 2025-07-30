@@ -12,8 +12,8 @@ import { Fragment, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { IconButton, Tooltip } from "@mui/material";
 import HelpIcon from '@mui/icons-material/Help';
-import { AppStateContext } from "../../utils/AppStateContext";
 import { MembershipType } from "../../utils/types/types";
+import { useAuthContext } from "../../pages/auth/AuthContext";
 
 
 function Copyright(props: any) {
@@ -49,7 +49,7 @@ const footers = [
 ];
 
 function PricingContent() {
-    const { appState } = useContext(AppStateContext);
+    const { user } = useAuthContext();
 
     const tiers = [
         {
@@ -61,7 +61,7 @@ function PricingContent() {
             buttonText: "J'adhère",
             buttonRedirectPath: "/adherer/ftth",
             buttonVariant: "contained",
-            disabled: appState?.user?.membership?.type === MembershipType.WIFI,
+            disabled: user?.membership?.type === MembershipType.WIFI,
         },
         {
             title: "Wi-Fi",
@@ -72,7 +72,7 @@ function PricingContent() {
             buttonText: "J'adhère",
             buttonRedirectPath: "/adherer/wifi",
             buttonVariant: "contained",
-            disabled: appState?.user?.membership?.type === MembershipType.FTTH,
+            disabled: user?.membership?.type === MembershipType.FTTH,
         },
     ];
 

@@ -10,15 +10,16 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
-import { Link as RouterLink, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SettingsIcon from '@mui/icons-material/Settings';
-import LoggedMenu from "../Menus/LoggedMenu";
+import MenuBar from "../Menus/MenuBar";
 import { MembershipType } from "../../utils/types/types";
-import { AppState } from "../../utils/AppStateContext";
 import { AccountBalance } from "@mui/icons-material";
+import { useAuthContext } from "../../pages/auth/AuthContext";
 
-function AccountDashboard({ appState }: { appState: AppState }) {
+function AccountDashboard() {
+    const { user } = useAuthContext();
     const [open, setOpen] = React.useState(true);
     const toggleDrawer = () => {
         setOpen(!open);
@@ -64,8 +65,8 @@ function AccountDashboard({ appState }: { appState: AppState }) {
     </Link>;
 
     let drawerContent = <Outlet />;
-    if (appState.user?.membership?.type == MembershipType.FTTH) {
-        if (appState.user?.membership?.unetid) {
+    if (user?.membership?.type == MembershipType.FTTH) {
+        if (user?.membership?.unetid) {
             drawerContent = (
                 <>
                     {appoinmentLink}
@@ -90,7 +91,7 @@ function AccountDashboard({ appState }: { appState: AppState }) {
 
     return (
         <>
-            <LoggedMenu />
+            <MenuBar />
 
             <Box sx={{ display: "flex" }}>
                 <CssBaseline />
