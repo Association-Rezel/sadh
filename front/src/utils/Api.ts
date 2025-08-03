@@ -41,7 +41,7 @@ const jsonReplacer = (_key: string, value: any): any => {
 }
 
 class Api {
-    async myFetcher<T>(url: string, body: object | null = null, method: string = "GET"): Promise<T> {
+    async myFetcher<T>(url: string, body: object | null = null, method: string = "GET", rawResponse: boolean = false): Promise<T> {
         let config: RequestInit | undefined = undefined;
 
         if (body !== null && method === "GET") {
@@ -67,7 +67,11 @@ class Api {
             const details = await response.text();
             throw new BackendResponseError(details, response.status);
         }
-        return await response.json() as T;
+        if (rawResponse) {
+            return response as T;
+        } else {
+            return await response.json() as T;
+        }
     }
 
     async fetchOrDefault<T>(url: string, defaultValue: T): Promise<T> {
@@ -214,15 +218,15 @@ class Api {
     }
 
     async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_commande_acces", info);
+        return await this.myFetcher<Response>("/nix/generer_commande_acces", info, "POST", true);
     }
 
     async sendCRMiseEnService(info: CRMiseEnService): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_cr_mise_en_service", info);
+        return await this.myFetcher<Response>("/nix/generer_cr_mise_en_service", info, "POST", true);
     }
 
     async sendAnnulAcces(info: AnnulAccesInfo): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_annul_access", info);
+        return await this.myFetcher<Response>("/nix/generer_annul_access", info, "POST", true);
     }
 
     async fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo> {
