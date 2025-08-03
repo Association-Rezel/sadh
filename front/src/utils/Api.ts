@@ -5,6 +5,7 @@ import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
 import { toast } from "react-toastify";
 import type { AuthStatusResponse, JwtUserData } from "./types/auth";
+import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from "react";
 
 export class BackendResponseError extends Error {
     constructor(message: string, public code: number) {
@@ -234,7 +235,7 @@ class Api {
     }
 
     async updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User> {
-        return this.parseUser(await this.myFetcher(`/users/${user_id}/next-membership-status?next_status=${status}`, null));
+        return this.parseUser(await this.myFetcher(`/users/${user_id}/next-membership-status?next_status=${status}`, null, "POST"));
     }
 
     async fetchAllSSIDs(): Promise<string[]> {
