@@ -215,7 +215,7 @@ class Api {
     }
 
     async registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box> {
-        return await this.myFetcher<Box>("/users/" + user_id + "/box?box_type=" + box_type + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null);
+        return await this.myFetcher<Box>("/users/" + user_id + "/box?box_type=" + box_type + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null, "POST");
     }
 
     async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
@@ -259,7 +259,7 @@ class Api {
     }
 
     async createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box> {
-        return await this.myFetcher<Box>(`/users/${id}/unet?mac_address=${macAddress}&telecomian=${isTelecomian}`, null);
+        return await this.myFetcher<Box>(`/users/${id}/unet?mac_address=${macAddress}&telecomian=${isTelecomian}`, null, "POST");
     }
 
     async generateNewContract(user_id: string): Promise<void> {
