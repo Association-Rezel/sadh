@@ -5,6 +5,16 @@ stages:
   - pre_checks
   - build
   - deploy
+  - security-checks
+  - publish
+
+include:
+  - project: 'rezel/shared-ci'
+    file: .gitlab-ci-template-publish_to_github.yml
+    inputs:
+      vault_secrets_role: service_sadh
+      vault_secrets_path: kv/data/sadh_prod
+      github_git_remote: git@github.com:Association-Rezel/sadh.git
 
 variables:
   FRONT_IMAGE_TAG: $CI_REGISTRY_IMAGE/sadh-front:$CI_COMMIT_SHORT_SHA-$DEPLOY_ENV
