@@ -283,7 +283,7 @@ class Api {
     }
 
     async transferUnet(unet_id: string, target_mac_address: string): Promise<UnetProfile> {
-        return await this.myFetcher(`/net/transfer-unet/${unet_id}/to/${target_mac_address}`, null);
+        return await this.myFetcher(`/net/transfer-unet/${unet_id}/to/${target_mac_address}`, null, "POST");
     }
 
     async deleteUnet(user_id: string): Promise<Box> {
