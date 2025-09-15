@@ -267,7 +267,7 @@ class Api {
     }
 
     async refreshContract(user_id: string): Promise<User> {
-        return this.parseUser(await this.myFetcher(`/documenso/refresh/${user_id}`, null));
+        return this.parseUser(await this.myFetcher(`/documenso/refresh/${user_id}`, null, "POST"));
     }
 
     async payUserPartialRefunds(user_id: string): Promise<void> {
