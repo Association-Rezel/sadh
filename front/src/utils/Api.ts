@@ -312,7 +312,7 @@ class Api {
     }
 
     async transferDevices(user_id: string, target_user_id: string): Promise<void> {
-        await this.myFetcher(`/users/${user_id}/transfer-devices?target_user_id=${target_user_id}`, null);
+        await this.myFetcher(`/users/${user_id}/transfer-devices?target_user_id=${target_user_id}`, null, "POST");
     }
 
     async fetchAllUsersOnBox(mac_address: string): Promise<User[]> {
