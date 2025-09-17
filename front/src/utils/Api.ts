@@ -295,7 +295,7 @@ class Api {
     }
 
     async forceOntRegistration(serial_number: string): Promise<ONTInfo> {
-        return await this.myFetcher<ONTInfo>(`/devices/ont/${serial_number}/register_in_olt`, null);
+        return await this.myFetcher<ONTInfo>(`/devices/ont/${serial_number}/register_in_olt`, null, "POST");
     }
 
     async fetchAllONTSummary(): Promise<string> {
