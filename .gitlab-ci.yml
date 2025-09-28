@@ -93,8 +93,10 @@ deploybackend:
         DEPLOY_NAMESPACE: "dev"
     - when: never
   image:
-    name: bitnami/kubectl:latest
+    name: dtzar/helm-kubectl
     entrypoint: ['']
+  before_script:
+    - apk add envsubst
   script:
     # Substitute environment variables in Kubernetes manifests
     - mkdir back/k8s-envsubst
@@ -124,8 +126,10 @@ deployfrontend:
         DEPLOY_NAMESPACE: "dev"
     - when: never
   image:
-    name: bitnami/kubectl:latest
+    name: dtzar/helm-kubectl
     entrypoint: ['']
+  before_script:
+    - apk add envsubst
   script:
     # Substitute environment variables in Kubernetes manifests
     - mkdir front/k8s-envsubst

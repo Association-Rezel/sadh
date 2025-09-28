@@ -21,6 +21,7 @@ import AuthCallbackErrorPage from "./pages/auth/AuthCallbackErrorPage";
 import { AuthProvider, useAuthContext } from "./pages/auth/AuthContext";
 import LoginOrSignupPage from "./pages/auth/LoginOrSignupPage";
 import { AdminLoginRedirect, LoginRedirect } from "./pages/auth/AuthRedirect";
+import PtahImageDownloader from "./components/AdminDashboard/Ptah/Ptah";
 
 function AppRouter() {
     const { user, admin, isLoading } = useAuthContext();
@@ -49,6 +50,7 @@ function AppRouter() {
                         <Route path="olt-debug" Component={OLTDebug} />
                         <Route path="logs-ipam" Component={IpamLogs} />
                         <Route path="partial-refunds" Component={PartialRefunds} />
+                        <Route path="ptah-images" Component={PtahImageDownloader} />
                     </Route>
                 ): (
                     <Route path="admin/*" element={<AdminLoginRedirect />} />

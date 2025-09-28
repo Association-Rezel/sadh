@@ -49,5 +49,7 @@ spec:
         env:
         - name: DEPLOY_ENV
           value: "${DEPLOY_ENV}"
+        - name: VAULT_ROLE_NAME
+          value: "sadh_${DEPLOY_ENV}"
       imagePullSecrets:
        - name: gitlab-registery-credentials

@@ -1,16 +1,14 @@
 import { User, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, AnnulAccesInfo, MembershipRequest, StatusUpdateInfo, MembershipStatus, AttachedWifiAdherent, PartialRefund } from "./types/types";
-import { Config } from "./Config";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
 import { toast } from "react-toastify";
 import type { AuthStatusResponse, JwtUserData } from "./types/auth";
-import { DO_NOT_USE_OR_YOU_WILL_BE_FIRED_EXPERIMENTAL_REACT_NODES } from "react";
 
 export class BackendResponseError extends Error {
     constructor(message: string, public code: number) {
         super(message);
-        this.name = "RequestError";
+        this.name = "BackendResponseError";
     }
 
     toString() {
@@ -25,24 +23,20 @@ const jsonReplacer = (_key: string, value: any): any => {
     if (value instanceof Date) {
         return value.getTime() / 1000;
     }
-
-    if (Array.isArray(value)) {
-        return value.map(item => jsonReplacer(_key, item));
-    }
-
-    if (typeof value === 'object' && value !== null) {
-        let newValue: Record<string, any> = {};
-        for (const key in value) {
-            newValue[key] = jsonReplacer(key, (value as Record<string, any>)[key]);
-        }
-        return newValue;
-    }
-
     return value;
 }
 
 class Api {
-    async myFetcher<T>(url: string, body: object | null = null, method: string = "GET", rawResponse: boolean = false): Promise<T> {
+    async myFetcher(url: string, body: object | null, method: string, responseType: 'download', downloadFilename: string): Promise<void>;
+    async myFetcher(url: string, body: object | null, method: string, responseType: 'raw'): Promise<Response>;
+    async myFetcher<T>(url: string, body?: object | null, method?: string, responseType?: 'json'): Promise<T>;
+    async myFetcher<T>(
+        url: string,
+        body: object | null = null,
+        method: string = "GET",
+        responseType: 'json' | 'download' | 'raw' = 'json',
+        downloadFilename: string = 'file'
+    ): Promise<T | Response | void> {
         let config: RequestInit | undefined = undefined;
 
         if (body !== null && method === "GET") {
@@ -57,6 +51,8 @@ class Api {
                 },
                 body: JSON.stringify(body, jsonReplacer),
             };
+        } else {
+            config = { method: "GET" };
         }
 
         const response = await fetch("/api" + url, config);
@@ -68,11 +64,26 @@ class Api {
             const details = await response.text();
             throw new BackendResponseError(details, response.status);
         }
-        if (rawResponse) {
-            return response as T;
-        } else {
-            return await response.json() as T;
+
+        if (responseType === 'download') {
+            const blob = await response.blob();
+            const objectUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.setAttribute('download', downloadFilename);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(objectUrl);
+            return;
         }
+
+        if (responseType === 'raw') {
+            return response;
+        }
+
+        const text = await response.text();
+        return text ? (JSON.parse(text) as T) : ({} as T);
     }
 
     async fetchOrDefault<T>(url: string, defaultValue: T): Promise<T> {
@@ -111,7 +122,6 @@ class Api {
 
         return data;
     }
-
     parseUser(data: any): User {
         if (data?.availability_slots) {
             data.availability_slots = data.availability_slots.map((slot: any) => this.parseAppointmentSlot(slot));
@@ -168,7 +178,7 @@ class Api {
     }
 
     async fetchMyUnet(): Promise<UnetProfile | null> {
-        return await this.fetchOrDefault<UnetProfile>("/users/me/unet", null);
+        return await this.fetchOrDefault<UnetProfile | null>("/users/me/unet", null);
     }
 
     async updateMyUnet(unet: UnetProfile): Promise<UnetProfile> {
@@ -182,16 +192,16 @@ class Api {
         return users.map((user: any) => this.parseUser(user));
     }
 
-    async fetchUser(user_id: string): Promise<User> {
-        return this.parseUser(await this.fetchOrDefault<User>("/users/" + user_id, null));
+    async fetchUser(user_id: string): Promise<User | null> {
+        return this.parseUser(await this.fetchOrDefault<User | null>("/users/" + user_id, null));
     }
 
     async fetchPMs(): Promise<PMInfo[]> {
         return await this.fetchOrDefault<PMInfo[]>("/pms", []);
     }
 
-    async fetchONT(user_id: string): Promise<ONTInfo> {
-        return await this.fetchOrDefault<ONTInfo>("/users/" + user_id + "/ont", null);
+    async fetchONT(user_id: string): Promise<ONTInfo | null> {
+        return await this.fetchOrDefault<ONTInfo | null>("/users/" + user_id + "/ont", null);
     }
 
     async registerONT(user_id: string, register: RegisterONT): Promise<ONTInfo> {
@@ -210,28 +220,37 @@ class Api {
         return this.parseUser(await this.myFetcher(`/users/${user_id}/membership`, null, "DELETE"));
     }
 
-    async fetchUserBox(user_id: string): Promise<Box> {
-        return await this.fetchOrDefault<Box>("/users/" + user_id + "/box", null);
+    async fetchUserBox(user_id: string): Promise<Box | null> {
+        return await this.fetchOrDefault<Box | null>("/users/" + user_id + "/box", null);
     }
 
-    async registerUserBox(user_id: string, box_type: string, mac_address: string, telecomian: boolean): Promise<Box> {
-        return await this.myFetcher<Box>("/users/" + user_id + "/box?box_type=" + box_type + "&mac_address=" + mac_address + "&telecomian=" + telecomian, null, "POST");
+    async registerUserBox(user_id: string, box_type: string, ptah_profile: string, mac_address: string, telecomian: boolean): Promise<Box> {
+        const url = `/users/${user_id}/box?box_type=${box_type}&ptah_profile=${ptah_profile}&mac_address=${mac_address}&telecomian=${telecomian}`;
+        return await this.myFetcher<Box>(url, null, "POST");
     }
 
     async sendCommandeAccesInfo(info: CommandeAccesInfo): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_commande_acces", info, "POST", true);
+        return await this.myFetcher("/nix/generer_commande_acces", info, "POST", 'raw');
     }
 
     async sendCRMiseEnService(info: CRMiseEnService): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_cr_mise_en_service", info, "POST", true);
+        return await this.myFetcher("/nix/generer_cr_mise_en_service", info, "POST", 'raw');
     }
 
     async sendAnnulAcces(info: AnnulAccesInfo): Promise<Response> {
-        return await this.myFetcher<Response>("/nix/generer_annul_access", info, "POST", true);
+        return await this.myFetcher("/nix/generer_annul_access", info, "POST", 'raw');
     }
 
-    async fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo> {
-        return await this.fetchOrDefault<StatusUpdateInfo>("/users/" + user_id + "/next-membership-status", null);
+    async getPtahProfilesNameList(): Promise<string[]> {
+        return await this.myFetcher<string[]>("/ptah/ptah_profiles/names");
+    }
+
+    async downloadPtahImage(mac: string, ptah_profile: string): Promise<void> {
+        await this.myFetcher(`/ptah/build/${mac}/${ptah_profile}`, null, 'POST', 'download', 'ptah.bin');
+    }
+
+    async fetchNextMembershipStatus(user_id: string): Promise<StatusUpdateInfo | null> {
+        return await this.fetchOrDefault<StatusUpdateInfo | null>("/users/" + user_id + "/next-membership-status", null);
     }
 
     async updateMembershipStatus(user_id: string, status: MembershipStatus): Promise<User> {
@@ -254,8 +273,8 @@ class Api {
         return await this.fetchOrDefault<Box[]>("/devices/box", []);
     }
 
-    async fetchBoxByUnetID(main_unet_id: string): Promise<Box> {
-        return await this.fetchOrDefault<Box>("/devices/box/by_unet_id/" + main_unet_id, null);
+    async fetchBoxByUnetID(main_unet_id: string): Promise<Box | null> {
+        return await this.fetchOrDefault<Box | null>("/devices/box/by_unet_id/" + main_unet_id, null);
     }
 
     async createUnetOnBox(id: string, macAddress: string, isTelecomian: boolean): Promise<Box> {
@@ -263,7 +282,7 @@ class Api {
     }
 
     async generateNewContract(user_id: string): Promise<void> {
-        await this.myFetcher(`/users/${user_id}/generate_new_contract`, null);
+        await this.myFetcher(`/users/${user_id}/generate_new_contract`, null, "POST");
     }
 
     async refreshContract(user_id: string): Promise<User> {
@@ -294,6 +313,10 @@ class Api {
         return await this.myFetcher<Box>(`/devices/box/${mac_address}/mac/${new_mac_address}`, null, "PATCH");
     }
 
+    async updateBoxPtahProfile(mac_address: string, new_ptah_profile: string): Promise<Box> {
+        return await this.myFetcher<Box>(`/devices/box/${mac_address}/ptah_profile/${new_ptah_profile}`, null, "PATCH");
+    }
+
     async forceOntRegistration(serial_number: string): Promise<ONTInfo> {
         return await this.myFetcher<ONTInfo>(`/devices/ont/${serial_number}/register_in_olt`, null, "POST");
     }
@@ -303,12 +326,13 @@ class Api {
     }
 
     async fetchIpamLogs(start: Date, end: Date): Promise<IpamLog[]> {
-        const data = await this.fetchOrDefault<object[]>(`/logging/ipam?start=${Math.floor(start.getTime() / 1000)}&end=${Math.floor(end.getTime() / 1000)}`, []);
+        const url = `/logging/ipam?start=${Math.floor(start.getTime() / 1000)}&end=${Math.floor(end.getTime() / 1000)}`;
+        const data = await this.fetchOrDefault<object[]>(url, []);
         return data.map((usage: any) => this.parseIpamLog(usage));
     }
 
     async createIpamLog(message: string, source: string): Promise<void> {
-        await this.myFetcher(`/logging/ipam?message=${message}&source=${source}`, null);
+        await this.myFetcher(`/logging/ipam?message=${message}&source=${source}`, null, "POST");
     }
 
     async transferDevices(user_id: string, target_user_id: string): Promise<void> {

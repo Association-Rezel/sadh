@@ -189,6 +189,36 @@ async def _update_box_mac(
     return updated_box
 
 
+@router.patch(
+    "/box/{mac_str}/ptah_profile/{new_ptah_profile}",
+    response_model=Box,
+    dependencies=[Depends(must_be_admin)],
+)
+async def _update_box_ptah_profile(
+    new_ptah_profile: str,
+    box: BoxFromMacStr,
+    db: GetDatabase,
+) -> Box:
+    """Replace the MAC address of a box."""
+
+    new_ptah_profile = new_ptah_profile.lower()
+
+    updated_box = Box.model_validate(
+        await db.boxes.find_one_and_update(
+            {"mac": str(box.mac)},
+            {"$set": {"ptah_profile": new_ptah_profile}},
+            return_document=ReturnDocument.AFTER,
+        )
+    )
+    if not updated_box:
+        raise HTTPException(
+            status_code=404,
+            detail="Box not found",
+        )
+
+    return updated_box
+
+
 @router.get(
     "/ont",
     response_model=list[ONT],

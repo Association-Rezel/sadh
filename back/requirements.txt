@@ -2,6 +2,7 @@
 --index-url https://pypi.org/simple
 # Index personnalisé (common-models)
 --extra-index-url https://gitlab.core.rezel.net/api/v4/projects/56/packages/pypi/simple
+--extra-index-url https://gitlab.core.rezel.net/api/v4/projects/139/packages/pypi/simple
 uvicorn<1.0.0
 fastapi<1.0.0
 python-dotenv<2.0.0
@@ -17,6 +18,7 @@ Jinja2<4.0.0
 motor<4.0.0
 babel<3.0.0
 schwifty==2025.1.0
-common-models==0.1.8
+common-models==0.2.1
+rezel-vault-jwt==0.1.1
 starlette<1.0.0
 itsdangerous<3.0.0

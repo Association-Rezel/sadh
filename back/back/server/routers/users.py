@@ -486,6 +486,7 @@ async def _user_get_box(
 )
 async def _user_register_box(
     box_type: str,
+    ptah_profile: str,
     telecomian: bool,
     mac_address: str,
     db: GetDatabase,
@@ -504,7 +505,9 @@ async def _user_register_box(
             status_code=400, detail="Box with this MAC address already exists"
         )
 
-    new_box = await register_box_for_new_ftth_adh(db, box_type, mac_address, telecomian)
+    new_box = await register_box_for_new_ftth_adh(
+        db, box_type, ptah_profile, mac_address, telecomian
+    )
 
     await create_log(
         db,

@@ -16,7 +16,7 @@ import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
 import { Link, Outlet } from "react-router-dom";
 import DebugIcon from "@mui/icons-material/BugReport";
 import EvenListIcon from "@mui/icons-material/EventNote";
-import { Euro } from "@mui/icons-material";
+import { Download, Euro } from "@mui/icons-material";
 
 function AdminDashboard() {
     const [open, setOpen] = React.useState(true);
@@ -94,6 +94,14 @@ function AdminDashboard() {
                                 <Euro />
                             </ListItemIcon>
                             <ListItemText primary="Remboursements" />
+                        </ListItemButton>
+                    </Link>
+                    <Link to={"ptah-images"}>
+                        <ListItemButton>
+                            <ListItemIcon>
+                                <Download />
+                            </ListItemIcon>
+                            <ListItemText primary="Images Ptah" />
                         </ListItemButton>
                     </Link>
                 </List>

@@ -48,6 +48,7 @@ async def _generate_unique_unet_id(db: AsyncIOMotorDatabase) -> str:
 async def register_box_for_new_ftth_adh(
     db: AsyncIOMotorDatabase,
     box_type: str,
+    ptah_profile: str,
     mac: str,
     telecom_ip: bool,
 ) -> Box:
@@ -60,9 +61,9 @@ async def register_box_for_new_ftth_adh(
     ipv6, prefix = ipam.compute_ipv6_and_prefix(available_ipv4.ip.ip, telecom_ip)
 
     unet_id = await _generate_unique_unet_id(db)
-
     new_box = Box(
         type=box_type.lower(),
+        ptah_profile=ptah_profile.lower(),
         main_unet_id=unet_id,
         mac=EUI(mac),
         unets=[
@@ -108,6 +109,21 @@ async def register_box_for_new_ftth_adh(
     )
 
     return new_box
+
+
+async def update_ptah_profile_on_box(
+    db: AsyncIOMotorDatabase, box: Box, new_ptah_profile: str
+) -> Box:
+    if box.ptah_profile == new_ptah_profile:
+        return box
+
+    await db.boxes.update_one(
+        {"mac": str(box.mac)},
+        {"$set": {"ptah_profile": new_ptah_profile.lower()}},
+    )
+
+    box.ptah_profile = new_ptah_profile.lower()
+    return box
 
 
 async def get_box_by_ssid(db: AsyncIOMotorDatabase, ssid: str) -> Box | None:

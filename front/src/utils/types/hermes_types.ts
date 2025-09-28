@@ -77,6 +77,7 @@ export interface PingHistory {
 
 export interface Box {
     type: string;
+    ptah_profile: string;
     main_unet_id: string;
     mac: string;
     unets: UnetProfile[];

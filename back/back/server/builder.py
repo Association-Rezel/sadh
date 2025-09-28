@@ -16,6 +16,7 @@ from back.server.routers.documenso import router as router_documenso
 from back.server.routers.logging import router as router_logging
 from back.server.routers.net import router as router_net
 from back.server.routers.nix import router as router_nix
+from back.server.routers.ptah import router as router_ptah
 from back.server.routers.partial_refunds import router as router_partial_refunds
 from back.server.routers.pms import router as router_pms
 from back.server.routers.users import router as router_users
@@ -26,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 def root() -> RedirectResponse:
     """Redirect to the docs."""
+    # Regist to /docs but taking in account that the root is not neceseselraliry / for the api
     return RedirectResponse(url="/docs")
 
 
@@ -33,6 +35,7 @@ def build() -> FastAPI:
     """Build the app from interfaces."""
     init_logger()
     app = FastAPI()
+    app.openapi_version = "3.0.3"
 
     if ENV.deploy_env in ["dev", "local"]:
         origins = [
@@ -77,6 +80,7 @@ def build() -> FastAPI:
     app.include_router(router_logging)
     app.include_router(router_net)
     app.include_router(router_nix)
+    app.include_router(router_ptah)
     app.include_router(router_partial_refunds)
     app.include_router(router_pms)
     app.include_router(router_users)

@@ -78,6 +78,13 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     nix_url: str
 
+    ptah_url: str
+
+    vault_url: str
+    vault_role_name: str
+    vault_transit_mount: str
+    vault_transit_key: str
+
     fai_email_address: str | None
     sender_email_address: str | None
     sender_email_address_password: str | None
@@ -130,6 +137,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.charon_url = get_or_raise("CHARON_URL")
 
         self.nix_url = get_or_raise("NIX_URL")
+
+        self.ptah_url = get_or_raise("PTAH_URL")
+
+        self.vault_url = get_or_raise("VAULT_URL")
+        self.vault_role_name = get_or_raise("VAULT_ROLE_NAME")
+        self.vault_transit_mount = get_or_raise("VAULT_TRANSIT_MOUNT")
+        self.vault_transit_key = get_or_raise("VAULT_TRANSIT_KEY")
+        self.vault_token = get_or_none("VAULT_TOKEN")
 
         self.fai_email_address = get_or_none("FAI_EMAIL_ADDRESS")
         self.sender_email_address = get_or_none("SENDER_EMAIL_ADDRESS")

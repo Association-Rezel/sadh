@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
 import Api from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
@@ -8,12 +8,13 @@ import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
 import EditIcon from '@mui/icons-material/Edit';
-import { ContentCopy, ExitToApp, ImportExport, TransferWithinAStation } from "@mui/icons-material";
+import { ContentCopy, Download, ExitToApp, ImportExport, TransferWithinAStation } from "@mui/icons-material";
 
 type FormValues = {
     boxType?: string;
     macAddress: string;
     isTelecomian: boolean;
+    ptahProfile: string | null;
 };
 
 export default function UnetSection({
@@ -40,7 +41,8 @@ export default function UnetSection({
         defaultValues: {
             boxType: "ac2350",
             macAddress: "",
-            isTelecomian: false
+            isTelecomian: false,
+            ptahProfile: null
         }
     });
 
@@ -49,9 +51,19 @@ export default function UnetSection({
     const [newMac, setNewMac] = useState("");
     const [usersOnBox, setUsersOnBox] = useState<User[]>([]);
     const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+    const [ptahProfiles, setPtahProfiles] = useState<string[]>([]);
+    const [ptahProfilesLoading, setPtahProfilesLoading] = useState(false);
+    const [editingPtahProfile, setEditingPtahProfile] = useState(false);
+    const [newPtahProfile, setNewPtahProfile] = useState<string | null>(null);
+    const [isDownloadingPtah, setIsDownloadingPtah] = useState(false);
+
 
     if (box && newMac === "") {
         setNewMac(box.mac);
+    }
+
+    if (box && box.ptah_profile && newPtahProfile === null) {
+        setNewPtahProfile(box.ptah_profile);
     }
 
     const mainUser = usersOnBox.find(u => u.membership?.unetid === box?.main_unet_id);
@@ -65,8 +77,8 @@ export default function UnetSection({
 
 
     const onSubmit = async (event: FormValues) => {
-        //Check not empty 
-        if (!event.boxType && user.membership.type === MembershipType.FTTH || !event.macAddress) {
+        //Check not empty 
+        if ((user.membership.type === MembershipType.FTTH && (!event.boxType || !event.ptahProfile)) || !event.macAddress) {
             alert("Veuillez remplir tous les champs");
             return;
         }
@@ -78,7 +90,7 @@ export default function UnetSection({
 
         if (user.membership.type === MembershipType.FTTH) {
             try {
-                const box = await Api.registerUserBox(user.id, event.boxType, event.macAddress, event.isTelecomian);
+                const box = await Api.registerUserBox(user.id, event.boxType!, event.ptahProfile!, event.macAddress, event.isTelecomian);
                 setBox(box);
             } catch (e) {
                 alert("Erreur lors de l'assignation de la box : " + e);
@@ -145,6 +157,22 @@ export default function UnetSection({
         });
     }
 
+    const onUpdatePtahProfile = () => {
+        if (!newPtahProfile) {
+            alert("Veuillez sélectionner un profil Ptah.");
+            return;
+        }
+        setBoxLoading(true);
+        Api.updateBoxPtahProfile(box.mac, newPtahProfile).then((updatedBox) => {
+            setBox(updatedBox);
+        }).catch(e => {
+            alert("Erreur lors de la modification du profil Ptah : " + e);
+        }).finally(() => {
+            setBoxLoading(false);
+            setEditingPtahProfile(false);
+        });
+    }
+
     useEffect(() => {
         if (!user) return;
         if (user.membership.type === MembershipType.WIFI) {
@@ -165,6 +193,23 @@ export default function UnetSection({
             alert(e);
         });
     }, [box]);
+
+    useEffect(() => {
+        if (user.membership.type === MembershipType.FTTH) {
+            setPtahProfilesLoading(true);
+            Api.getPtahProfilesNameList()
+                .then(profiles => {
+                    setPtahProfiles(profiles);
+                })
+                .catch(e => {
+                    alert("Erreur lors de la récupération des profils Ptah : " + e);
+                })
+                .finally(() => {
+                    setPtahProfilesLoading(false);
+                });
+        }
+    }, [user.membership.type]);
+
 
     return (
         <div className="mt-10 max-w-xs">
@@ -230,19 +275,52 @@ export default function UnetSection({
                                     />
                                 </FormControl>
                             </div>
-                            <Controller
-                                name="macAddress"
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                    <TextField
-                                        className="bg-white"
-                                        required
-                                        label="Adresse MAC"
-                                        value={value}
-                                        onChange={onChange}
+                            <Stack direction="row" spacing={2}>
+                                <Controller
+                                    name="macAddress"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <TextField
+                                            className="bg-white"
+                                            required
+                                            fullWidth
+                                            label="Adresse MAC"
+                                            {...field}
+                                        />
+                                    )}
+                                />
+                                {user.membership.type === MembershipType.FTTH &&
+                                    <Controller
+                                        name="ptahProfile"
+                                        control={control}
+                                        render={({ field: { onChange, value } }) => (
+                                            <Autocomplete
+                                                options={ptahProfiles}
+                                                loading={ptahProfilesLoading}
+                                                value={value}
+                                                onChange={(event, newValue) => onChange(newValue)}
+                                                sx={{ width: 300 }}
+                                                renderInput={(params) => (
+                                                    <FormControl fullWidth required>
+                                                        <InputLabel {...params.InputLabelProps}>Profil Ptah</InputLabel>
+                                                        <OutlinedInput
+                                                            {...params.InputProps}
+                                                            inputProps={params.inputProps}
+                                                            label="Profil Ptah"
+                                                            endAdornment={
+                                                                <>
+                                                                    {ptahProfilesLoading ? <CircularProgress color="inherit" size={20} sx={{ mr: 1 }} /> : null}
+                                                                    {params.InputProps.endAdornment}
+                                                                </>
+                                                            }
+                                                        />
+                                                    </FormControl>
+                                                )}
+                                            />
+                                        )}
                                     />
-                                )}
-                            />
+                                }
+                            </Stack>
                             <Button variant="contained" type="submit">
                                 {user.membership.type === MembershipType.FTTH ? "Assigner la box" : "Créer un Unet sur cette box"}
                             </Button>
@@ -273,8 +351,8 @@ export default function UnetSection({
 
                                             <strong>Ping fonctionnel</strong> : {
                                                 lastPing.success ?
-                                                    <Chip variant="outlined" color="success" label="Oui"/> :
-                                                    <Chip color="error" label="Non"/>
+                                                    <Chip variant="outlined" color="success" label="Oui" /> :
+                                                    <Chip color="error" label="Non" />
                                             }
                                             <br />
                                             <strong>Dernier ping réussi</strong> : {
@@ -299,6 +377,7 @@ export default function UnetSection({
                                 <TextField
                                     value={newMac}
                                     onChange={(e) => setNewMac(e.target.value)}
+                                    size="small"
                                 /> :
                                 <Button
                                     onClick={() => navigator.clipboard.writeText(box.mac)}
@@ -324,6 +403,59 @@ export default function UnetSection({
                             </ConfirmableButton>}
                             <br />
                             <strong>Type</strong> : {box.type}<br />
+                            {user.membership.type === MembershipType.FTTH && (
+                                <>
+                                    <strong>Profil Ptah</strong> :<span className="pr-2" />
+                                    {editingPtahProfile ? (
+                                        <Autocomplete
+                                            options={ptahProfiles}
+                                            loading={ptahProfilesLoading}
+                                            value={newPtahProfile}
+                                            onChange={(event, newValue) => setNewPtahProfile(newValue)}
+                                            sx={{ width: 250, display: 'inline-block', verticalAlign: 'middle' }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                                <TextField {...params} label="Profil Ptah" />
+                                            )}
+                                        />
+                                    ) : (
+                                        <span>{box.ptah_profile}</span>
+                                    )}
+
+                                    {isMainUnet && <IconButton onClick={() => setEditingPtahProfile(!editingPtahProfile)}><EditIcon /></IconButton>}
+
+                                    {editingPtahProfile && (
+                                        <ConfirmableButton
+                                            variant="contained"
+                                            buttonColor="error"
+                                            onConfirm={onUpdatePtahProfile}
+                                            confirmationText={<p>Le profil Ptah de la box sera modifié. Ceci peut entraîner une coupure de service temporaire le temps que la box soit reconfigurée.</p>}
+                                        >
+                                            Valider
+                                        </ConfirmableButton>
+                                    )}
+                                    <div style={{ marginTop: '8px' }}>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={async () => {
+                                                setIsDownloadingPtah(true);
+                                                try {
+                                                    await Api.downloadPtahImage(box.mac, box.ptah_profile);
+                                                } catch (e) {
+                                                    alert("Erreur lors du téléchargement de l'image : " + e);
+                                                } finally {
+                                                    setIsDownloadingPtah(false);
+                                                }
+                                            }}
+                                            disabled={isDownloadingPtah}
+                                            startIcon={isDownloadingPtah ? <CircularProgress size={16} /> : <Download />}
+                                        >
+                                            {isDownloadingPtah ? 'Génération de l\'image...' : 'Image Ptah'}
+                                        </Button>
+                                    </div>
+                                </>
+                            )}
                             <br />
                             {mainUser &&
                                 <>
