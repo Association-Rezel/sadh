@@ -8,8 +8,8 @@ import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
 import EditIcon from '@mui/icons-material/Edit';
-import { ContentCopy, Download, ExitToApp, ImportExport, TransferWithinAStation } from "@mui/icons-material";
-
+import { ContentCopy, Download, ExitToApp, ImportExport, QrCodeScanner, TransferWithinAStation } from "@mui/icons-material";
+import QRCodeScannerDialog from "./QRCodeScannerDialog_zbar";
 type FormValues = {
     boxType?: string;
     macAddress: string;
@@ -37,6 +37,7 @@ export default function UnetSection({
         handleSubmit,
         control,
         reset,
+        setValue,
     } = useForm<FormValues>({
         defaultValues: {
             boxType: "ac2350",
@@ -57,6 +58,7 @@ export default function UnetSection({
     const [newPtahProfile, setNewPtahProfile] = useState<string | null>(null);
     const [isDownloadingPtah, setIsDownloadingPtah] = useState(false);
 
+    const [qrScannerOpen, setQrScannerOpen] = useState(false);
 
     if (box && newMac === "") {
         setNewMac(box.mac);
@@ -173,6 +175,11 @@ export default function UnetSection({
         });
     }
 
+    const handleQRScanSuccess = (macAddress: string) => {
+        setValue('macAddress', macAddress);
+        setQrScannerOpen(false);
+    }
+
     useEffect(() => {
         if (!user) return;
         if (user.membership.type === MembershipType.WIFI) {
@@ -224,6 +231,12 @@ export default function UnetSection({
                 }
             </Typography>
             <TransferUnetToMacDialog unet_id={user.membership.unetid} open={transferDialogOpen} setTransferDialogOpen={setTransferDialogOpen} />
+            <QRCodeScannerDialog 
+                open={qrScannerOpen} 
+                onClose={() => setQrScannerOpen(false)} 
+                onScanSuccess={handleQRScanSuccess}
+                scanType="mac"
+            />
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 {(boxLoading) && <p>Chargement...</p>}
                 <form onSubmit={handleSubmit(onSubmit)}>
@@ -289,6 +302,12 @@ export default function UnetSection({
                                         />
                                     )}
                                 />
+                                <Tooltip title="Scanner le code barre de la box">
+                                    <IconButton onClick={() => setQrScannerOpen(true)}>
+                                        <QrCodeScanner />
+                                    </IconButton>
+                                </Tooltip>
+                                </Stack>
                                 {user.membership.type === MembershipType.FTTH &&
                                     <Controller
                                         name="ptahProfile"
@@ -320,7 +339,6 @@ export default function UnetSection({
                                         )}
                                     />
                                 }
-                            </Stack>
                             <Button variant="contained" type="submit">
                                 {user.membership.type === MembershipType.FTTH ? "Assigner la box" : "Créer un Unet sur cette box"}
                             </Button>

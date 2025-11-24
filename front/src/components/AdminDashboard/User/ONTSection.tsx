@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import Api from "../../../utils/Api";
-import { Alert, Button, Chip, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Button, Chip, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography, Tooltip, IconButton, InputAdornment  } from "@mui/material";
 import { ONTInfo, PMInfo, RegisterONT } from "../../../utils/types/pon_types";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import TrashIcon from '@mui/icons-material/Delete';
 import { Box } from "../../../utils/types/hermes_types";
 import ConfirmableButton from "../../utils/ConfirmableButton";
+import { QrCodeScanner } from "@mui/icons-material";
+import QRCodeScannerDialogZbar from "./QRCodeScannerDialog_zbar";
 
 export default function ONTSection(
     {
@@ -23,7 +25,7 @@ export default function ONTSection(
         ontLoading: boolean,
         setONTLoading: (loading: boolean) => void,
     }) {
-    const { register, handleSubmit, getValues, reset, control } = useForm<RegisterONT>({
+    const { register, handleSubmit, getValues, reset, control, setValue } = useForm<RegisterONT>({
         defaultValues: {
             serial_number: "",
             software_version: "3FE45655AOCK88",
@@ -33,6 +35,7 @@ export default function ONTSection(
     });
 
     const [pms, setPms] = useState<PMInfo[] | null>(null);
+    const [scannerOpen, setScannerOpen] = useState(false);
 
     const onSubmit: SubmitHandler<RegisterONT> = (register: RegisterONT) => {
         if (!box) {
@@ -45,8 +48,8 @@ export default function ONTSection(
             return;
         }
         // Check serial format
-        if (!register.serial_number.match(/^ALCL:[0-9A-Fa-f]{8}$/)) {
-            alert("Le numéro de série doit être de la forme ALCL:XXXXXXXX (13 chars)");
+        if (!register.serial_number.match(/^[A-Za-z]{4}:[0-9A-Fa-f]{8}$/)) {
+            alert("Le numéro de série doit être de la forme AAAA:HHHHHHHH");
             return;
         }
         // Check PM not null
@@ -85,6 +88,11 @@ export default function ONTSection(
         });
     }
 
+    const handleScanSuccess = (scannedValue: string) => {
+        setValue('serial_number', scannedValue);
+        setScannerOpen(false);
+    };
+
     useEffect(() => {
         Api.fetchPMs().then(pms => {
             setPms(pms);
@@ -105,13 +113,23 @@ export default function ONTSection(
                             name="serial_number"
                             control={control}
                             render={({ field }) => (
-                                <TextField
-                                    className="bg-white"
-                                    required
-                                    label="Numéro de série de l'ONT"
-                                    {...field}
-                                />
-                            )}
+                                <div className="flex items-center gap-2">
+                                    <TextField
+                                        className="bg-white flex-1"
+                                        required
+                                        label="Numéro de série ONT"
+                                        {...field}
+                                    />
+                                    <IconButton
+                                        onClick={() => setScannerOpen(true)}
+                                        color="primary"
+                                    >
+                                        <QrCodeScanner />
+                                    </IconButton>
+                                </div>
+                            )
+                        }
+                        
                         />
 
                         <Controller
@@ -243,6 +261,13 @@ export default function ONTSection(
                     </>
                 )}
             </Typography>
+
+            <QRCodeScannerDialogZbar
+                open={scannerOpen}
+                onClose={() => setScannerOpen(false)}
+                onScanSuccess={handleScanSuccess}
+                scanType="serial"
+            />
         </div>
     )
 }
