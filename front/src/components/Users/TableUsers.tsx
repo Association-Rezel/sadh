@@ -102,6 +102,9 @@ export function TableUsers({ users,
     const [selectedFieldsFirstMonth, setSelectedFieldsFirstMonth] = React.useState<string[]>(["Oui", "Non"]);
     const possibleFieldsFirstMonth = ["Oui", "Non"];
 
+    const [selectedFieldsMembership, setSelectedFieldsMembership] = React.useState<string[]>(["Oui", "Non"]);
+    const possibleFieldsMembership = ["Oui", "Non"];
+
     const [selectedFieldsContract, setSelectedFieldsContract] = React.useState<string[]>(["Oui", "Non"]);
     const possibleFieldsContract = ["Oui", "Non"];
 
@@ -143,6 +146,7 @@ export function TableUsers({ users,
             const statusMatch = selectedFieldsStatus.includes(MembershipStatus[user.membership?.status]) || (selectedFieldsStatus.includes("(Vide)") && !user.membership?.status);
             const depositMatch = selectedFieldsDeposit.includes(user.membership?.deposit_status === DepositStatus.PAID ? "Oui" : "Non");
             const firstMonthMatch = selectedFieldsFirstMonth.includes(user.membership?.paid_first_month ? "Oui" : "Non");
+            const membershipMatch = selectedFieldsMembership.includes(user.membership?.paid_membership ? "Oui" : "Non");
             const contractMatch = selectedFieldsContract.includes(user.membership?.contract_signed ? "Oui" : "Non");
 
             return typeMatch && statusMatch && depositMatch && firstMonthMatch && contractMatch;
@@ -170,16 +174,19 @@ export function TableUsers({ users,
                                         >Prénom Nom</TableSortLabel>
                                 </TableCell>
                                 <SelectableTableCell selectedFields={selectedFieldsType} possibleFields={possibleFieldsType} onChange={setSelectedFieldsType}>
-                                    Type d'adhésion
+                                    Type d'abonnement
                                 </SelectableTableCell>
                                 <SelectableTableCell selectedFields={selectedFieldsStatus} possibleFields={possibleFieldsStatus} onChange={setSelectedFieldsStatus}>
-                                    Statut d'adhésion
+                                    Statut d'abonnement
                                 </SelectableTableCell>
                                 <SelectableTableCell selectedFields={selectedFieldsDeposit} possibleFields={possibleFieldsDeposit} onChange={setSelectedFieldsDeposit}>
                                     Caution payé
                                 </SelectableTableCell>
                                 <SelectableTableCell selectedFields={selectedFieldsFirstMonth} possibleFields={possibleFieldsFirstMonth} onChange={setSelectedFieldsFirstMonth}>
                                     1er mois payé
+                                </SelectableTableCell>
+                                <SelectableTableCell selectedFields={selectedFieldsMembership} possibleFields={possibleFieldsMembership} onChange={setSelectedFieldsMembership}>
+                                    Cotisation payée
                                 </SelectableTableCell>
                                 <SelectableTableCell selectedFields={selectedFieldsContract} possibleFields={possibleFieldsContract} onChange={setSelectedFieldsContract}>
                                     Contrat signé
@@ -209,6 +216,9 @@ export function TableUsers({ users,
                                 </TableCell>
                                 <TableCell align="right">
                                     {user.membership?.paid_first_month ? <p className="text-green-700">1er mois</p> : <p className="text-red-700">1er mois</p>}
+                                </TableCell>
+                                <TableCell align="right">
+                                    {user.membership?.paid_membership ? <p className="text-green-700">Cotisation</p> : <p className="text-red-700">Cotisation</p>}
                                 </TableCell>
                                 <TableCell align="right">
                                     {user.membership?.contract_signed ? <p className="text-green-700">Contrat</p> : <p className="text-red-700">Contrat</p>}

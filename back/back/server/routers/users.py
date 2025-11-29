@@ -98,6 +98,7 @@ async def _me_create_membership_request(
                     "membership.equipment_status": EquipmentStatus.PENDING_PROVISIONING,
                     "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
                     "membership.init.payment_method_first_month": request.payment_method_first_month,
+                    "membership.init.payment_method_membership": request.payment_method_membership,
                     "membership.init.payment_method_deposit": request.payment_method_deposit,
                     "membership.documenso_contract_id": document_id,
                     "membership.documenso_adherent_url": links[0],
@@ -127,6 +128,7 @@ async def _me_create_membership_request(
                     "membership.deposit_status": DepositStatus.NOT_DEPOSITED,
                     "membership.init.main_unet_id": associated_box.main_unet_id,
                     "membership.init.payment_method_first_month": request.payment_method_first_month,
+                    "membership.init.payment_method_membership": request.payment_method_membership,
                     "membership.documenso_contract_id": document_id,
                     "membership.documenso_adherent_url": links[0],
                     "membership.documenso_president_url": links[1],
@@ -141,8 +143,8 @@ async def _me_create_membership_request(
     user = User.model_validate(userdict)
 
     send_matrix_message(
-        f"<h4>🆕 Demande d'adhésion - {request.type.name}</h4>",
-        f"Un utilisateur a demandé à adhérer: {user.first_name} {user.last_name} - {user.email}",
+        f"<h4>🆕 Demande d'abonnement - {request.type.name}</h4>",
+        f"Un utilisateur a demandé à s'abonner: {user.first_name} {user.last_name} - {user.email}",
         f"🔗 https://fai.rezel.net/admin/users/{user.id}",
     )
 

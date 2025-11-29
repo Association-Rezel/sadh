@@ -1,4 +1,4 @@
-import { Alert, Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
+import { Alert, Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, Link, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import 'react-phone-number-input/style.css';
@@ -11,6 +11,7 @@ type FormValues = {
     appartement_id: string;
     ssid: string;
     paymentMethodFirstMonth: string;
+    paymentMethodMembership: string;
     paymentMethodDeposit: string;
 };
 
@@ -29,6 +30,7 @@ export default function WifiMembershipForm() {
             residence: "",
             appartement_id: "",
             paymentMethodFirstMonth: "",
+            paymentMethodMembership: "",
             paymentMethodDeposit: "",
         }
     });
@@ -60,7 +62,7 @@ export default function WifiMembershipForm() {
         try {
             const realSSID = allSSIDs.find((ssid) => ssid.toLowerCase() === "rezel-" + event.ssid.toLowerCase());
             if (!realSSID) {
-                alert("Erreur lors de la demande d'adhésion. Le réseau Wi-Fi n'existe pas.");
+                alert("Erreur lors de la demande d'abonnement. Le réseau Wi-Fi n'existe pas.");
                 return;
             }
 
@@ -72,11 +74,12 @@ export default function WifiMembershipForm() {
                     appartement_id: event.appartement_id,
                 },
                 payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
+                payment_method_membership: PaymentMethod[event.paymentMethodMembership],
             });
             setUser({ ...user });
         } catch (error) {
             alert(
-                "Erreur lors de la demande d'adhésion. Veuillez réessayer ultérieurement. Message d'erreur : " +
+                "Erreur lors de la demande d'abonnement. Veuillez réessayer ultérieurement. Message d'erreur : " +
                 error.message +
                 "\nSi le problème persiste, veuillez contacter contact@rezel.net"
             );
@@ -86,7 +89,7 @@ export default function WifiMembershipForm() {
     return (
         <div>
             <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                Adhérer à Rezel (Wi-Fi)
+                S'abonner à Rezel (Wi-Fi)
             </Typography>
             <form className="container mt-16 max-w-2xl" onSubmit={handleSubmit(onSubmitMembership)}>
                 <div className="flex flex-col items-start">
@@ -159,11 +162,11 @@ export default function WifiMembershipForm() {
                     </div>
                     <div className="mt-16 mb-8">
                         <Typography variant="h5" color="text.primary" align="left">
-                            Premier mois d'adhésion : <strong>10€</strong>
+                            Premier mois d'abonnement : <strong>10€</strong>
                             <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 10€/mois)</Typography>
                         </Typography>
                         <Typography variant="body2" color="text.secondary" align="left">
-                            Le premier mois d'adhésion est à régler dès maintenant.<br />
+                            Le premier mois d'abonnement est à régler dès maintenant.<br />
                             Une fois que nous aurons confirmé la réception du paiement,
                             nous activerons un nouveau réseau Wi-Fi pour toi sur la box que tu as
                             indiquée plus haut. Tu recevras alors un mail de confirmation.
@@ -184,19 +187,52 @@ export default function WifiMembershipForm() {
                                         onChange={onChange}
                                     >
                                         <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
                                     </RadioGroup>
                                 )} />
                             <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
                     </div>
                 </div>
+                <div className="mt-16 mb-8">
+                    <Typography variant="h5" color="text.primary" align="left">
+                        Première année d'adhésion : <strong>1€</strong>
+                        <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 1€/an)</Typography>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" align="left">
+                        Vous devez régler votre cotisation pour un an. Être membre adhérent de Rezel est obligatoire pour bénéficier du service FAI.<br />
+                        Votre adhésion commencera le jour de la signature de votre contrat. <br />
+                        Elle est à rendertue chaque année à la date anniversaire de votre adhésion.
+                    </Typography>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <FormControl required variant="standard" sx={{ textAlign: "left" }}>
+                        <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
+                        <Controller
+                            name="paymentMethodMembership"
+                            control={control}
+                            rules={{ required: true }}
+                            render={({ field: { onChange, value } }) => (
+                                <RadioGroup
+                                    aria-label="paymentMethodMembership"
+                                    name="paymentMethodMembership"
+                                    value={value}
+                                    onChange={onChange}
+                                >
+                                    <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
+                                    <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
+									<FormControlLabel value={PaymentMethod.HELLOASSO} control={<Radio />} label="Par carte bancaire (via HelloAsso)" />
+                                </RadioGroup>
+                            )} />
+                        <FormHelperText error> {formState.errors.paymentMethodMembership && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
+                    </FormControl>
+                </div>
                 <div className="mt-16">
                     {formState.isSubmitting ?
                         <CircularProgress />
                         :
                         <Button variant="contained" type="submit" disabled={!watch("ssid")} >
-                            Je souhaite adhérer à Rezel
+                            Je souhaite m'abonner à Rezel
                         </Button>
                     }
                 </div>

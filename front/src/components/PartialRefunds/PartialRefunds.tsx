@@ -42,15 +42,15 @@ export default function PartialRefunds() {
                 Calculer les remboursements partiels jusqu'à aujourd'hui
             </Button>
             <Typography variant="subtitle1" align="left">
-                L'algorithme se base sur la date de début d'adhésion de chaque adhérent FTTH
-                (indiqué sur sa page adhérent sur ce site), et sur la liste des adhérents Wi-Fi
+                L'algorithme se base sur la date de début d'abonnement de chaque abonné FTTH
+                (indiqué sur sa page abonné sur ce site), et sur la liste des abonnés Wi-Fi
                 attachés à chaque période.<br />
                 <br />
-                Pour chaque mois d'adhésion de l'adhérent FTTH, on calcule la somme des adhérents Wi-Fi
+                Pour chaque mois d'abonnement de l'abonné FTTH, on calcule la somme des abonnements Wi-Fi
                 entièrement présents sur le mois. Si aucun objet "Remboursement partiel" n'existe déjà
-                pour ce mois d'adhésion, alors un objet est crée pour ce mois.<br />
+                pour ce mois d'abonnement, alors un objet est crée pour ce mois.<br />
                 <br />
-                Les objets "Remboursement partiel" avec aucun adhérent Wi-Fi ne sont pas affichés sur cette
+                Les objets "Remboursement partiel" avec aucun abonné Wi-Fi ne sont pas affichés sur cette
                 page, pour ne pas la surcharger. Ils sont cependant bien créés dans la base de données.
             </Typography>
 
@@ -70,7 +70,7 @@ export default function PartialRefunds() {
                         période, ou bien des remboursements partiels déjà payés pour des périodes
                         similaires.<br />
                         <br />
-                        Cela peut être dû au changement de date d'adhésion de l'adhérent FTTH par exemple.
+                        Cela peut être dû au changement de date d'abonnement de l'abonné FTTH par exemple.
                         Attention à bien vérifier si les remboursements partiels sont valides ou non.<br />
                         <br />
                     </Typography>
@@ -85,7 +85,7 @@ export default function PartialRefunds() {
             }
             <Alert severity="info">
                 {users && partialRefunds && partialRefunds.filter(p => !p.paid && p.wifi_adherents.length === 0).length || <CircularProgress />} cartes sont masquées
-                car elles concernent des mois d'adhésions FTTH avec aucun adhérent Wi-Fi à rembourser.
+                car elles concernent des mois d'abonnements FTTH avec aucun abonné Wi-Fi à rembourser.
             </Alert>
             <Alert severity="warning">
                 Les cartes à traiter sont susceptibles d'être supprimées et recalculées automatiquement
@@ -209,13 +209,13 @@ function PartialRefundCard({ users, partialRefund, setPartialRefund, deleteParti
                     }
                     <Typography variant="h6">
                         <Link to={`/admin/users/${user.id}`} style={{ color: 'inherit' }}>
-                            <Tooltip title="Voir la fiche de l'adhérent" placement="right">
+                            <Tooltip title="Voir la fiche de l'abonné" placement="right">
                                 <span className="mr-6 hover:underline">
                                     {user.first_name} {user.last_name}
                                 </span>
                             </Tooltip>
                         </Link>
-                        <Tooltip title={`Adhésion FTTH entre le ${month_start.format("DD/MM/YYYY")} et le ${month_end.format("DD/MM/YYYY")}`} placement="right">
+                        <Tooltip title={`Abonnement FTTH entre le ${month_start.format("DD/MM/YYYY")} et le ${month_end.format("DD/MM/YYYY")}`} placement="right">
                             <Chip label={dayjs(month_start).locale('fr').format('MMMM YYYY')} />
                         </Tooltip>
                     </Typography>
@@ -223,14 +223,14 @@ function PartialRefundCard({ users, partialRefund, setPartialRefund, deleteParti
                 <div className="flex flex-col gap-6 mt-4">
                     <Typography variant="body1">
                         <Tooltip title={
-                            <p>Adhérents Wi-Fi attachés à cette période :
+                            <p>Abonnés Wi-Fi attachés à cette période :
                                 {partialRefund.wifi_adherents.map((wifi_adherent, index) =>
                                     <span key={index} className="block">
                                         {users.find(u => u.id === wifi_adherent)?.first_name} {users.find(u => u.id === wifi_adherent)?.last_name}
                                     </span>
                                 )}
                             </p>} placement="right">
-                            <span>{partialRefund.wifi_adherents.length} adhérent(s) Wi-Fi</span>
+                            <span>{partialRefund.wifi_adherents.length} abonnés(s) Wi-Fi</span>
                         </Tooltip>
                     </Typography>
                     <Controller

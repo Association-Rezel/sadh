@@ -82,8 +82,8 @@ function UserComponent() {
             {!user && <p>Chargement...</p>}
             {user && !user?.membership &&
                 <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
-                    Utilisateur n'est pas adhérent et n'a pas de demande d'adhéssion en cours.<br />
-                    {user?.prev_memberships && user.prev_memberships.length} ancienne(s) adhésion(s) ou demandes trouvée(s).
+                    Utilisateur n'est pas abonné et n'a pas de demande d'abonnement en cours.<br />
+                    {user?.prev_memberships && user.prev_memberships.length} ancien(s) abonnement(s) ou demandes trouvée(s).
                 </Typography>}
             {user && user?.membership && (
                 <>

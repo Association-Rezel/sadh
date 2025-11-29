@@ -195,9 +195,15 @@ class StatusUpdateManager:
                     ),
                 ),
                 StatusUpdateCondition(
-                    "La cotisation pour le premier mois a été payée",
+                    "L'abonnement pour le premier mois a été payée",
                     lambda user, _: (
                         user.membership.paid_first_month if user.membership else False
+                    ),
+                ),
+                StatusUpdateCondition(
+                    "La cotisation a été payée",
+                    lambda user, _: (
+                        user.membership.paid_membership if user.membership else False
                     ),
                 ),
                 StatusUpdateCondition(
@@ -209,7 +215,7 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état VALIDATED",
+                    "Passage de l'abonnement à l'état VALIDATED",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.VALIDATED
                     ),
@@ -263,7 +269,7 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état SENT_CMD_ACCES",
+                    "Passage de l'abonnement à l'état SENT_CMD_ACCES",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.SENT_CMD_ACCES
                     ),
@@ -289,7 +295,7 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état APPOINTMENT_VALIDATED",
+                    "Passage de l'abonnement à l'état APPOINTMENT_VALIDATED",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.APPOINTMENT_VALIDATED
                     ),
@@ -318,13 +324,13 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état ACTIVE",
+                    "Passage de l'abonnement à l'état ACTIVE",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.ACTIVE
                     ),
                 ),
                 StatusUpdateEffect(
-                    "Mise à jour de la date de début d'adhésion à aujourd'hui",
+                    "Mise à jour de la date de début d'abonnement à aujourd'hui",
                     _set_adhesion_date_today,
                 ),
             ],
@@ -337,7 +343,7 @@ class StatusUpdateManager:
             [],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état PENDING_INACTIVE",
+                    "Passage de l'abonnement à l'état PENDING_INACTIVE",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.PENDING_INACTIVE
                     ),
@@ -352,7 +358,7 @@ class StatusUpdateManager:
             [],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état INACTIVE",
+                    "Passage de l'abonnement à l'état INACTIVE",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.INACTIVE
                     ),
@@ -373,9 +379,15 @@ class StatusUpdateManager:
             MembershipStatus.ACTIVE,
             [
                 StatusUpdateCondition(
-                    "La cotisation pour le premier mois a été payée",
+                    "L'abonnement pour le premier mois a été payée",
                     lambda user, _: (
                         user.membership.paid_first_month if user.membership else False
+                    ),
+                ),
+                StatusUpdateCondition(
+                    "La cotisation a été payée",
+                    lambda user, _: (
+                        user.membership.paid_membership if user.membership else False
                     ),
                 ),
                 StatusUpdateCondition(
@@ -391,7 +403,7 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état ACTIVE",
+                    "Passage de l'abonnement à l'état ACTIVE",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.ACTIVE
                     ),
@@ -435,7 +447,7 @@ class StatusUpdateManager:
             ],
             [
                 StatusUpdateEffect(
-                    "Passage de l'adhésion à l'état INACTIVE",
+                    "Passage de l'abonnement à l'état INACTIVE",
                     lambda user, db: _update_membership_status(
                         db, user, MembershipStatus.INACTIVE
                     ),

@@ -65,7 +65,7 @@ export default function MyNetworkConfigurationPage() {
                     justifyContent="center"
                     width="100%"
                 >
-                    <h3>Changer le mot de passe du WiFi</h3>
+                    <h3>Changer le mot de passe du Wi-Fi</h3>
                     <PasswordResetForm unet={unet} setUnet={setUnet} />
                 </Stack>
             </Stack>
@@ -155,7 +155,7 @@ function BoxInfos({ unet }) {
                 <br />
                 <b>Adresse locale du routeur : </b> {unet.network.lan_ipv4.address}
                 <br />
-                <b>Mot de passe WiFi : </b> {unet.wifi.psk.replace(/./g, '*')}
+                <b>Mot de passe Wi-Fi : </b> {unet.wifi.psk.replace(/./g, '*')}
                 <br /> <br />
                 <Button variant="outlined" onClick={handleCopyPassword}>{stateIcon}{stateCopy}</Button>
             </div>

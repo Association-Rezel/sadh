@@ -57,7 +57,7 @@ function AdminDashboard() {
                             <ListItemIcon>
                                 <PeopleIcon />
                             </ListItemIcon>
-                            <ListItemText primary="Adhérents" />
+                            <ListItemText primary="Abonnés" />
                         </ListItemButton>
                     </Link>
 

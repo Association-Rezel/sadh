@@ -78,7 +78,7 @@ def _send_email(
 
 def send_email_validated_ftth(user: User) -> None:
     _send_email(
-        "Rezel - Demande d'adhésion validée",
+        "Rezel - Demande d'abonnement validée",
         jinja2_emails_env.get_template("request_validated_ftth.html").render(user=user),
         user.email,
         html=True,
@@ -114,7 +114,7 @@ async def send_email_validated_wifi(user: User, db: AsyncIOMotorDatabase) -> Non
         ) + timedelta(days=1)
 
     _send_email(
-        "Rezel - Demande d'adhésion validée",
+        "Rezel - Demande d'abonnement validée",
         jinja2_emails_env.get_template("request_validated_wifi.html").render(
             user=user,
             date_wifi=date_wifi.strftime("%d/%m"),

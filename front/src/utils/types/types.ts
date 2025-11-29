@@ -55,7 +55,8 @@ export interface Appointment {
 export enum PaymentMethod {
     CHEQUE = "CHEQUE",
     VIREMENT = "VIREMENT",
-    ESPECE = "ESPECE"
+    ESPECE = "ESPECE",
+    HELLOASSO = "HELLOASSO"
 }
 
 export enum MembershipType {
@@ -65,6 +66,7 @@ export enum MembershipType {
 
 export interface MembershipInitialization {
     payment_method_first_month: PaymentMethod;
+    payment_method_membership: PaymentMethod;
     payment_method_deposit?: PaymentMethod;
     main_unet_id?: string;
 }
@@ -90,6 +92,7 @@ export interface Membership {
     cr_mes_sent: boolean;
     annul_acces_sent: boolean;
     paid_first_month: boolean;
+    paid_membership: boolean;
     contract_signed: boolean;
     appointment?: Appointment;
     init?: MembershipInitialization;
@@ -122,6 +125,7 @@ export interface MembershipRequest {
     phone_number?: string;
     iban?: string;
     payment_method_first_month: PaymentMethod;
+    payment_method_membership: PaymentMethod;
     payment_method_deposit?: PaymentMethod;
 }
 

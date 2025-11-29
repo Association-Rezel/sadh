@@ -96,17 +96,17 @@ export default function MembershipSection({
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
-                Adhésion <MembershipTypeChip type={user.membership.type} />
+                Abonnement <MembershipTypeChip type={user.membership.type} />
                 <ConfirmableButton
                     variant="text"
-                    confirmationText="La suppression de l'adhésion va supprimer toutes
-                    les données associées à l'adhésion de l'adhérent. Les processus en
+                    confirmationText="La suppression de l'abonnement va supprimer toutes
+                    les données associées à l'abonnement de l'adhérent. Les processus en
                     cours auprès d'Orange ne sont PAS gérés. Vérifiez que l'annulation
-                    de l'adhésion à ce stade n'expose pas Rezel à des pénalités auprès
+                    de l'abonnement à ce stade n'expose pas Rezel à des pénalités auprès
                     d'Orange, et à effecuter les actions nécessaires (ANNUL_ACCES ou autre)."
                     onConfirm={() => {
                         Api.deleteMembership(user.id).then(() => {
-                            alert("Adhésion supprimée avec succès");
+                            alert("Abonnement supprimée avec succès");
                             window.location.reload();
                         }).catch((e) => {
                             alert(e);
@@ -137,7 +137,7 @@ export default function MembershipSection({
                     <div className="grid grid-cols-3 gap-y-6">
                         {user.membership.type === MembershipType.FTTH && (
                             <>
-                                <strong>Début de l'adhésion</strong>
+                                <strong>Début de l'abonnement</strong>
                                 <div className="flex flex-row gap-4 col-span-2">
                                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
                                         <Controller
@@ -154,12 +154,12 @@ export default function MembershipSection({
                                     </LocalizationProvider>
                                     <ConfirmableButton
                                         confirmationText={
-                                            <>Modifier la date de début de l'adhésion aura pour
+                                            <>Modifier la date de début de l'abonnement aura pour
                                                 effet de supprimer et de recréer tous les objects 'remboursement partiels'.
                                                 Ces objets sont parfaitement indicatifs et vous pourrez ensuite refaire le tri
                                                 pour cette utilisateur.<br />
                                                 <br />
-                                                La date de début d'adhésion est automatiquement ajoutée lors du passage à l'état ACTIVE.
+                                                La date de début d'abonnement est automatiquement ajoutée lors du passage à l'état ACTIVE.
                                             </>}
                                         onConfirm={() => setConfirmedStartDateEdit(!confirmedStartDateEdit)}
                                         type="iconbutton"
@@ -209,6 +209,10 @@ export default function MembershipSection({
                     <div className="flex items-center">
                         <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("paid_first_month")} />
                         <strong className="pl-2">Premier mois payé</strong>
+                    </div>
+                    <div className="flex items-center">
+                        <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("paid_membership")} />
+                        <strong className="pl-2">Cotisation payée</strong>
                     </div>
                     {!user.membership.documenso_contract_id && (
                         <>
@@ -302,7 +306,7 @@ function WarningManualStatusUpdateDialog({ open, onConfirm, onClose }: { open: b
             <DialogTitle>⚠️ Attention</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    L'édition manuelle du statut de l'adhésion n'appliquera pas les effets
+                    L'édition manuelle du statut de l'abonnement n'appliquera pas les effets
                     de changement de statut. Par exemple, aucun mail ne sera envoyé à l'adhérent
                     ou à Orange (Interop).
                     <br />
@@ -355,7 +359,7 @@ function TransferMembershipDialog({ currentUser, open, onClose }: { currentUser:
             <DialogTitle>Transférer les équipements</DialogTitle>
             <DialogContent>
                 <DialogContentText>
-                    Une adhésion ne peut pas être transférée à un utilisateur à proprement parler.
+                    Un abonnement ne peut pas être transférée à un utilisateur à proprement parler.
                     Cette action aura uniquement pour effet de transférer les équipements
                     (ONT et Box) à un autre utilisateur. Il n'y aura aucun effet sur la configuration
                     des équipements, ni des UNETs secondaires associés.<br />
@@ -393,7 +397,7 @@ function TransferMembershipDialog({ currentUser, open, onClose }: { currentUser:
                         </div>
                     )}
                     {targetUser && targetUser.membership?.type !== MembershipType.FTTH && (
-                        <Alert severity="error">L'utilisateur cible doit avoir une adhésion FTTH et aucun équipements associés</Alert>
+                        <Alert severity="error">L'utilisateur cible doit avoir un abonnement FTTH et aucun équipements associés</Alert>
                     )}
                 </div>
             </DialogContent>

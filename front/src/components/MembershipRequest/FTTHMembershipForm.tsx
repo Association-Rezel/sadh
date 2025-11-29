@@ -1,4 +1,4 @@
-import { Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
+import { Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, Link, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
 import { validateIBAN } from "ngx-iban-validator/dist/iban.validator";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -14,6 +14,7 @@ type FormValues = {
     phone_number: string;
     iban: string;
     paymentMethodFirstMonth: string;
+    paymentMethodMembership: string;
     paymentMethodDeposit: string;
 };
 
@@ -31,6 +32,7 @@ export default function FTTHMembershipForm() {
             phone_number: "",
             iban: "",
             paymentMethodFirstMonth: "",
+            paymentMethodMembership: "",
             paymentMethodDeposit: "",
         }
     });
@@ -58,12 +60,13 @@ export default function FTTHMembershipForm() {
                 phone_number: event.phone_number,
                 iban: event.iban,
                 payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
+                payment_method_membership: PaymentMethod[event.paymentMethodMembership],
                 payment_method_deposit: PaymentMethod[event.paymentMethodDeposit],
             });
             setUser({ ...user });
         } catch (error) {
             alert(
-                "Erreur lors de la demande d'adhésion. Veuillez réessayer ultérieurement. Message d'erreur : " +
+                "Erreur lors de la demande d'abonnement. Veuillez réessayer ultérieurement. Message d'erreur : " +
                 error.message +
                 "\nSi le problème persiste, veuillez contacter contact@rezel.net"
             );
@@ -73,7 +76,7 @@ export default function FTTHMembershipForm() {
     return (
         <div>
             <Typography component="h1" variant="h2" align="center" color="text.primary" gutterBottom>
-                Adhérer à Rezel (Fibre)
+                S'abonner à Rezel (Fibre)
             </Typography>
             <form className="container mt-16" onSubmit={handleSubmit(onSubmitMembership)}>
                 <div className="flex flex-col items-start">
@@ -166,17 +169,17 @@ export default function FTTHMembershipForm() {
                         />
                         <Typography variant="body2" color="text.secondary" align="left">
                             Cet IBAN nous servira à effectuer des remboursements partiels en cas de partage de votre lien fibre <br />
-                            (voir contrat et réglement intérieur à l'étape suivante), et pour rembourser votre caution à la fin de votre adhésion.
+                            (voir contrat et réglement intérieur à l'étape suivante), et pour rembourser votre caution à la fin de votre abonnement.
                         </Typography>
                     </div>
                     <div className="mt-16 mb-8">
                         <Typography variant="h5" color="text.primary" align="left">
-                            Premier mois d'adhésion : <strong>20€</strong>
+                            Premier mois d'abonnement : <strong>20€</strong>
                             <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 20€/mois)</Typography>
                         </Typography>
                         <Typography variant="body2" color="text.secondary" align="left">
-                            Le premier mois d'adhésion est à régler dès maintenant.<br />
-                            Votre adhésion ne commencera qu'à partir de la date de votre rendez-vous d'installation.
+                            Le premier mois d'abonnement est à régler dès maintenant.<br />
+                            Votre abonnement ne commencera qu'à partir de la date de votre rendez-vous d'installation.
                         </Typography>
                     </div>
                     <div className="flex flex-col gap-4">
@@ -194,10 +197,44 @@ export default function FTTHMembershipForm() {
                                         onChange={onChange}
                                     >
                                         <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
                                     </RadioGroup>
                                 )} />
                             <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
+                        </FormControl>
+                    </div>
+
+                    <div className="mt-16 mb-8">
+                        <Typography variant="h5" color="text.primary" align="left">
+                            Première année d'adhésion : <strong>1€</strong>
+                            <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 1€/an)</Typography>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="left">
+                            Vous devez régler votre cotisation pour un an. Être membre adhérent de Rezel est obligatoire pour bénéficier du service FAI.<br />
+                            Votre adhésion commencera le jour de la signature de votre contrat. <br />
+                            Elle est à renouveler chaque année à la date anniversaire de votre adhésion.
+                        </Typography>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                        <FormControl required variant="standard" sx={{ textAlign: "left" }}>
+                            <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
+                            <Controller
+                                name="paymentMethodMembership"
+                                control={control}
+                                rules={{ required: true }}
+                                render={({ field: { onChange, value } }) => (
+                                    <RadioGroup
+                                        aria-label="paymentMethodMembership"
+                                        name="paymentMethodMembership"
+                                        value={value}
+                                        onChange={onChange}
+                                    >
+                                        <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
+                                        <FormControlLabel value={PaymentMethod.HELLOASSO} control={<Radio />} label="Par carte bancaire (via HelloAsso)" />
+                                    </RadioGroup>
+                                )} />
+                            <FormHelperText error> {formState.errors.paymentMethodMembership && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
                         </FormControl>
                     </div>
 
@@ -222,10 +259,10 @@ export default function FTTHMembershipForm() {
                                         name="paymentMethodDeposit"
                                         value={value}
                                         onChange={onChange}
-                                        >
+                                    >
                                         <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
                                         <FormControlLabel value={PaymentMethod.CHEQUE} control={<Radio />} label="Par chèque au local de l'association" />
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'assocation" />
+                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
                                     </RadioGroup>
                                 )} />
                             <FormHelperText error> {formState.errors.paymentMethodDeposit && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
@@ -237,7 +274,7 @@ export default function FTTHMembershipForm() {
                             <CircularProgress />
                             :
                             <Button variant="contained" type="submit">
-                                Je souhaite adhérer à Rezel
+                                Je souhaite m'abonner à Rezel
                             </Button>
                         }
                     </div>

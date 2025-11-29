@@ -1,5 +1,5 @@
 import requests
-from common_models.user_models import MembershipType, User
+from common_models.user_models import User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 from requests.exceptions import SSLError
@@ -7,8 +7,7 @@ from requests.exceptions import SSLError
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
 
-TYPE_ADHERENT_WIFI = "5"
-TYPE_ADHERENT_FTTH = "4"
+TYPE_ADHERENT = "1"
 
 
 async def create_dolibarr_user(
@@ -32,12 +31,8 @@ async def create_dolibarr_user(
         "Accept": "application/json",
         "DOLAPIKEY": api_token,
     }
-    if user.membership.type == MembershipType.FTTH:
-        typeid = TYPE_ADHERENT_FTTH
-        cotisation = 20
-    else:
-        typeid = TYPE_ADHERENT_WIFI
-        cotisation = 10
+    cotisation = 1
+    typeid = TYPE_ADHERENT
     user_fai_url = f"https://fai.rezel.net/admin/users/{user.id}"
     methode_payement1 = "- par virement bancaire, voici notre RIB : IBAN : FR76 3000 4033 6400 0100 0660 667, domiciliation : BNP Paribas, BIC : BNPAFRPPXXX"
     methode_payement2 = "- en espèce ou chèque à notre local, salle 0A206 à Télécom Paris (au fond du couloir des associations, côté LudoTech/Robotics/Forum/BDS), 19 Pl. Marguerite Perey, 91120 Palaiseau"

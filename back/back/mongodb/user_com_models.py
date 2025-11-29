@@ -32,6 +32,7 @@ class MembershipUpdate(RezelBaseModel):
     cr_mes_sent: Optional[bool] = Field(None)
     annul_acces_sent: Optional[bool] = Field(None)
     paid_first_month: Optional[bool] = Field(None)
+    paid_membership: Optional[bool] = Field(None)
     contract_signed: Optional[bool] = Field(None)
     appointment: Optional[Appointment] = Field(None)
     start_date: Optional[PortableDatetime] = Field(None)
@@ -52,6 +53,7 @@ class MembershipRequest(RezelBaseModel):
     iban: Optional[PortableIBAN] = Field(None)
     address: Address = Field(...)
     payment_method_first_month: PaymentMethod = Field(...)
+    payment_method_membership: PaymentMethod = Field(...)
     payment_method_deposit: Optional[str] = Field(None)
 
     @model_validator(mode="after")

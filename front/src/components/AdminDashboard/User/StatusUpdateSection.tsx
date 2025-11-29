@@ -38,7 +38,7 @@ export default function StatusUpdateSection({ user, setUser }: { user: User, set
     return (
         <div className="mt-10 max-w-xs">
             <Typography variant="h5" align="left" color="text.primary" component="div">
-                Changement d'état de l'adhésion
+                Changement d'état de l'abonnement
             </Typography>
             <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
                 <div className="flex flex-col gap-y-2">
