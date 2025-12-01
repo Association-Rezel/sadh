@@ -18,6 +18,9 @@ router = APIRouter(prefix="/ptah", tags=["ptah"])
     dependencies=[Depends(must_be_admin)],
 )
 async def _get_ptah_profiles_name_list():
+    if ENV.deploy_env == "local":
+        return Response(content='["ac2350"]')
+
     url = f"{ENV.ptah_url}/v1/ptah_profiles/names"
     try:
         response = requests.request(
