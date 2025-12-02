@@ -49,7 +49,7 @@ export default function ONTSection(
         }
         // Check serial format
         if (!register.serial_number.match(/^[A-Za-z]{4}:[0-9A-Fa-f]{8}$/)) {
-            alert("Le numéro de série doit être de la forme AAAA:HHHHHHHH");
+            alert("Le numéro de série doit être de la forme ABCD:1A2B3C4D");
             return;
         }
         // Check PM not null
