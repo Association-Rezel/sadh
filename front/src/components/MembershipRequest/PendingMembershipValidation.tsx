@@ -126,7 +126,7 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     {user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
-                        Premier abonnement 10€ (puis 10€/mois)
+                        Premier mois d'abonnement 10€ (puis 10€/mois)
                     </span>
                 </Typography>
                 <PaymentInfo type={PaymentType.SUBSCRIPTION} method={user.membership.init.payment_method_first_month} paid={user.membership.paid_first_month} />
