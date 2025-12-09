@@ -367,6 +367,10 @@ class StatusUpdateManager:
                     "Envoi d'un questionnaire de satisfaction",
                     lambda user, _: send_satisfaction_survey(user),
                 ),
+                StatusUpdateEffect(
+                    "Mise à jour du statut d'étudiant boursier à False",
+                    _set_scholarship_student_to_false,
+                ),
             ],
         )
 
@@ -469,6 +473,10 @@ class StatusUpdateManager:
                 StatusUpdateEffect(
                     "Envoi d'un questionnaire de satisfaction",
                     lambda user, _: send_satisfaction_survey(user),
+                ),
+                StatusUpdateEffect(
+                    "Mise à jour du statut d'étudiant boursier à False",
+                    _set_scholarship_student_to_false,
                 ),
             ],
         )
@@ -617,3 +625,16 @@ async def _set_adhesion_date_today(user: User, db: AsyncIOMotorDatabase) -> User
         {"$set": {"membership.start_date": user.membership.start_date}},
     )
     return user
+
+
+async def _set_scholarship_student_to_false(
+    user: User, db: AsyncIOMotorDatabase
+) -> User:
+    if not user.membership:
+        raise ValueError("User has no membership")
+    userdict = await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {"$set": {"scholarship_student": False}},
+        return_document=ReturnDocument.AFTER,
+    )
+    return User.model_validate(userdict)

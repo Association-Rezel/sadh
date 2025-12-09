@@ -293,6 +293,15 @@ class Api {
         await this.myFetcher(`/users/${user_id}/pay-user-partial-refunds`, null, "POST");
     }
 
+    async fetchAllScholarshipStudents(): Promise<User[]> {
+        const users = await this.fetchOrDefault<User[]>("/users/scholarship-student", []);
+        return users.map((user: any) => this.parseUser(user));
+    }
+
+    async resetAllScholarshipStudents(): Promise<void> {
+        await this.myFetcher("/users/scholarship-student/reset", null, "POST");
+    }
+
     async deleteONT(serial_number: string): Promise<ONTInfo> {
         return await this.myFetcher(`/devices/ont/${serial_number}`, null, "DELETE");
     }

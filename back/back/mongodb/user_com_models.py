@@ -42,6 +42,7 @@ class MembershipUpdate(RezelBaseModel):
 class UserUpdate(RezelBaseModel):
     phone_number: Optional[str] = Field(None)
     iban: Optional[PortableIBAN] = Field(None)
+    scholarship_student: Optional[bool] = Field(None)
     membership: Optional[Membership] = Field(None)
     availability_slots: Optional[set[AppointmentSlot]] = Field(None)
 

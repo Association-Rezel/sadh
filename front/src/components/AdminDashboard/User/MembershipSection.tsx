@@ -214,6 +214,14 @@ export default function MembershipSection({
                         <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" {...registerToMembershipUpdateForm("paid_membership")} />
                         <strong className="pl-2">Cotisation payée</strong>
                     </div>
+                    <div className="flex items-center">
+                        <input style={{ boxShadow: "none", background: "none", margin: "0px", width: "30px" }} type="checkbox" checked={user.scholarship_student} onClick={() => {
+                            Api.updateUser(user.id, { scholarship_student: !user.scholarship_student }).then((updatedUser) => {
+                                setUser(updatedUser);
+                            }).catch(alert);
+                        }} />
+                        <strong className="pl-2">Etudiant boursier</strong>
+                    </div>
                     {!user.membership.documenso_contract_id && (
                         <>
                             <Alert severity="warning">

@@ -116,6 +116,7 @@ export interface User {
     availability_slots: AppointmentSlot[];
     dolibarr_id?: string;
     prev_memberships: Membership[];
+    scholarship_student: boolean;
 }
 
 export interface MembershipRequest {

@@ -35,6 +35,10 @@ from back.core.pon import (
     get_ontinfo_from_box,
     register_ont_for_new_ftth_adh,
 )
+from back.core.scholarship_student import (
+    get_all_scholarship_students,
+    reset_all_scholarship_students,
+)
 from back.core.status_update import StatusUpdateInfo, delete_unet_of_wifi_adherent
 from back.messaging.matrix import send_matrix_message
 from back.mongodb.db import GetDatabase
@@ -297,6 +301,30 @@ async def _get_users(
 ) -> list[User]:
     """Get all users."""
     return await db.users.find().to_list(None)
+
+
+@router.get(
+    "/scholarship-student",
+    response_model=list[User],
+    dependencies=[Depends(must_be_admin)],
+    tags=["scholarship-student"],
+)
+async def _get_all_scholarship_students(
+    db: GetDatabase,
+) -> list[User]:
+    return await get_all_scholarship_students(db)
+
+
+@router.post(
+    "/scholarship-student/reset",
+    dependencies=[Depends(must_be_admin)],
+    tags=["scholarship-student"],
+)
+async def _reset_all_scholarship_students(
+    db: GetDatabase,
+) -> JSONResponse:
+    await reset_all_scholarship_students(db)
+    return JSONResponse({"message": "All scholarship students have been reset"})
 
 
 @router.get(

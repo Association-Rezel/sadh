@@ -16,6 +16,7 @@ import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
 import PageNetworkSettings from "./pages/account/PageNetworkSettings";
 import PartialRefunds from "./components/PartialRefunds/PartialRefunds";
+import ScholarshipStudent from "./components/ScholarshipStudent/ScholarshipStudent";
 import { ToastContainer } from "react-toastify";
 import AuthCallbackErrorPage from "./pages/auth/AuthCallbackErrorPage";
 import { AuthProvider, useAuthContext } from "./pages/auth/AuthContext";
@@ -50,6 +51,7 @@ function AppRouter() {
                         <Route path="olt-debug" Component={OLTDebug} />
                         <Route path="logs-ipam" Component={IpamLogs} />
                         <Route path="partial-refunds" Component={PartialRefunds} />
+                        <Route path="scholarship-student" Component={ScholarshipStudent} />
                         <Route path="ptah-images" Component={PtahImageDownloader} />
                     </Route>
                 ): (
