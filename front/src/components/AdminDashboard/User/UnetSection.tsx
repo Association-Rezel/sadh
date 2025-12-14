@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Select, Stack, TextField, Tooltip, Typography } from "@mui/material";
+import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
 import Api from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
@@ -502,10 +502,91 @@ export default function UnetSection({
                             <strong>Unet ID de {user.first_name}</strong> : {myUnetProfile?.unet_id}<br />
                             <strong>IPv4 WAN</strong> : {myUnetProfile?.network.wan_ipv4.ip}<br />
                             <strong>IPv6 WAN</strong> : {myUnetProfile?.network.wan_ipv6.ip}<br />
-                            <strong>SSID</strong> : {myUnetProfile?.wifi.ssid}<br />
+                            <strong>SSID</strong> : {myUnetProfile?.wifi.ssid}<br /> 
                             <strong>PSK</strong> : {maskedPsk}<br />
                             <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>Afficher PSK</Button>
                         </div>
+                        
+                        {/* Section Ports ouverts / Redirections */}
+                        {myUnetProfile?.firewall && (
+                            <div className="mt-4">
+                                <Typography variant="h6" align="left" component="div">
+                                    Ports ouverts / Redirections
+                                </Typography>
+                                
+                                {/* IPv4 Port Forwarding */}
+                                {myUnetProfile.firewall.ipv4_port_forwarding && myUnetProfile.firewall.ipv4_port_forwarding.length > 0 && (
+                                    <div className="mt-2">
+                                        <Typography variant="subtitle2" align="left" component="div" sx={{ fontWeight: 'bold' }}>
+                                            Redirections de ports IPv4
+                                        </Typography>
+                                        <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>Nom</TableCell>
+                                                        <TableCell>Port WAN</TableCell>
+                                                        <TableCell>IP LAN</TableCell>
+                                                        <TableCell>Port LAN</TableCell>
+                                                        <TableCell>Proto</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {myUnetProfile.firewall.ipv4_port_forwarding.map((rule, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>{rule.name || "-"}</TableCell>
+                                                            <TableCell>{rule.wan_port}</TableCell>
+                                                            <TableCell>{rule.lan_ip}</TableCell>
+                                                            <TableCell>{rule.lan_port}</TableCell>
+                                                            <TableCell>{rule.protocol}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    </div>
+                                )}
+                                
+                                {/* IPv6 Port Opening */}
+                                {myUnetProfile.firewall.ipv6_port_opening && myUnetProfile.firewall.ipv6_port_opening.length > 0 && (
+                                    <div className="mt-3">
+                                        <Typography variant="subtitle2" align="left" component="div" sx={{ fontWeight: 'bold' }}>
+                                            Ports ouverts IPv6
+                                        </Typography>
+                                        <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
+                                            <Table size="small">
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell>Nom</TableCell>
+                                                        <TableCell>IP</TableCell>
+                                                        <TableCell>Port</TableCell>
+                                                        <TableCell>Proto</TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {myUnetProfile.firewall.ipv6_port_opening.map((rule, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>{rule.name || "-"}</TableCell>
+                                                            <TableCell sx={{ fontSize: '0.75rem', maxWidth: 180, wordBreak: 'break-all' }}>{rule.ip}</TableCell>
+                                                            <TableCell>{rule.port}</TableCell>
+                                                            <TableCell>{rule.protocol}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </TableContainer>
+                                    </div>
+                                )}
+                                
+                                {(!myUnetProfile.firewall.ipv4_port_forwarding || myUnetProfile.firewall.ipv4_port_forwarding.length === 0) &&
+                                    (!myUnetProfile.firewall.ipv6_port_opening || myUnetProfile.firewall.ipv6_port_opening.length === 0) && (
+                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                        Aucun port ouvert
+                                    </Typography>
+                                )}
+                            </div>
+                        )}
+                        
                         <div>
                             {isMainUnet &&
                                 <ConfirmableButton
