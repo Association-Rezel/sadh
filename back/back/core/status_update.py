@@ -26,6 +26,7 @@ from back.messaging.mails import (
     send_satisfaction_survey,
 )
 from back.messaging.matrix import send_matrix_message
+from back.env import ENV
 
 
 class StatusUpdateEffect:
@@ -242,6 +243,17 @@ class StatusUpdateManager:
             MembershipStatus.VALIDATED,
             MembershipStatus.SENT_CMD_ACCES,
             [
+                StatusUpdateCondition(
+                    (
+                        "Le numéro de téléphone a été vérifié"
+                        if ENV.ovh_enabled
+                        else "OVH désactivé, vérification du numéro de téléphone ignorée"
+                    ),
+                    lambda user, _: (
+                        (user.phone_number_verified and user.membership is not None)
+                        or not ENV.ovh_enabled
+                    ),
+                ),
                 StatusUpdateCondition(
                     "L'utilisateur a un ONT assigné",
                     _check_user_has_ont,

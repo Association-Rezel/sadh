@@ -1,6 +1,7 @@
 """Get or edit users."""
 
 from datetime import datetime, timedelta
+import logging
 
 from common_models.hermes_models import Box, UnetProfile
 from common_models.log_models import IpamLog
@@ -41,6 +42,7 @@ from back.core.scholarship_student import (
 )
 from back.core.status_update import StatusUpdateInfo, delete_unet_of_wifi_adherent
 from back.messaging.matrix import send_matrix_message
+from back.messaging.sms import send_code
 from back.mongodb.db import GetDatabase
 from back.mongodb.pon_com_models import ONTInfo, RegisterONT
 from back.mongodb.user_com_models import (
@@ -59,6 +61,7 @@ from back.server.dependencies import (
     get_box,
     must_be_admin,
 )
+from random import randint
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -72,6 +75,104 @@ def _me(
         return AuthStatusResponse(logged_in=False, user=None)
     user.redact_for_non_admin()
     return AuthStatusResponse(logged_in=True, user=user)
+
+
+@router.get("/me/generateVerificationCode", status_code=201, response_model=None)
+async def _me_generate_sms_code(
+    user: RequireCurrentUser,
+    db: GetDatabase,
+) -> User:
+    if len(user.valid_sms_codes) >= 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Trop de demandes de code SMS, si le problème persiste contactez fai@rezel.net",
+        )
+    if user.phone_number_verified:
+        raise HTTPException(
+            status_code=400,
+            detail="Numéro déjà vérifié, si le problème persiste contactez fai@rezel.net",
+        )
+    if user.phone_number is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Aucun numéro de téléphone défini, si le problème persiste contactez fai@rezel.net",
+        )
+    code = str(randint(0, 999999)).zfill(6)
+    try:
+        send_code(user.phone_number, code)
+    except Exception as e:
+        logging.warning("SMS sending is disabled, not sending code, error : ", e.args)
+        raise HTTPException(
+            status_code=500,
+            detail="Erreur lors de l'envoi du SMS, si le problème persiste contactez fai@rezel.net",
+        )
+    userdict = await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {
+            "$set": {
+                "valid_sms_codes": user.valid_sms_codes + [code],
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    user = User.model_validate(userdict)
+    user.redact_for_non_admin()
+    return user
+
+
+@router.get("/me/checkVerificationCode", status_code=201, response_model=User)
+async def _me_check_sms_code(
+    code: str,
+    user: RequireCurrentUser,
+    db: GetDatabase,
+) -> User:
+    if len(code) != 6 or not code.isdigit():
+        raise HTTPException(status_code=400, detail="Format du code incorrect")
+    if user.phone_number is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Aucun numéro de téléphone défini, si le problème persiste contactez fai@rezel.net",
+        )
+    if user.phone_number_verified:
+        raise HTTPException(
+            status_code=400,
+            detail="Numéro déjà vérifié, si le problème persiste contactez fai@rezel.net",
+        )
+    if user.number_of_tried_sms_code >= 5:
+        raise HTTPException(
+            status_code=400,
+            detail="Trop de tentatives, si le problème persiste contactez fai@rezel.net",
+        )
+    if user.valid_sms_codes == []:
+        raise HTTPException(
+            status_code=400,
+            detail="Aucun code SMS généré, si le problème persiste contactez fai@rezel.net",
+        )
+    if code not in user.valid_sms_codes:
+        userdict = await db.users.find_one_and_update(
+            {"_id": str(user.id)},
+            {
+                "$set": {
+                    "number_of_tried_sms_code": user.number_of_tried_sms_code + 1,
+                }
+            },
+            return_document=ReturnDocument.AFTER,
+        )
+        user = User.model_validate(userdict)
+        user.redact_for_non_admin()
+        return user
+    userdict = await db.users.find_one_and_update(
+        {"_id": str(user.id)},
+        {
+            "$set": {
+                "phone_number_verified": True,
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    user = User.model_validate(userdict)
+    user.redact_for_non_admin()
+    return user
 
 
 @router.post("/me/membershipRequest", status_code=201, response_model=User)

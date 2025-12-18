@@ -31,6 +31,9 @@ spec:
             STARLETTE_SESSION_SECRET="{{ .Data.data.starlette_session_secret }}"
             OIDC_CLIENT_SECRET="{{ .Data.data.oidc_client_secret }}"
             OIDC_ADMIN_CLIENT_SECRET="{{ .Data.data.oidc_admin_client_secret }}"
+            OVH_APPLICATION_KEY="{{ .Data.data.ovh_application_key }}"
+            OVH_APPLICATION_SECRET="{{ .Data.data.ovh_application_secret }}"
+            OVH_CONSUMER_KEY="{{ .Data.data.ovh_consumer_key }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa

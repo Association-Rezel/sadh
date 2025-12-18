@@ -22,6 +22,11 @@ export default function AppointmentSlotList() {
                     <Typography variant="body1" align="center">
                         Si tu souhaites modifier tes disponibilités, merci d'envoyer un mail au plus vite à fai@rezel.net
                     </Typography>
+                    {!user.phone_number.startsWith("+33") && !user.phone_number_verified && 
+                    <Typography variant="body1" align="center" color="error">
+                        Attention : ton numéro de téléphone n'est pas un numéro français. Merci de contacter fai@rezel.net pour le faire valider.
+                    </Typography>
+                    }
                 </>
             )}
         </div>

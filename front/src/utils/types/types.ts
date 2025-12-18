@@ -117,6 +117,7 @@ export interface User {
     dolibarr_id?: string;
     prev_memberships: Membership[];
     scholarship_student: boolean;
+    phone_number_verified: boolean;
 }
 
 export interface MembershipRequest {

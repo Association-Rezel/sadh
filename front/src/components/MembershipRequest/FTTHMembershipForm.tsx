@@ -1,6 +1,6 @@
 import { Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, Link, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
 import { validateIBAN } from "ngx-iban-validator/dist/iban.validator";
-import { useEffect } from "react";
+import { useEffect } from "react"; 
 import { Controller, useForm } from "react-hook-form";
 import PhoneInput, { isValidPhoneNumber } from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -36,18 +36,18 @@ export default function FTTHMembershipForm() {
             paymentMethodDeposit: "",
         }
     });
-
+    
     const { user, setUser } = useAuthContext();
-
+    
     useEffect(() => {
-        reset({
+    	reset({
             residence: user?.membership?.address.residence || "",
             appartement_id: user?.membership?.address.appartement_id || "",
             phone_number: user?.phone_number || "",
             iban: user?.iban || "",
         });
 
-    }, [user]);
+    }, [user]);    
 
     const onSubmitMembership = async (event: FormValues) => {
         try {
@@ -106,6 +106,7 @@ export default function FTTHMembershipForm() {
                         <TextField required id="appartement_id" label="Appartment n°" variant="standard" {...register("appartement_id")} />
                         <div className="flex flex-col items-start gap-2">
                             <label className="block" htmlFor="phone_number">Numéro de téléphone *</label>
+                            <label className="block text-left text-sm text-gray-500">⚠ Numéro utilisé pour vous contacter et réaliser l'installation</label>
                             <Controller
                                 name="phone_number"
                                 control={control}

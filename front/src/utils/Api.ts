@@ -164,6 +164,18 @@ class Api {
         return this.parseUser(user.user);
     }
 
+    async generateVerificationCode(): Promise<User> {
+        return this.parseUser(await this.myFetcher("/users/me/generateVerificationCode"));
+    }
+
+    async checkVerificationCode(code: string): Promise<User> {
+        return this.parseUser(await this.myFetcher("/users/me/checkVerificationCode?code=" + code));
+    }
+
+    async isOvhEnabled(): Promise<boolean> {
+        return await this.myFetcher<boolean>("/features/phone-number-check");
+    }
+
     async submitMyMembershipRequest(request: MembershipRequest): Promise<User> {
         return this.parseUser(await this.myFetcher("/users/me/membershipRequest", request));
     }

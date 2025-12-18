@@ -39,7 +39,6 @@ function AppRouter() {
                 <Route index element={<Index />} />
                 <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
                 <Route path="adherer/*" Component={user ? BecomeMember : LoginOrSignupPage} />
-
                 {accountRoute({ user })}
 
                 {admin ? (

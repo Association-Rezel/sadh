@@ -94,9 +94,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
     documenso_template_contract_ftth_id: int
     documenso_template_contract_wifi_id: int
 
-    # Dolibarr
     dolibarr_api_token: str
     dolibarr_base_url: str
+
+    ovh_application_key: str | None
+    ovh_application_secret: str | None
+    ovh_consumer_key: str | None
+    ovh_service_name: str | None
+    ovh_enabled: bool
 
     def __init__(self) -> None:
         """Load all variables."""
@@ -165,6 +170,12 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.dolibarr_api_token = get_or_raise("DOLIBARR_API_TOKEN")
         self.dolibarr_base_url = get_or_raise("DOLIBARR_BASE_URL")
+
+        self.ovh_application_key = get_or_none("OVH_APPLICATION_KEY")
+        self.ovh_application_secret = get_or_none("OVH_APPLICATION_SECRET")
+        self.ovh_consumer_key = get_or_none("OVH_CONSUMER_KEY")
+        self.ovh_service_name = get_or_none("OVH_SERVICE_NAME")
+        self.ovh_enabled = get_or_default("OVH_ENABLED", "false").lower() == "true"
 
 
 ENV = Env()
