@@ -133,7 +133,7 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                 <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
                     {user.membership.paid_membership ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
                     <span className="ml-2">
-                        Cotisation 1€ (puis 1€/mois)
+                        Cotisation 1€ (puis 1€/an)
                     </span>
                 </Typography>
                 <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_membership} paid={user.membership.paid_membership} />
