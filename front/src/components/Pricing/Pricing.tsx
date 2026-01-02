@@ -161,6 +161,29 @@ function PricingContent() {
                         </Grid>
                     ))}
                 </Grid>
+                <Grid container justifyContent="center" sx={{ mt: 4 }}>
+                    <Grid item xs={12} sm={12} md={10} lg={9}>
+                        <Card sx={{ background: (theme) => theme.palette.mode === 'light' ? '#e3f2fd' : '#263238', borderLeft: '6px solid #1976d2', boxShadow: 2 }}>
+                            <CardContent>
+                                <Typography variant="h5" align="center" color="primary" gutterBottom fontWeight={600}>
+                                    Tarification solidaire 2026
+                                </Typography>
+                                <Typography variant="body1" align="center" color="text.primary" sx={{ mb: 1 }}>
+                                    Grâce au soutien de <b>Télécom Paris Alumni</b>, une réduction de <b>5€/mois</b> est disponible pour les <b style={{ color: 'red', fontWeight: 700, fontSize: '1.1em' }}>élèves boursiers de Télécom Paris</b>.
+                                </Typography>
+                                <Typography variant="body1" align="center" color="text.primary" sx={{ mb: 1 }}>
+                                    <b>Offre Fibre :</b> 15€/mois <span style={{ color: '#888', textDecoration: 'line-through', marginLeft: 4, marginRight: 4 }}>20€</span> | <b>Offre WiFi :</b> 5€/mois <span style={{ color: '#888', textDecoration: 'line-through', marginLeft: 4, marginRight: 4 }}>10€</span>
+                                </Typography>
+                                <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 1 }}>
+                                    Pour bénéficier de cette réduction, remplissez le formulaire sur <a href="https://reduction.rezel.net/" target="_blank" rel="noopener noreferrer" style={{ color: '#1976d2', fontWeight: 500 }}>reduction.rezel.net</a>.
+                                </Typography>
+                                <Typography variant="body2" align="center" color="text.secondary">
+                                    Cette réduction est cumulable avec le remboursement partiel fibre (2€/mois/utilisateur).
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                </Grid>
             </Container>
             {/* Footer */}
             <Container
