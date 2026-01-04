@@ -1,7 +1,8 @@
 """Get or edit users."""
 
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime, timedelta
+from secrets import randbelow
 
 from common_models.hermes_models import Box, UnetProfile
 from common_models.log_models import IpamLog
@@ -61,7 +62,6 @@ from back.server.dependencies import (
     get_box,
     must_be_admin,
 )
-from random import randint
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -97,7 +97,7 @@ async def _me_generate_sms_code(
             status_code=400,
             detail="Aucun numéro de téléphone défini, si le problème persiste contactez fai@rezel.net",
         )
-    code = str(randint(0, 999999)).zfill(6)
+    code = str(randbelow(1000000)).zfill(6)
     try:
         send_code(user.phone_number, code)
     except Exception as e:
