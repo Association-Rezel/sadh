@@ -44,6 +44,7 @@ from back.core.scholarship_student import (
 from back.core.status_update import StatusUpdateInfo, delete_unet_of_wifi_adherent
 from back.messaging.matrix import send_matrix_message
 from back.messaging.sms import send_code
+from back.messaging.sms import send_code
 from back.mongodb.db import GetDatabase
 from back.mongodb.pon_com_models import ONTInfo, RegisterONT
 from back.mongodb.user_com_models import (

@@ -10,7 +10,7 @@ export default function CheckPhoneNumber() {
     const [code, setCode] = useState("");
     const [ now, setNow ] = useState(Date.now());
     const [lastSmsDate, setLastSmsDate] = useState(Date.now() - cooldown_time);
-    const [wrongCode, setWrongCode] = useState(true);
+    const [wrongCode, setWrongCode] = useState(false);
     useEffect(() => {
         const interval = setInterval(() => setNow(Date.now()), 500);
     },
@@ -39,7 +39,7 @@ export default function CheckPhoneNumber() {
         try {
             const user = await Api.checkVerificationCode(code);
             setUser({ ...user });
-            if (!user.phone_number_verified){setWrongCode(false);}
+            if (!user.phone_number_verified){setWrongCode(true);}
         }
         catch (error) { 
             alert(error.message);

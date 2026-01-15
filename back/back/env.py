@@ -175,6 +175,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.ovh_application_secret = get_or_none("OVH_APPLICATION_SECRET")
         self.ovh_consumer_key = get_or_none("OVH_CONSUMER_KEY")
         self.ovh_service_name = get_or_none("OVH_SERVICE_NAME")
+        self.ovh_user_name = get_or_none("OVH_USER_NAME")
         self.ovh_enabled = get_or_default("OVH_ENABLED", "false").lower() == "true"
 
 
