@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime, timedelta
 from secrets import randbelow
+from urllib.parse import urljoin
 
 from common_models.hermes_models import Box, UnetProfile
 from common_models.log_models import IpamLog
@@ -63,6 +64,13 @@ from back.server.dependencies import (
     get_box,
     must_be_admin,
 )
+
+from back.core.helloasso import (
+    get_ongoing_or_init_checkout,
+    CheckoutItem,
+    InitCheckoutResponse,
+)
+from back.env import ENV
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -256,6 +264,44 @@ async def _me_create_membership_request(
 
     user.redact_for_non_admin()
     return user
+
+
+@router.post(
+    "/me/checkout_first_month_helloasso",
+    response_model=InitCheckoutResponse,
+)
+async def _me_checkout_first_month_helloasso(
+    user: RequireCurrentUser,
+    db: GetDatabase,
+) -> InitCheckoutResponse:
+    if not user.membership or not user.membership.init:
+        raise HTTPException(
+            status_code=400, detail="User hasn't requested any membership"
+        )
+    if user.membership.paid_first_month:
+        raise HTTPException(status_code=400, detail="User has already paid first-month")
+
+    checkout_response = await get_ongoing_or_init_checkout(
+        user=user,
+        item_name=f"Adhésion {user.membership.type.name} premier mois",
+        back_url=urljoin(ENV.sadh_base_url, "/adherer"),
+        error_url=urljoin(ENV.sadh_base_url, "/adherer"),
+        checkout_items=[
+            (
+                CheckoutItem.FIRST_MONTH_WIFI_MEMBERSHIP
+                if user.membership.type == MembershipType.WIFI
+                else CheckoutItem.FIRST_MONTH_FTTH_MEMBERSHIP
+            )
+        ],
+        return_url="/adherer",
+    )
+
+    if checkout_response.redirect_url is None:
+        raise HTTPException(
+            status_code=500, detail="HelloAsso checkout initialization failed"
+        )
+
+    return checkout_response
 
 
 @router.post("/me/availability", response_model=User)

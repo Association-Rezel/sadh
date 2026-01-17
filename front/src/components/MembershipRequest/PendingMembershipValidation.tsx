@@ -1,17 +1,17 @@
-import { Launch } from "@mui/icons-material";
+import {Launch} from "@mui/icons-material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DownloadIcon from '@mui/icons-material/Download';
 import PendingIcon from '@mui/icons-material/Pending';
-import { Alert, Button, Typography } from "@mui/material";
-import { useAuthContext } from "../../pages/auth/AuthContext";
-import { DepositStatus, MembershipType, PaymentMethod, User } from "../../utils/types/types";
+import {Alert, Button, Typography} from "@mui/material";
+import {useAuthContext} from "../../pages/auth/AuthContext";
+import {DepositStatus, MembershipType, PaymentMethod, User} from "../../utils/types/types";
+import HelloAssoPayment from "./HelloassoPayment";
 
 export default function PendingMembershipValidation({ user }: { user: User }): JSX.Element {
     if (user.membership.type === MembershipType.FTTH) {
-        return <FTTHPendingMembershipValidation />;
-    }
-    else if (user.membership.type === MembershipType.WIFI) {
-        return <WifiPendingMembershipValidation />;
+        return <FTTHPendingMembershipValidation/>;
+    } else if (user.membership.type === MembershipType.WIFI) {
+        return <WifiPendingMembershipValidation/>;
     } else {
         return <Alert severity="error">
             Type d'adhésion inconnu
@@ -28,50 +28,64 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                 Demande d'adhésion Fibre
             </Typography>
             <div className="flex flex-col gap-8">
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.contract_signed ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Contrat de fourniture de service
                     </span>
                 </Typography>
-                <ContractSignatureInfo user={user} />
+                <ContractSignatureInfo user={user}/>
 
                 <div className="flex flex-col gap-4 items-start">
                     <Typography variant="body1" color="text.secondary" component="p" align="left">
                         En adhérant à Rezel, tu t'engages à respecter le règlement intérieur de l'association.
                     </Typography>
                     <div className="flex flex-row gap-4">
-                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary"
+                                href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                             Réglement Intérieur
                         </Button>
-                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary"
+                                href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                             Statuts de l'association
                         </Button>
                     </div>
                 </div>
 
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.deposit_status === DepositStatus.PAID ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Caution 50€
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.DEPOSIT} method={user.membership.init.payment_method_deposit} paid={user.membership.deposit_status === DepositStatus.PAID} />
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <PaymentInfo type={PaymentType.DEPOSIT} method={user.membership.init.payment_method_deposit}
+                             paid={user.membership.deposit_status === DepositStatus.PAID}/>
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.paid_first_month ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Premier mois d'abonnement 20€ (puis 20€/mois)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.SUBSCRIPTION} method={user.membership.init.payment_method_first_month} paid={user.membership.paid_first_month} />
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.paid_membership ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <PaymentInfo type={PaymentType.SUBSCRIPTION} method={user.membership.init.payment_method_first_month}
+                             paid={user.membership.paid_first_month}/>
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.paid_membership ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Cotisation 1€ (puis 1€/an)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_membership} paid={user.membership.paid_membership} />
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_membership}
+                             paid={user.membership.paid_membership}/>
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
                     Et ensuite ?
                 </Typography>
                 <Typography variant="body1" color="text.secondary" component="p" align="justify">
@@ -82,8 +96,8 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                     car les infrastructures FTTH (Fibre To The Home) sont mutualisées. Ton adhésion
                     commencera le jour de l'installation de la fibre, et nous te demanderons de régler
                     ton abonnement de 20€ tous les mois à partir de ce moment.
-                    <br />
-                    <br />
+                    <br/>
+                    <br/>
                     Si tu as la moindre question, n'hésites pas à paser au local de l'association,
                     ou bien à envoyer un mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a>
                 </Typography>
@@ -101,51 +115,62 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                 Demande d'adhésion Wi-Fi
             </Typography>
             <div className="flex flex-col gap-8">
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.contract_signed ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.contract_signed ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Contrat de fourniture de service
                     </span>
                 </Typography>
-                <ContractSignatureInfo user={user} />
-				
+                <ContractSignatureInfo user={user}/>
+
                 <div className="flex flex-col gap-4 items-start">
                     <Typography variant="body1" color="text.secondary" component="p" align="left">
                         En adhérant à Rezel, tu t'engages à respecter le règlement intérieur de l'association.
                     </Typography>
                     <div className="flex flex-row gap-4">
-                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary"
+                                href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                             Réglement Intérieur
                         </Button>
-                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary" href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                        <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary"
+                                href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                             Statuts de l'association
                         </Button>
                     </div>
                 </div>
 
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.paid_first_month ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.paid_first_month ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Premier mois d'abonnement 10€ (puis 10€/mois)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.SUBSCRIPTION} method={user.membership.init.payment_method_first_month} paid={user.membership.paid_first_month} />
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
-                    {user.membership.paid_membership ? <CheckCircleIcon color="success" /> : <PendingIcon color="warning" />}
+                <PaymentInfo type={PaymentType.SUBSCRIPTION} method={user.membership.init.payment_method_first_month}
+                             paid={user.membership.paid_first_month}/>
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
+                    {user.membership.paid_membership ? <CheckCircleIcon color="success"/> :
+                        <PendingIcon color="warning"/>}
                     <span className="ml-2">
                         Cotisation 1€ (puis 1€/an)
                     </span>
                 </Typography>
-                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_membership} paid={user.membership.paid_membership} />
-                <Typography variant="h5" color="text.secondary" component="div" align="left" className="flex items-center">
+                <PaymentInfo type={PaymentType.MEMBERSHIP} method={user.membership.init.payment_method_membership}
+                             paid={user.membership.paid_membership}/>
+                <Typography variant="h5" color="text.secondary" component="div" align="left"
+                            className="flex items-center">
                     Et ensuite ?
                 </Typography>
                 <Typography variant="body1" color="text.secondary" component="p" align="justify">
                     Nous t'enverrons un mail dès que les paiements auront été vérifiés. Ensuite,
                     tu recevras un mail te confirmant qu'un nouveau réseau Wi-Fi a été crée pour toi,
                     et nous te demanderons de régler ton abonnement de 10€ tous les mois à partir de ce moment.
-                    <br />
-                    <br />
+                    <br/>
+                    <br/>
                     Si tu as la moindre question, n'hésites pas à paser au local de l'association,
                     ou bien à envoyer un mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a>
                 </Typography>
@@ -175,7 +200,7 @@ function ContractSignatureInfo({ user }: { user: User }) {
                     href={user.membership.documenso_adherent_url}
                     variant="contained"
                     color="success"
-                    startIcon={<Launch />}
+                    startIcon={<Launch/>}
                 >
                     Signer le contrat en ligne
                 </Button>
@@ -185,29 +210,62 @@ function ContractSignatureInfo({ user }: { user: User }) {
         return (
             <div className="flex flex-col gap-4 items-start">
                 <Typography variant="body1" color="text.secondary" component="p" align="left">
-                    Un mail t'a été envoyé avec le contrat de fourniture de service pré-rempli. <br />
+                    Un mail t'a été envoyé avec le contrat de fourniture de service pré-rempli. <br/>
                     Merci de le signer et de le renvoyer à <a href="mailto:fai@rezel.net">fai@rezel.net</a>.
                 </Typography>
             </div>
         );
 }
 
-function PaymentInfo({ type, method, paid }: { type: PaymentType, method: PaymentMethod, paid: boolean }) {
-    if (paid)
-        return (
+function HelloAssoFirstMonthPaymentInfo(): JSX.Element {
+    return <>
+        <div className="text-left">
             <Typography variant="body1" color="text.secondary" component="p" align="left">
-                Paiment bien reçu !
+            Tu peux payer <strong>par carte bancaire</strong> via le service tiers HelloAsso.<br/>
+            HelloAsso ajoute automatiquement une contribution volontaire (quelques euros) qui leur est destinée, pour
+            financer leur plateforme et leur modèle solidaire.
+                Grâce leur modèle, notre association ne paie aucun frais sur votre paiement.
             </Typography>
-        );
+            <br/>
+            <Alert severity={"warning"}>
+              Cette contribution n’est <strong>pas obligatoire</strong> : vous pouvez la réduire ou la supprimer en cliquant sur « Modifier
+                la contribution volontaire » sur la page de règlement.
+            </Alert>
+        </div>
+        <div className="flex flex-col gap-4 items-start"><HelloAssoPayment/></div>
+    </>
+}
 
-    else if ([PaymentMethod.CHEQUE, PaymentMethod.ESPECE].includes(method))
+function HelloAssoMembershipPaymentInfo(): JSX.Element {
+    return <div className="flex flex-col gap-4 items-start">
+        <Typography variant="body1" color="text.secondary" component="p" align="left">
+            Tu peux payer <strong>par carte bancaire</strong>.<br/>
+            Nous utilisons le service tiers HelloAsso pour ce type de paiement.
+        </Typography>
+        <Button target="_blank" rel="noopener noreferrer" variant="contained" color="success"
+                href="https://www.helloasso.com/associations/rezel/adhesions/adhesion" className="mt-2"
+                startIcon={<Launch/>}>
+            Cotiser sur HelloAsso
+        </Button>
+        <Typography variant="body1" color="text.secondary" component="p" align="left">
+            ⚠️ Nous ne vérifions pas automatiquement que la cotisation a été prise en compte. Si tu as déjà cotisé à
+            l'association, il n'est pas nécessaire de le faire de nouveau.
+        </Typography>
+    </div>
+}
+
+function OtherPaymentInfo({ method, isHelloAssoAlternative }: { type: PaymentType, method: PaymentMethod, paid: boolean, isHelloAssoAlternative: boolean }) {
+    if ([PaymentMethod.CHEQUE, PaymentMethod.ESPECE].includes(method))
         return (
             <Typography variant="body1" color="text.secondary" component="p" align="left">
-                Tu as choisi de payer <strong>{method === PaymentMethod.CHEQUE ? "par chèque" : " en espèces"}</strong>. <br />
-                Merci de passer au local de l'association, qui se trouve en salle 0A316 à Télécom Paris (19 Place Marguerite Perey).                <br />
+                {isHelloAssoAlternative ? "Sinon, tu peux " : "Tu as choisi de "}
+                payer <strong>{method === PaymentMethod.CHEQUE ? "par chèque" : " en espèces"}</strong>. <br/>
+                Dans ce cas, merci de passer au local de l'association, qui se trouve en salle 0A316 à Télécom Paris (19
+                Place Marguerite Perey). <br/>
 
-                <br />
-                Pour s'assurer de la présence d'un bénévole, envoie nous un mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a> en précisant à quelle heure tu souhaites passer.
+                <br/>
+                Pour s'assurer de la présence d'un bénévole, envoie nous un mail à <a
+                href="mailto:fai@rezel.net">fai@rezel.net</a> en précisant à quelle heure tu souhaites passer.
             </Typography>
         );
 
@@ -215,34 +273,40 @@ function PaymentInfo({ type, method, paid }: { type: PaymentType, method: Paymen
         return (
             <div className="flex flex-col gap-4 items-start">
                 <Typography variant="body1" color="text.secondary" component="p" align="left">
-                    Tu as choisi de payer <strong>par virement bancaire</strong>.<br />
-                    ⚠️ Tu dois impérativement mentionner <strong>ton nom et prénom dans le libellé du virement.</strong><br />
+                    {isHelloAssoAlternative ? "Sinon, tu peux " : "Tu as choisi de "}
+                    payer <strong>par virement bancaire</strong>.<br/>
+                    ⚠️ Dans ce cas, tu dois impérativement mentionner <strong>ton nom et prénom dans le libellé du
+                    virement.</strong><br/>
                 </Typography>
-                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary" href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon />} >
+                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="primary"
+                        href="/static/RIB_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                     Télécharger le RIB de Rezel
                 </Button>
             </div>
         );
-
-    else if (method === PaymentMethod.HELLOASSO)
-        return (
-            <div className="flex flex-col gap-4 items-start">
-                <Typography variant="body1" color="text.secondary" component="p" align="left">
-                    Tu as choisi de payer <strong>par carte bancaire</strong>.<br />
-					Nous utilisons le service tiers HelloAsso pour ce type de paiement.
-                </Typography>
-                <Button target="_blank" rel="noopener noreferrer" variant="contained" color="success" href="https://www.helloasso.com/associations/rezel/adhesions/adhesion" className="mt-2" startIcon={<Launch />} >
-					Cotiser sur HelloAsso
-                </Button>
-                <Typography variant="body1" color="text.secondary" component="p" align="left">
-					⚠️ Nous ne vérifions pas automatiquement que la cotisation a été prise en compte. Si tu as déjà cotisé à l'association, il n'est pas nécessaire de le faire de nouveau.
-                </Typography>
-            </div>
-        );
+    else if (method === PaymentMethod.HELLOASSO) return <></> // Already shown in HelloAssoFirstMonthPaymentInfo
 
     else return (
-        <Typography variant="body1" color="text.secondary" component="p" align="left">
-            Une erreur est survenue, merci de contacter l'association par mail à <a href="mailto:fai@rezel.net">fai@rezel.net</a>
-        </Typography>
-    );
+            <Typography variant="body1" color="text.secondary" component="p" align="left">
+                Une erreur est survenue, merci de contacter l'association par mail à <a
+                href="mailto:fai@rezel.net">fai@rezel.net</a>
+            </Typography>
+        );
+}
+
+function PaymentInfo({ type, method, paid }: { type: PaymentType, method: PaymentMethod, paid: boolean }) {
+    if (paid)
+        return (
+            <Alert severity="success">
+                Paiement bien reçu !
+            </Alert>
+        );
+    else
+        return <>
+            {type == PaymentType.SUBSCRIPTION &&
+                <HelloAssoFirstMonthPaymentInfo/> /* Always show HelloAsso option for subscription payment*/}
+            {type == PaymentType.MEMBERSHIP &&
+                <HelloAssoMembershipPaymentInfo/> /* Always show HelloAsso option for membership payment*/}
+            <OtherPaymentInfo type={type} method={method} paid={paid} isHelloAssoAlternative={type == PaymentType.SUBSCRIPTION || type == PaymentType.MEMBERSHIP}/>
+        </>
 }

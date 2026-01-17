@@ -20,6 +20,7 @@ from back.server.routers.ptah import router as router_ptah
 from back.server.routers.partial_refunds import router as router_partial_refunds
 from back.server.routers.pms import router as router_pms
 from back.server.routers.users import router as router_users
+from back.server.routers.helloasso import router as router_helloasso_notif
 from back.server.routers.features import router as router_features
 from back.utils.logger import init_logger
 
@@ -86,6 +87,7 @@ def build() -> FastAPI:
     app.include_router(router_pms)
     app.include_router(router_users)
     app.include_router(router_features)
+    app.include_router(router_helloasso_notif)
 
     logger.info("Server built")
 

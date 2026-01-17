@@ -1,4 +1,19 @@
-import { User, Membership, AppointmentSlot, Appointment, CommandeAccesInfo, CRMiseEnService, AnnulAccesInfo, MembershipRequest, StatusUpdateInfo, MembershipStatus, AttachedWifiAdherent, PartialRefund } from "./types/types";
+import {
+  User,
+  Membership,
+  AppointmentSlot,
+  Appointment,
+  CommandeAccesInfo,
+  CRMiseEnService,
+  AnnulAccesInfo,
+  MembershipRequest,
+  StatusUpdateInfo,
+  MembershipStatus,
+  AttachedWifiAdherent,
+  PartialRefund,
+  FirstMonthCheckoutResponse,
+  CheckoutStatusResponse
+} from "./types/types";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
@@ -388,6 +403,14 @@ class Api {
             return null;
         }
         return response.user;
+    }
+
+    async checkoutFirstMonthHelloAsso(): Promise<FirstMonthCheckoutResponse> {
+      return await this.myFetcher<FirstMonthCheckoutResponse>(`/users/me/checkout_first_month_helloasso`, null, "POST");
+    }
+
+    async getCheckoutStatus(checkoutId: number): Promise<CheckoutStatusResponse> {
+        return await this.myFetcher<CheckoutStatusResponse>(`/helloasso/get_checkout_status/${checkoutId}`);
     }
 }
 

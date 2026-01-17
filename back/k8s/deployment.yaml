@@ -34,6 +34,8 @@ spec:
             OVH_APPLICATION_KEY="{{ .Data.data.ovh_application_key }}"
             OVH_APPLICATION_SECRET="{{ .Data.data.ovh_application_secret }}"
             OVH_CONSUMER_KEY="{{ .Data.data.ovh_consumer_key }}"
+            HELLOASSO_CLIENT_SECRET="{{ .Data.data.helloasso_client_secret }}"
+            HELLOASSO_WEBHOOK_SECRET="{{ .Data.data.helloasso_webhook_secret }}"
           {{- end }}
     spec:
       serviceAccountName: sadh-back-ksa

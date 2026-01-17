@@ -196,3 +196,12 @@ export interface PartialRefund {
     paid: boolean;
     refunded_amount: number;
 }
+
+export interface FirstMonthCheckoutResponse {
+  redirectUrl?: string
+}
+
+export interface CheckoutStatusResponse {
+  is_complete: boolean,
+  return_url: string
+}

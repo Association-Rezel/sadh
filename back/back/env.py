@@ -103,6 +103,16 @@ class Env:  # pylint: disable=too-many-instance-attributes
     ovh_service_name: str | None
     ovh_enabled: bool
 
+    helloasso_base_url: str | None
+    helloasso_client_id: str | None
+    helloasso_client_secret: str | None
+    helloasso_organization_slug: str | None
+    helloasso_webhook_secret: str | None
+    helloasso_wifi_price: int
+    helloasso_ftth_price: int
+
+    sadh_base_url: str
+
     def __init__(self) -> None:
         """Load all variables."""
 
@@ -177,6 +187,16 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.ovh_service_name = get_or_none("OVH_SERVICE_NAME")
         self.ovh_user_name = get_or_none("OVH_USER_NAME")
         self.ovh_enabled = get_or_default("OVH_ENABLED", "false").lower() == "true"
+
+        self.helloasso_base_url = get_or_none("HELLOASSO_BASE_URL")
+        self.helloasso_client_id = get_or_none("HELLOASSO_CLIENT_ID")
+        self.helloasso_client_secret = get_or_none("HELLOASSO_CLIENT_SECRET")
+        self.helloasso_organization_slug = get_or_none("HELLOASSO_ORGANIZATION_SLUG")
+        self.helloasso_webhook_secret = get_or_none("HELLOASSO_WEBHOOK_SECRET")
+        self.helloasso_wifi_price = int(get_or_raise("HELLOASSO_WIFI_PRICE"))
+        self.helloasso_ftth_price = int(get_or_raise("HELLOASSO_FTTH_PRICE"))
+
+        self.sadh_base_url = get_or_raise("SADH_BASE_URL")
 
 
 ENV = Env()

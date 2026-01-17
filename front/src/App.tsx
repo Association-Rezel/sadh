@@ -23,6 +23,7 @@ import { AuthProvider, useAuthContext } from "./pages/auth/AuthContext";
 import LoginOrSignupPage from "./pages/auth/LoginOrSignupPage";
 import { AdminLoginRedirect, LoginRedirect } from "./pages/auth/AuthRedirect";
 import PtahImageDownloader from "./components/AdminDashboard/Ptah/Ptah";
+import HelloAssoCheckoutCallback from "./components/MembershipRequest/HelloAssoCheckoutCallback";
 
 function AppRouter() {
     const { user, admin, isLoading } = useAuthContext();
@@ -39,6 +40,8 @@ function AppRouter() {
                 <Route index element={<Index />} />
                 <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
                 <Route path="adherer/*" Component={user ? BecomeMember : LoginOrSignupPage} />
+                <Route path="ha-checkout-callback" element={<HelloAssoCheckoutCallback/>}/>
+
                 {accountRoute({ user })}
 
                 {admin ? (
