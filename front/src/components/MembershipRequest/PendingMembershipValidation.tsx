@@ -135,7 +135,7 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                             Réglement Intérieur
                         </Button>
                         <Button target="_blank" rel="noopener noreferrer" variant="text" color="primary"
-                                href="/static/RI_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
+                                href="/static/Statuts_Rezel.pdf" className="mt-2" startIcon={<DownloadIcon/>}>
                             Statuts de l'association
                         </Button>
                     </div>
