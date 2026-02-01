@@ -228,7 +228,7 @@ function HelloAssoFirstMonthPaymentInfo(): JSX.Element {
             </Typography>
             <br/>
             <Alert severity={"warning"}>
-              Cette contribution n’est <strong>pas obligatoire</strong> : vous pouvez la réduire ou la supprimer en cliquant sur « Modifier
+              Cette contribution n’est <strong>pas obligatoire</strong> : tu peux la réduire ou la supprimer en cliquant sur « Modifier
                 la contribution volontaire » sur la page de règlement.
             </Alert>
         </div>

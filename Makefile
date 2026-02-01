@@ -32,7 +32,7 @@ BACK_PORT := 8040
 
 # Proxy command
 PROXY_COMMAND := caddy run --config Caddyfile.dev --adapter caddyfile
-PROXY_PORT := 8080 # Main entry point for your browser
+PROXY_PORT := 6100 # Main entry point for your browser
 
 # --- Main Targets ---
 .PHONY: all help run install clean
