@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from urllib.parse import urljoin
 from uuid import UUID
 
-from common_models.user_models import MembershipType, PaymentMethod, User
+from common_models.user_models import User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
@@ -13,7 +13,7 @@ from requests_oauthlib import OAuth2Session
 from back.core.helloasso_models import (
     NotificationMetadata,
     CheckoutIntentResponse,
-    CheckoutItem,
+    CheckoutItemId,
     CheckoutMetadata,
     InitCheckoutBody,
     InitCheckoutResponse,
@@ -25,6 +25,7 @@ from back.core.helloasso_models import (
 )
 from back.env import ENV
 from back.messaging.matrix import send_matrix_message
+from back.core.helloasso_items import CHECKOUT_ITEM_REGISTRY
 
 _API_URL = f"{ENV.helloasso_base_url}/v5"
 _TOKEN_URL = f"{ENV.helloasso_base_url}/oauth2/token"
@@ -176,24 +177,33 @@ def _create_checkout_payer_from_user(
     )
 
 
-item_prices = {
-    CheckoutItem.FIRST_MONTH_FTTH_MEMBERSHIP: ENV.helloasso_ftth_price,
-    CheckoutItem.FIRST_MONTH_WIFI_MEMBERSHIP: ENV.helloasso_wifi_price,
-}
+class UserNotEligibleError(Exception):
+    def __init__(self, user_id: UUID, item_id: CheckoutItemId):
+        super().__init__(f"User {user_id} is not eligible to buy item {item_id}")
+
+
+class CheckoutItemDoesNotExist(Exception):
+    def __init__(self, item_id: CheckoutItemId):
+        super().__init__(f"Checkout item {item_id} not found")
 
 
 async def init_and_cache_checkout(
     user: User,
-    item_name: str,
-    checkout_items: list[CheckoutItem],
+    checkout_item_ids: list[CheckoutItemId],
     back_url: str,
     error_url: str,
     return_url: str,
 ) -> InitCheckoutResponse:
     """
     Initialize a HelloAsso checkout for any purpose (for now, only checkouts with one term are supported).
+
+    Higher level function than HelloAssoAPIClient.init_checkout, it handles:
+    1. item management (check that user can buy the items, compute total price, generate purchase name)
+    2. creates the sadh specific metadata (to re associate the checkout with the user in the webhook)
+    3. caches the ongoing checkout in memory to avoid creating multiple checkouts for the same user at the same time.
+
     :param return_url: URL to redirect to after successful payment, (after going through the verification screen)
-    :param checkout_items: list of items present in the checkout
+    :param checkout_item_ids: list of items present in the checkout
     :param user: user to create the checkout for
     :param item_name: name of the item
     :param back_url: URL to redirect to if user goes back
@@ -201,16 +211,32 @@ async def init_and_cache_checkout(
     :return: HelloAsso checkout initialization response
     """
     checkout_metadata = CheckoutMetadata(
-        checkout_items=checkout_items, user_id=str(user.id), return_url=return_url
+        checkout_item_ids=checkout_item_ids, user_id=str(user.id), return_url=return_url
     )
 
     if ENV.helloasso_webhook_secret is None:
         raise ValueError("HelloAsso webhook secret is not set in environment")
     metadata = sign_sadh_metadata(checkout_metadata, ENV.helloasso_webhook_secret)
 
-    total_amount = sum(item_prices[item] for item in checkout_items)
+    # Check if the user is eligible to buy all the items
+    for item_id in checkout_item_ids:
+        if item_id not in CHECKOUT_ITEM_REGISTRY:
+            raise CheckoutItemDoesNotExist(item_id)
+        item_info = CHECKOUT_ITEM_REGISTRY[item_id]
+        if not await item_info.can_user_buy(user):
+            raise UserNotEligibleError(user.id, item_id)
 
+    # Retrieve item info from their IDs
+    checkout_items = [CHECKOUT_ITEM_REGISTRY[item_id] for item_id in checkout_item_ids]
+
+    total_amount = sum(item.price for item in checkout_items)
+
+    # Helloasso only supports one item name per checkout, so we concatenate the item names
+    item_name = " + ".join(item.display_name for item in checkout_items)
+
+    # Create the helloasso "checkout payer" object from the user
     checkout_payer = _create_checkout_payer_from_user(user)
+
     logger.debug("Creating HelloAsso checkout...")
     api_response = await get_or_init_ha_client().init_checkout(
         checkout_payer,
@@ -268,8 +294,7 @@ def get_ongoing_user_checkouts(user: User) -> list[OngoingCheckout]:
 
 async def get_ongoing_or_init_checkout(
     user: User,
-    item_name: str,
-    checkout_items: list[CheckoutItem],
+    checkout_items_ids: list[CheckoutItemId],
     back_url: str,
     error_url: str,
     return_url: str,
@@ -278,7 +303,8 @@ async def get_ongoing_or_init_checkout(
 
     for checkout in existing_checkouts:
         if all(
-            item in checkout.checkout_metadata.checkout_items for item in checkout_items
+            item_id in checkout.checkout_metadata.checkout_item_ids
+            for item_id in checkout_items_ids
         ):
             # Existing checkout found
             return checkout.checkout_response
@@ -286,13 +312,26 @@ async def get_ongoing_or_init_checkout(
     # No existing checkout found, create a new one
     checkout_response = await init_and_cache_checkout(
         user=user,
-        item_name=item_name,
-        checkout_items=checkout_items,
+        checkout_item_ids=checkout_items_ids,
         back_url=back_url,
         error_url=error_url,
         return_url=return_url,
     )
     return checkout_response
+
+
+async def _remove_checkout_from_cache(
+    checkout_metadata: CheckoutMetadata,
+) -> None:
+    """Clear a checkout from the ongoing checkouts cache, after it has been processed."""
+    global _ongoing_checkouts_cache
+    _ongoing_checkouts_cache = [
+        ongoing_checkout
+        for ongoing_checkout in _ongoing_checkouts_cache
+        if ongoing_checkout.checkout_metadata.user_id != checkout_metadata.user_id
+        or ongoing_checkout.checkout_metadata.checkout_item_ids
+        != checkout_metadata.checkout_item_ids
+    ]
 
 
 async def process_payment_notification(
@@ -307,19 +346,29 @@ async def process_payment_notification(
     global _ongoing_checkouts_cache
     logger.debug("Processing payment notification...")
     if notification.metadata is None or notification.metadata.sadh_metadata is None:
-        logger.debug("Payment notification has no SADH-specific metadata, ignoring")
+        logger.info("Payment notification has no SADH-specific metadata, ignoring")
         return
     elif notification.metadata.sadh_metadata_sig is None:
-        logger.error("Payment notification has no SADH metadata signature, ignoring")
+        logger.warning("Payment notification has no SADH metadata signature, ignoring")
         return
 
     # Verify the signature of the metadata
     if ENV.helloasso_webhook_secret is None:
-        logger.error("HelloAsso webhook secret is not set")
+        send_matrix_message(
+            f"⚠ Un webhook HelloAsso a été reçu (e.g. pour un paiement), mais le secret de webhook n'est pas configuré !\n"
+            f"Il vaut le coup de vérifier HelloAsso"
+        )
+        logger.error(
+            "HelloAsso webhook secret is not set, cannot verify metadata signature"
+        )
         return
     if not check_sadh_metadata_signature(
         notification.metadata, ENV.helloasso_webhook_secret
     ):
+        send_matrix_message(
+            f"⚠ Un webhook HelloAsso a été reçu (e.g. pour un paiement), mais sa signature est incorrecte !"
+            f"Il vaut le coup de vérifier HelloAsso"
+        )
         logger.warning("Notification has invalid SADH metadata signature, ignoring")
         return
 
@@ -349,75 +398,19 @@ async def process_payment_notification(
 
             match notification.data.state:
                 case PaymentState.AUTHORIZED:
-                    for checkout_item in checkout_metadata.checkout_items:
-                        match checkout_item:
-                            case (
-                                CheckoutItem.FIRST_MONTH_FTTH_MEMBERSHIP
-                                | CheckoutItem.FIRST_MONTH_WIFI_MEMBERSHIP
-                            ):
-                                # We check that the payment is for the correct membership type
-                                expected_membership_type = (
-                                    MembershipType.FTTH
-                                    if checkout_item
-                                    == CheckoutItem.FIRST_MONTH_FTTH_MEMBERSHIP
-                                    else MembershipType.WIFI
-                                )
+                    for checkout_item_id in checkout_metadata.checkout_item_ids:
+                        if checkout_item_id not in CHECKOUT_ITEM_REGISTRY:
+                            send_matrix_message(
+                                f"⚠ Un paiement HelloAsso contient un item inconnu et a donc été ignoré (user_id: "
+                                f"{checkout_metadata.user_id}). Merci de vérifier ce paiement."
+                            )
+                            logger.warning(
+                                "Unknown checkout item %s, ignoring",
+                                checkout_item_id,
+                            )
+                        checkout_item = CHECKOUT_ITEM_REGISTRY[checkout_item_id]
+                        await checkout_item.apply_purchase(user, db)
 
-                                if (
-                                    user.membership is None
-                                    or user.membership.type != expected_membership_type
-                                ):
-                                    logger.error(
-                                        "User membership type mismatch for payment validation: user_id=%s",
-                                        user.id,
-                                    )
-                                    send_matrix_message(
-                                        "❌ Webhook reçu pour un paiement HelloAsso, mais le type d'adhésion de"
-                                        f"l'utilisateur ne correspond pas au type de paiement reçu. user_id={user.id}"
-                                    )
-                                    return
-                                else:
-                                    _ongoing_checkouts_cache = [
-                                        ongoing_checkout
-                                        for ongoing_checkout in _ongoing_checkouts_cache
-                                        if ongoing_checkout.checkout_metadata.user_id
-                                        != checkout_metadata.user_id
-                                        or ongoing_checkout.checkout_metadata.checkout_items
-                                        != checkout_metadata.checkout_items
-                                    ]
-                                    if user.membership.paid_first_month:
-                                        send_matrix_message(
-                                            f"⚠ Paiement HelloAsso reçu pour {user.first_name} {user.last_name}"
-                                            f"(user_id={user.id}), mais le premier mois est déjà marqué comme payé.\n"
-                                            f"L'utilisateur a peut-être été débité deux fois par erreur, veuillez"
-                                            f"vérifier dans HelloAsso et rembourser si nécessaire.\n"
-                                            f"(Il se peut aussi que sadh ait simplement mis trop de temps à traiter la"
-                                            f"notif ou qu'elle se soit perdu, et que HelloAsso l'ait relancé)"
-                                        )
-                                        return
-                                    # Mark the first month as paid
-                                    logger.debug(
-                                        "Payment authorized for user_id=%s, marking first month as paid",
-                                        user.id,
-                                    )
-                                    send_matrix_message(
-                                        f"✅ Paiement HelloAsso reçu et validé pour {user.first_name} {user.last_name}"
-                                        f"(user_id={user.id})."
-                                    )
-                                    await db.users.find_one_and_update(
-                                        {"_id": str(user.id)},
-                                        {
-                                            "$set": {
-                                                "membership.paid_first_month": True,
-                                                "membership.init.payment_method_first_month": PaymentMethod.HELLOASSO.value,
-                                            }
-                                        },
-                                    )
-                            case _:
-                                logger.warning(
-                                    "Unknown checkout item %s",
-                                    checkout_item,
-                                )
                 case PaymentState.CONTESTED:
                     logger.warning("Payment contested for user_id=%s", user.id)
                     send_matrix_message(
@@ -441,17 +434,6 @@ async def process_payment_notification(
             )
 
 
-def _did_purchase_take_effect(user: User, item: CheckoutItem):
-    match item:
-        case (
-            CheckoutItem.FIRST_MONTH_FTTH_MEMBERSHIP
-            | CheckoutItem.FIRST_MONTH_WIFI_MEMBERSHIP
-        ):
-            if user.membership is not None:
-                return user.membership.paid_first_month
-            return False
-
-
 async def get_checkout_intent(checkout_id: int) -> CheckoutIntentResponse | None:
     # Nothing else to do for now, just call the API. Permission checks should be done by the caller
     checkout_intent = await get_or_init_ha_client().get_checkout_intent(checkout_id)
@@ -461,18 +443,30 @@ async def get_checkout_intent(checkout_id: int) -> CheckoutIntentResponse | None
 async def is_checkout_complete(
     checkout_intent: CheckoutIntentResponse, db: AsyncIOMotorDatabase
 ) -> bool:
+    """Check if a HelloAsso checkout intent represents a completed purchase.
+    :param checkout_intent: checkout intent to check
+    :param db: database
+
+    :return: True if the purchase was completed, False otherwise.
+
+    Useful to verify if a user has completed a purchase, to tell them the payment was OK.
+    """
+    # Two checks are performed:
+    #   1. check that all payments are authorized (i.e. purchase is OK on helloasso side),
+    #   2. check the purchase was applied (i.e. payment was processed by us)
     metadata = NotificationMetadata.model_validate(checkout_intent.metadata)
     if metadata.sadh_metadata is not None:
-        checkout_metadata: CheckoutMetadata = metadata.sadh_metadata
-
+        # 1. Check that all payments are authorized
         payment_ok = all(
             payment.state == PaymentState.AUTHORIZED
-            for payment in (checkout_intent.order.payments or [])
+            for payment in checkout_intent.order.payments
         )
 
         if not payment_ok:
             return False
 
+        # 2. Check that the purchase took effect
+        checkout_metadata: CheckoutMetadata = metadata.sadh_metadata
         userdict = await db.users.find_one({"_id": str(checkout_metadata.user_id)})
         if userdict is None:
             raise ValueError(
@@ -480,10 +474,17 @@ async def is_checkout_complete(
             )
         user = User.model_validate(userdict)
 
-        purchase_took_effect = all(
-            _did_purchase_take_effect(user, item)
-            for item in checkout_metadata.checkout_items
-        )
-        return purchase_took_effect
+        for item_id in checkout_metadata.checkout_item_ids:
+            if not await CHECKOUT_ITEM_REGISTRY[item_id].is_purchase_applied(user, db):
+                return False
+        return True
 
     raise ValueError("Checkout metadata not produced by SADH")
+
+
+async def is_checkout_item_valid_for_user(user: User, item_id: CheckoutItemId) -> bool:
+    if item_id not in CHECKOUT_ITEM_REGISTRY:
+        return False
+
+    item_info = CHECKOUT_ITEM_REGISTRY[item_id]
+    return await item_info.can_user_buy(user)

@@ -5,76 +5,81 @@ import {useSearchParams} from "react-router-dom";
 import {toast} from "react-toastify";
 
 enum ButtonStatus {
-  ERROR,
-  LOADING,
-  NOT_OPENED,
-  OPENED,
+    ERROR,
+    LOADING,
+    NOT_OPENED,
+    OPENED,
 }
 
-export default function HelloAssoPayment(): JSX.Element {
-  const [ searchParams, setSearchParams ] = useSearchParams();
-  const checkoutIntentId = searchParams.get("checkoutIntentId");
-  const checkoutError = searchParams.get("error");
+export default function HelloAssoPayment({ checkoutItems }: { checkoutItems: string[] }): JSX.Element {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const checkoutIntentId = searchParams.get("checkoutIntentId");
+    const checkoutError = searchParams.get("error");
 
-  let initialStatus = ButtonStatus.NOT_OPENED;
+    let initialStatus = ButtonStatus.NOT_OPENED;
 
-  const [status, setStatus] = useState<ButtonStatus>(initialStatus);
+    const [status, setStatus] = useState<ButtonStatus>(initialStatus);
 
-  useEffect(() => {
-    if (checkoutIntentId !== undefined && checkoutError) {
-      setSearchParams((searchParams) => {
-        searchParams.delete("checkoutIntentId");
-        searchParams.delete("error");
-        return searchParams;
-      })
-      setStatus(ButtonStatus.ERROR)
-    }
-  }, [searchParams]);
+    useEffect(() => {
+        if (checkoutIntentId !== undefined && checkoutError) {
+            setSearchParams((searchParams) => {
+                searchParams.delete("checkoutIntentId");
+                searchParams.delete("error");
+                return searchParams;
+            })
+            setStatus(ButtonStatus.ERROR)
+        }
+    }, [searchParams]);
 
-  useEffect(() => {
-    if (status === ButtonStatus.ERROR)
-      toast.error("Le paiement a échoué ou a été annulé. Merci de réessayer dans quelques instants, " +
-      "ou de contacter Rezel si le problème persiste.");
-  }, [status])
+    useEffect(() => {
+        if (status === ButtonStatus.ERROR)
+            toast.error("Le paiement a échoué ou a été annulé. Merci de réessayer dans quelques instants, " +
+                "ou de contacter Rezel si le problème persiste.");
+    }, [status])
 
-  const initCheckoutAndOpen = async () => {
-    if (status === ButtonStatus.LOADING) return; // Prevent multiple clicks while loading
-    else {
-        setStatus(ButtonStatus.LOADING);
-        try {
-            const new_checkout = await Api.checkoutFirstMonthHelloAsso();
-            if (new_checkout.redirectUrl === undefined) {
+    const initCheckoutAndOpen = async () => {
+        if (status === ButtonStatus.LOADING) return; // Prevent multiple clicks while loading
+        else {
+            setStatus(ButtonStatus.LOADING);
+            try {
+                const new_checkout = await Api.helloAssoInitCheckout(checkoutItems);
+                if (new_checkout.redirectUrl === undefined) {
+                    setStatus(ButtonStatus.ERROR);
+                    return;
+                } else {
+                    window.open(new_checkout.redirectUrl, "_blank", "noopener,noreferrer");
+                    setStatus(ButtonStatus.OPENED);
+                }
+            } catch (e) {
+                console.error("Unexpected error during HelloAsso checkout initiation:", e);
                 setStatus(ButtonStatus.ERROR);
-                return;
-            } else {
-                window.open(new_checkout.redirectUrl, "_blank", "noopener,noreferrer");
-                setStatus(ButtonStatus.OPENED);
             }
-        } catch (e) {
-            console.error("Unexpected error during HelloAsso checkout initiation:", e);
-            setStatus(ButtonStatus.ERROR);
         }
     }
-  }
 
-  return <div className="text-left">
-    <HelloAssoPaymentButton status={status} onclick={initCheckoutAndOpen}/>
-    <div className={"mt-4"}>
-    {status === ButtonStatus.ERROR &&
-        <Alert severity="error">
-            Une erreur est survenue et empêche le paiement d'aboutir, essaie de rafraîchir la page et réssayer dans quelques instants.
-            Si le problème persiste, n'hésite pas à contacter Rezel.
-        </Alert>}
-    {status === ButtonStatus.OPENED &&
-            <Alert severity="info">Le paiement devrait être ouvert dans un nouvel onglet. Si ce n'est pas le cas, vérifie que la fenêtre pop-up n'a pas été bloquée par ton navigateur.
-                En cas de difficultés, n'hésite pas à contacter Rezel.</Alert>
-    }
+    return <div className={"flex flex-col text-left sm:items-start items-center"}>
+        <div>
+            {checkoutItems.length === 0 && <Alert severity={"error"} sx={{display: "flex"}}>Aucun paiement sélectionné</Alert>}
+            <HelloAssoPaymentButton status={status} onclick={initCheckoutAndOpen} disabled={checkoutItems.length == 0}/>
+        </div>
+        <div className={"mt-2"}>
+            {status === ButtonStatus.ERROR &&
+                <Alert severity="error">
+                    Une erreur est survenue et empêche le paiement d'aboutir, essaie de rafraîchir la page et réssayer
+                    dans quelques instants.
+                    Si le problème persiste, n'hésite pas à contacter Rezel.
+                </Alert>}
+            {status === ButtonStatus.OPENED &&
+                <Alert severity="info">Le paiement devrait être ouvert dans un nouvel onglet. Si ce n'est pas le cas,
+                    vérifie que la fenêtre pop-up n'a pas été bloquée par ton navigateur.
+                    En cas de difficultés, essaie de refraîchir la page, et n'hésite pas à contacter Rezel.</Alert>
+            }
+        </div>
+
     </div>
-
-  </div>
 }
 
-function HelloAssoPaymentButtonInner({status}: { status: ButtonStatus }): JSX.Element {
+function HelloAssoPaymentButtonInner({ status }: { status: ButtonStatus }): JSX.Element {
     switch (status) {
         case ButtonStatus.LOADING:
             return <CircularProgress size="1.7em" color="inherit"/>;
@@ -105,65 +110,70 @@ function HelloAssoPaymentButtonInner({status}: { status: ButtonStatus }): JSX.El
     }
 }
 
-function HelloAssoPaymentButton({status, onclick}: { status: ButtonStatus, onclick: () => void }): JSX.Element {
-  return (
-    <div className="inline-flex flex-col justify-center items-stretch font-sans transition-all duration-300 ease-out">
-      <button
-        className="flex p-0 rounded-lg group hover:brightness-75 transition-all duration-300 ease-out"
-        onClick={onclick}
-      >
+function HelloAssoPaymentButton({ status, onclick, disabled }: {
+    status: ButtonStatus,
+    disabled: boolean,
+    onclick: () => void
+}): JSX.Element {
+    return (
+        <div
+            className={"inline-flex flex-col justify-center items-stretch font-sans transition-all duration-300 ease-out" + (disabled ? " opacity-50 pointer-events-none grayscale" : "")}>
+            <button
+                className="flex p-0 rounded-lg group hover:brightness-75 transition-all duration-300 ease-out"
+                onClick={onclick}
+            >
         <span className="px-4 py-2 bg-white rounded-l-lg">
           <img
-            src="/static/bouton_payer_helloasso/logo-ha.svg"
-            alt="Logo Helloasso"
-            className="w-[30px]"
+              src="/static/bouton_payer_helloasso/logo-ha.svg"
+              alt="Logo Helloasso"
+              className="w-[30px]"
           />
         </span>
 
-        <span
-          className="flex flex-grow items-center justify-center gap-x-1.5 bg-[#4c40cf] rounded-r-lg
+                <span
+                    className="flex flex-grow items-center justify-center gap-x-1.5 bg-[#4c40cf] rounded-r-lg
                      text-white text-base font-extrabold px-4 py-3"
-        >
+                >
             <HelloAssoPaymentButtonInner status={status}/>
         </span>
-      </button>
+            </button>
 
-      <div className="flex items-center justify-between gap-x-1.5 py-2 px-4 text-sm font-semibold text-[#2e2f5e]">
-        <svg
-          width="9"
-          height="10"
-          viewBox="0 0 11 12"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="fill-current"
-        >
-          <path
-            d="M3.875 3V4.5H7.625V3C7.625 1.96875 6.78125 1.125 5.75 1.125C4.69531 1.125 3.875 1.96875 3.875 3ZM2.75 4.5V3C2.75 1.35938 4.08594 0 5.75 0C7.39062 0 8.75 1.35938 8.75 3V4.5H9.5C10.3203 4.5 11 5.17969 11 6V10.5C11 11.3438 10.3203 12 9.5 12H2C1.15625 12 0.5 11.3438 0.5 10.5V6C0.5 5.17969 1.15625 4.5 2 4.5H2.75ZM1.625 6V10.5C1.625 10.7109 1.78906 10.875 2 10.875H9.5C9.6875 10.875 9.875 10.7109 9.875 10.5V6C9.875 5.8125 9.6875 5.625 9.5 5.625H2C1.78906 5.625 1.625 5.8125 1.625 6Z"/>
-        </svg>
+            <div className="flex items-center justify-between gap-x-1.5 py-2 px-4 text-sm font-semibold text-[#2e2f5e]">
+                <svg
+                    width="9"
+                    height="10"
+                    viewBox="0 0 11 12"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="fill-current"
+                >
+                    <path
+                        d="M3.875 3V4.5H7.625V3C7.625 1.96875 6.78125 1.125 5.75 1.125C4.69531 1.125 3.875 1.96875 3.875 3ZM2.75 4.5V3C2.75 1.35938 4.08594 0 5.75 0C7.39062 0 8.75 1.35938 8.75 3V4.5H9.5C10.3203 4.5 11 5.17969 11 6V10.5C11 11.3438 10.3203 12 9.5 12H2C1.15625 12 0.5 11.3438 0.5 10.5V6C0.5 5.17969 1.15625 4.5 2 4.5H2.75ZM1.625 6V10.5C1.625 10.7109 1.78906 10.875 2 10.875H9.5C9.6875 10.875 9.875 10.7109 9.875 10.5V6C9.875 5.8125 9.6875 5.625 9.5 5.625H2C1.78906 5.625 1.625 5.8125 1.625 6Z"/>
+                </svg>
 
-        <span>Paiement sécurisé</span>
+                <span>Paiement sécurisé</span>
 
-        <img
-          src="/static/bouton_payer_helloasso/logo-visa.svg"
-          alt="Logo Visa"
-          className="h-4"
-        />
-        <img
-          src="/static/bouton_payer_helloasso/logo-mastercard.svg"
-          alt="Logo Mastercard"
-          className="h-4"
-        />
-        <img
-          src="/static/bouton_payer_helloasso/logo-cb.svg"
-          alt="Logo CB"
-          className="h-4"
-        />
-        <img
-          src="/static/bouton_payer_helloasso/logo-pci.svg"
-          alt="Logo PCI"
-          className="h-4"
-        />
-      </div>
-    </div>
-  )
+                <img
+                    src="/static/bouton_payer_helloasso/logo-visa.svg"
+                    alt="Logo Visa"
+                    className="h-4"
+                />
+                <img
+                    src="/static/bouton_payer_helloasso/logo-mastercard.svg"
+                    alt="Logo Mastercard"
+                    className="h-4"
+                />
+                <img
+                    src="/static/bouton_payer_helloasso/logo-cb.svg"
+                    alt="Logo CB"
+                    className="h-4"
+                />
+                <img
+                    src="/static/bouton_payer_helloasso/logo-pci.svg"
+                    alt="Logo PCI"
+                    className="h-4"
+                />
+            </div>
+        </div>
+    )
 }

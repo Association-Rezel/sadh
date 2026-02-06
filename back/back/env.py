@@ -110,6 +110,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
     helloasso_webhook_secret: str | None
     helloasso_wifi_price: int
     helloasso_ftth_price: int
+    helloasso_ftth_deposit_price: int
+    helloasso_membership_price: int
 
     sadh_base_url: str
 
@@ -193,8 +195,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.helloasso_client_secret = get_or_none("HELLOASSO_CLIENT_SECRET")
         self.helloasso_organization_slug = get_or_none("HELLOASSO_ORGANIZATION_SLUG")
         self.helloasso_webhook_secret = get_or_none("HELLOASSO_WEBHOOK_SECRET")
-        self.helloasso_wifi_price = int(get_or_raise("HELLOASSO_WIFI_PRICE"))
-        self.helloasso_ftth_price = int(get_or_raise("HELLOASSO_FTTH_PRICE"))
+        self.helloasso_wifi_price = int(get_or_default("HELLOASSO_WIFI_PRICE", "1000"))
+        self.helloasso_ftth_price = int(get_or_default("HELLOASSO_FTTH_PRICE", "2000"))
+        self.helloasso_ftth_deposit_price = int(
+            get_or_default("HELLOASSO_FTTH_DEPOSIT_PRICE", "5000")
+        )
+        self.helloasso_membership_price = int(
+            get_or_default("HELLOASSO_MEMBERSHIP_PRICE", "100")
+        )
 
         self.sadh_base_url = get_or_raise("SADH_BASE_URL")
 

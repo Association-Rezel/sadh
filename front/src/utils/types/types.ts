@@ -197,11 +197,11 @@ export interface PartialRefund {
     refunded_amount: number;
 }
 
-export interface FirstMonthCheckoutResponse {
+export interface HelloAssoCheckoutInitResponse {
   redirectUrl?: string
 }
 
-export interface CheckoutStatusResponse {
+export interface HelloAssoCheckoutStatusResponse {
   is_complete: boolean,
   return_url: string
 }

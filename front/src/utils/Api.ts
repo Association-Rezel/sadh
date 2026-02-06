@@ -1,18 +1,18 @@
 import {
-  User,
-  Membership,
-  AppointmentSlot,
-  Appointment,
-  CommandeAccesInfo,
-  CRMiseEnService,
-  AnnulAccesInfo,
-  MembershipRequest,
-  StatusUpdateInfo,
-  MembershipStatus,
-  AttachedWifiAdherent,
-  PartialRefund,
-  FirstMonthCheckoutResponse,
-  CheckoutStatusResponse
+    User,
+    Membership,
+    AppointmentSlot,
+    Appointment,
+    CommandeAccesInfo,
+    CRMiseEnService,
+    AnnulAccesInfo,
+    MembershipRequest,
+    StatusUpdateInfo,
+    MembershipStatus,
+    AttachedWifiAdherent,
+    PartialRefund,
+    HelloAssoCheckoutInitResponse,
+    HelloAssoCheckoutStatusResponse
 } from "./types/types";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
@@ -405,12 +405,13 @@ class Api {
         return response.user;
     }
 
-    async checkoutFirstMonthHelloAsso(): Promise<FirstMonthCheckoutResponse> {
-      return await this.myFetcher<FirstMonthCheckoutResponse>(`/users/me/checkout_first_month_helloasso`, null, "POST");
+    async helloAssoInitCheckout(checkoutItemsIds: string[]): Promise<HelloAssoCheckoutInitResponse> {
+        // TOOD: make helloassocheckoutinitrequest type
+        return await this.myFetcher<HelloAssoCheckoutInitResponse>(`/helloasso/init_checkout`, { checkout_item_ids: checkoutItemsIds }, "POST");
     }
 
-    async getCheckoutStatus(checkoutId: number): Promise<CheckoutStatusResponse> {
-        return await this.myFetcher<CheckoutStatusResponse>(`/helloasso/get_checkout_status/${checkoutId}`);
+    async getCheckoutStatus(checkoutId: number): Promise<HelloAssoCheckoutStatusResponse> {
+        return await this.myFetcher<HelloAssoCheckoutStatusResponse>(`/helloasso/get_checkout_status/${checkoutId}`);
     }
 }
 

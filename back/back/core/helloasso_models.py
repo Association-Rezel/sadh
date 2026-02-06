@@ -1,4 +1,3 @@
-import abc
 import enum
 import hashlib
 import hmac
@@ -8,11 +7,13 @@ from base64 import urlsafe_b64encode, urlsafe_b64decode
 from datetime import datetime
 from enum import Enum
 from typing import Annotated, Literal
-
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from common_models.base import RezelBaseModel
 from pydantic import ConfigDict, Field, Discriminator
 from pydantic.alias_generators import to_camel
 
-from common_models.base import RezelBaseModel
+from common_models.user_models import User
+from abc import ABC, abstractmethod
 
 
 class NotificationContext(str, enum.Enum):
@@ -21,9 +22,40 @@ class NotificationContext(str, enum.Enum):
 
 
 # HelloAsso doesn't allow item management for checkouts, so we manage them ourselves by storing them in checkouts metadata
-class CheckoutItem(str, enum.Enum):
-    FIRST_MONTH_FTTH_MEMBERSHIP = "FIRST_MONTH_FTTH_MEMBERSHIP"
-    FIRST_MONTH_WIFI_MEMBERSHIP = "FIRST_MONTH_WIFI_MEMBERSHIP"
+type CheckoutItemId = str
+
+
+class CheckoutItemInfo(ABC):
+    @property
+    @abstractmethod
+    def price(self) -> int:
+        """Price of the item in cents"""
+        ...
+
+    @property
+    @abstractmethod
+    def display_name(self) -> str:
+        """Display name of the item"""
+        ...
+
+    # We DON'T store purchase state anywhere. Purchases are simply "applied" once we receive the webhook from helloasso.
+    #  So we need to define 1. if the user can currently purchase the item
+    #                       2. how to apply the purchase when we receive the webhook
+    #                       3. if the purchase has taken effect (so we can confirm the user that their purchase was successful)
+    @abstractmethod
+    async def can_user_buy(self, user: User) -> bool:
+        """Can the user currently buy this item ?"""
+        ...
+
+    @abstractmethod
+    async def apply_purchase(self, user: User, db: AsyncIOMotorDatabase) -> None:
+        """Apply the purchase to the user"""
+        ...
+
+    @abstractmethod
+    async def is_purchase_applied(self, user: User, db: AsyncIOMotorDatabase) -> bool:
+        """Has the purchase taken effect for the user ?"""
+        ...
 
 
 # cf HelloAsso doc
@@ -60,13 +92,13 @@ class PaymentState(str, Enum):
 #  (SadhNotificationMetadata), in an optional field "sadh_metadata"
 
 
-class BaseSadhNotificationMetadata(RezelBaseModel, abc.ABC):
+class BaseSadhNotificationMetadata(RezelBaseModel, ABC):
     issued_at: int = Field(default_factory=lambda: int(time.time()))
 
 
 class CheckoutMetadata(BaseSadhNotificationMetadata):
     context: Literal[NotificationContext.CHECKOUT] = NotificationContext.CHECKOUT
-    checkout_items: list[CheckoutItem]
+    checkout_item_ids: list[CheckoutItemId]
     user_id: str
     return_url: str
 
@@ -134,7 +166,7 @@ def sign_sadh_metadata(
 
 
 # HelloAsso field naming convention is camelCase
-class CamelCaseModel(RezelBaseModel, abc.ABC):
+class CamelCaseModel(RezelBaseModel, ABC):
     model_config = ConfigDict(
         alias_generator=to_camel, populate_by_name=True, from_attributes=True
     )
