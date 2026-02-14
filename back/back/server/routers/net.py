@@ -1,4 +1,5 @@
 from datetime import datetime
+from ipaddress import IPv4Interface
 
 import pytz
 import requests
@@ -116,12 +117,27 @@ async def _transfer_unet(
             status_code=400, detail="Unet already exists in the new box"
         )
 
-    # Transfer the unet to the new box
+    # Remove the unet from the current box
     await db.boxes.find_one_and_update(
         {"mac": str(current_box.mac)},
         {"$pull": {"unets": {"unet_id": unet_id}}},
     )
 
+    # Check the unets on the new box to determine if local VLAN needs to change
+    vlans_on_new_box = set(
+        unet_already_on_box.network.lan_ipv4.vlan
+        for unet_already_on_box in new_box.unets
+    )
+    if unet.network.lan_ipv4.vlan in vlans_on_new_box:
+        # The VLAN is already used on the new box, we need to change it to a new one that is not used
+        new_vlan = 1
+        while new_vlan in vlans_on_new_box:
+            new_vlan += 1
+
+        unet.network.lan_ipv4.vlan = new_vlan
+        unet.network.lan_ipv4.address = IPv4Interface(f"192.168.{new_vlan}.1/24")
+
+    # Add the unet to the new box
     await db.boxes.find_one_and_update(
         {"mac": str(mac)},
         {"$push": {"unets": unet.model_dump(mode="json")}},
