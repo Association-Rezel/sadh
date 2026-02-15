@@ -11,7 +11,6 @@ from common_models.user_models import (
     Membership,
     MembershipStatus,
     MembershipType,
-    PaymentMethod,
     User,
 )
 from pydantic import Field, model_validator
@@ -54,9 +53,6 @@ class MembershipRequest(RezelBaseModel):
     phone_number: Optional[str] = Field(None)
     iban: Optional[PortableIBAN] = Field(None)
     address: Address = Field(...)
-    payment_method_first_month: PaymentMethod = Field(...)
-    payment_method_membership: PaymentMethod = Field(...)
-    payment_method_deposit: Optional[str] = Field(None)
 
     @model_validator(mode="after")
     def _validate(self) -> Self:
@@ -67,11 +63,6 @@ class MembershipRequest(RezelBaseModel):
 
             if self.iban is None:
                 raise ValueError("iban is required for FTTH membership")
-
-            if self.payment_method_deposit is None:
-                raise ValueError(
-                    "payment_method_deposit is required for FTTH membership"
-                )
 
         elif self.type == MembershipType.WIFI:
             if self.ssid is None:

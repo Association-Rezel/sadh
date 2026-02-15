@@ -19,7 +19,7 @@ motor<4.0.0
 babel<3.0.0
 schwifty==2025.1.0
 rezel-vault-jwt==0.1.1
-common-models==0.4.0
+common-models==0.5.0
 starlette<1.0.0
 itsdangerous<3.0.0
 requests-oauthlib==2.0.0

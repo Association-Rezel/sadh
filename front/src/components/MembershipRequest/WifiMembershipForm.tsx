@@ -1,18 +1,15 @@
-import { Alert, Button, CircularProgress, FormControl, FormControlLabel, FormHelperText, FormLabel, InputLabel, Link, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from "@mui/material";
+import { Alert, Button, CircularProgress, FormControl, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import 'react-phone-number-input/style.css';
 import { useAuthContext } from "../../pages/auth/AuthContext";
 import Api from "../../utils/Api";
-import { MembershipType, PaymentMethod, Residence } from "../../utils/types/types";
+import { MembershipType, Residence } from "../../utils/types/types";
 
 type FormValues = {
     residence: string;
     appartement_id: string;
     ssid: string;
-    paymentMethodFirstMonth: string;
-    paymentMethodMembership: string;
-    paymentMethodDeposit: string;
 };
 
 export default function WifiMembershipForm() {
@@ -29,9 +26,6 @@ export default function WifiMembershipForm() {
             ssid: "",
             residence: "",
             appartement_id: "",
-            paymentMethodFirstMonth: "",
-            paymentMethodMembership: "",
-            paymentMethodDeposit: "",
         }
     });
 
@@ -73,8 +67,6 @@ export default function WifiMembershipForm() {
                     residence: Residence[event.residence],
                     appartement_id: event.appartement_id,
                 },
-                payment_method_first_month: PaymentMethod[event.paymentMethodFirstMonth],
-                payment_method_membership: PaymentMethod[event.paymentMethodMembership],
             });
             setUser({ ...user });
         } catch (error) {
@@ -135,7 +127,7 @@ export default function WifiMembershipForm() {
                             Ce réseau Wi-Fi n'existe pas.
                         </Typography>
                     }
-                    <div className="mt-8 mb-12" >
+                    <div className="mt-8 mb-6" >
                         <Typography variant="h5" color="text.primary" align="left">
                             Informations personelles
                         </Typography>
@@ -160,73 +152,40 @@ export default function WifiMembershipForm() {
                         </FormControl>
                         <TextField required id="appartement_id" label="Appartment n°" variant="standard" {...register("appartement_id")} />
                     </div>
-                    <div className="mt-16 mb-8">
-                        <Typography variant="h5" color="text.primary" align="left">
-                            Premier mois d'abonnement : <strong>10€</strong>
-                            <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 10€/mois)</Typography>
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" align="left">
-                            Le premier mois d'abonnement est à régler dès maintenant.<br />
-                            Une fois que nous aurons confirmé la réception du paiement,
-                            nous activerons un nouveau réseau Wi-Fi pour toi sur la box que tu as
-                            indiquée plus haut. Tu recevras alors un mail de confirmation.
-                        </Typography>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        <FormControl required variant="standard" sx={{ textAlign: "left" }}>
-                            <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
-                            <Controller
-                                name="paymentMethodFirstMonth"
-                                control={control}
-                                rules={{ required: true }}
-                                render={({ field: { onChange, value } }) => (
-                                    <RadioGroup
-                                        aria-label="paymentMethodFirstMonth"
-                                        name="paymentMethodFirstMonth"
-                                        value={value}
-                                        onChange={onChange}
-                                    >
-                                        <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
-                                        <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
-                                        <FormControlLabel value={PaymentMethod.HELLOASSO} control={<Radio />} label="Par carte bancaire (via HelloAsso)" />
-                                    </RadioGroup>
-                                )} />
-                            <FormHelperText error> {formState.errors.paymentMethodFirstMonth && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
-                        </FormControl>
-                    </div>
+
                 </div>
-                <div className="mt-16 mb-8">
+
+                <div className="mt-8">
                     <Typography variant="h5" color="text.primary" align="left">
-                        Première année d'adhésion : <strong>1€</strong>
-                        <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 1€/an)</Typography>
+                        Récapitulatif des paiements à réaliser:
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" align="left">
-                        Vous devez régler votre cotisation pour un an. Être membre adhérent de Rezel est obligatoire pour bénéficier du service FAI.<br />
-                        Votre adhésion commencera le jour de la signature de votre contrat. <br />
-                        Elle est à rendertue chaque année à la date anniversaire de votre adhésion.
-                    </Typography>
-                </div>
-                <div className="flex flex-col gap-4">
-                    <FormControl required variant="standard" sx={{ textAlign: "left" }}>
-                        <FormLabel id="payment-method-first-month-label">Mode de paiement</FormLabel>
-                        <Controller
-                            name="paymentMethodMembership"
-                            control={control}
-                            rules={{ required: true }}
-                            render={({ field: { onChange, value } }) => (
-                                <RadioGroup
-                                    aria-label="paymentMethodMembership"
-                                    name="paymentMethodMembership"
-                                    value={value}
-                                    onChange={onChange}
-                                >
-                                    <FormControlLabel value={PaymentMethod.VIREMENT} control={<Radio />} label="Par virement bancaire" />
-                                    <FormControlLabel value={PaymentMethod.ESPECE} control={<Radio />} label="En espèces au local de l'association" />
-									<FormControlLabel value={PaymentMethod.HELLOASSO} control={<Radio />} label="Par carte bancaire (via HelloAsso)" />
-                                </RadioGroup>
-                            )} />
-                        <FormHelperText error> {formState.errors.paymentMethodMembership && "Vous devez indiquer un moyen de paiement"}</FormHelperText>
-                    </FormControl>
+                    <ul className={"flex flex-col text-left gap-4 pl-4 mt-6"}>
+                        <li>
+                            <Typography variant="h6" color="text.primary" align="left">
+                                Premier mois d'abonnement : <strong>10€</strong>
+                                <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 10€/mois)</Typography>
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" align="left">
+                                Le premier mois d'abonnement est à régler dès maintenant.
+                                Une fois que nous aurons confirmé la réception du paiement,
+                                nous activerons un nouveau réseau Wi-Fi la box que vous
+                                indiquée plus haut. Vous recevrez alors un mail de confirmation.
+                            </Typography>
+                        </li>
+
+                        <li>
+                            <Typography variant="h6" color="text.primary" align="left">
+                                Première année d'adhésion : <strong>1€</strong>
+                                <Typography className="inline" variant="body1" color="text.secondary" align="left"> (puis 1€/an)</Typography>
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" align="left">
+                                Vous devez régler votre cotisation pour un an (sauf si vous êtes déjà membre).
+                                Être membre adhérent de Rezel est obligatoire pour bénéficier du service FAI.
+                                Votre adhésion commencera le jour de la signature de votre contrat.
+                                Elle est à renouveler chaque année à la date anniversaire de votre adhésion.
+                            </Typography>
+                        </li>
+                    </ul>
                 </div>
                 <div className="mt-16">
                     {formState.isSubmitting ?

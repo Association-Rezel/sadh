@@ -1,6 +1,6 @@
 import logging
 
-from common_models.user_models import MembershipType, PaymentMethod, User, DepositStatus
+from common_models.user_models import MembershipType, User, DepositStatus
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 
@@ -60,7 +60,6 @@ async def _apply_first_month_membership_payment(
             {
                 "$set": {
                     "membership.paid_first_month": True,
-                    "membership.init.payment_method_first_month": PaymentMethod.HELLOASSO.value,
                 }
             },
         )
@@ -73,7 +72,6 @@ class _FTTHFirstMonthItem(CheckoutItemInfo):
     async def can_user_buy(self, user: User) -> bool:
         return (
             user.membership is not None
-            and user.membership.init is not None
             and user.membership.type == MembershipType.FTTH
             and not user.membership.paid_first_month
         )
@@ -94,7 +92,6 @@ class _WiFiFirstMonthItem(CheckoutItemInfo):
     async def can_user_buy(self, user: User) -> bool:
         return (
             user.membership is not None
-            and user.membership.init is not None
             and user.membership.type == MembershipType.WIFI
             and not user.membership.paid_first_month
         )
@@ -115,7 +112,6 @@ class _FTTHDepositItem(CheckoutItemInfo):
     async def can_user_buy(self, user: User) -> bool:
         return (
             user.membership is not None
-            and user.membership.init is not None
             and user.membership.type == MembershipType.FTTH
             and user.membership.deposit_status == DepositStatus.NOT_DEPOSITED
         )

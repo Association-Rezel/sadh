@@ -52,12 +52,6 @@ export interface Appointment {
     type: AppointmentType;
 }
 
-export enum PaymentMethod {
-    CHEQUE = "CHEQUE",
-    VIREMENT = "VIREMENT",
-    ESPECE = "ESPECE",
-    HELLOASSO = "HELLOASSO"
-}
 
 export enum MembershipType {
     FTTH = "FTTH",
@@ -65,9 +59,6 @@ export enum MembershipType {
 }
 
 export interface MembershipInitialization {
-    payment_method_first_month: PaymentMethod;
-    payment_method_membership: PaymentMethod;
-    payment_method_deposit?: PaymentMethod;
     main_unet_id?: string;
 }
 
@@ -126,9 +117,6 @@ export interface MembershipRequest {
     ssid?: string;
     phone_number?: string;
     iban?: string;
-    payment_method_first_month: PaymentMethod;
-    payment_method_membership: PaymentMethod;
-    payment_method_deposit?: PaymentMethod;
 }
 
 export function isSameSlot(slot1: AppointmentSlot | null, slot2: AppointmentSlot | null) {

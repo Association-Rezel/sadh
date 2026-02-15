@@ -136,10 +136,12 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                 <ReglementInfo/>
 
                 <div className={"flex flex-col gap-2"}>
-                    <Typography variant="h5" color="text.secondary" component="div" align="left"
-                                className="flex items-center">
-                        États des paiements
-                    </Typography>
+                    <div className={"mb-6"}>
+                        <Typography variant="h5" color="text.secondary" component="div" align="left"
+                                    className="flex items-center">
+                            États des paiements
+                        </Typography>
+                    </div>
 
                     <div className={"pl-4 flex flex-col gap-4"}>
                         <PaymentStatus paid={user.membership.deposit_status === DepositStatus.PAID}
@@ -224,10 +226,12 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                 <ReglementInfo/>
 
                 <div className={"flex flex-col gap-2"}>
-                    <Typography variant="h5" color="text.secondary" component="div" align="left"
-                                className="flex items-center">
-                        États des paiements
-                    </Typography>
+                    <div className={"mb-6"}>
+                        <Typography variant="h5" color="text.secondary" component="div" align="left"
+                                    className="flex items-center">
+                            États des paiements
+                        </Typography>
+                    </div>
 
                     <div className={"pl-4 flex flex-col gap-4"}>
                         <PaymentStatus paid={user.membership.paid_first_month}
