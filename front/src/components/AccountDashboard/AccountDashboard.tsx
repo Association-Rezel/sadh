@@ -15,7 +15,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MenuBar from "../Menus/MenuBar";
 import { MembershipType } from "../../utils/types/types";
-import { AccountBalance } from "@mui/icons-material";
+import { AccountBalance, Cancel } from "@mui/icons-material";
 import { useAuthContext } from "../../pages/auth/AuthContext";
 
 function AccountDashboard() {
@@ -63,6 +63,16 @@ function AccountDashboard() {
             <ListItemText primary="Mon RIB" />
         </ListItemButton>
     </Link>;
+    const resiliationLink = (
+        <Link to={"resiliation"}>
+            <ListItemButton>
+                <ListItemIcon>
+                    <Cancel />
+                </ListItemIcon>
+                <ListItemText primary="Résilier" />
+            </ListItemButton>
+        </Link>
+    );
 
     let drawerContent = <Outlet />;
     if (user?.membership?.type == MembershipType.FTTH) {
@@ -72,12 +82,14 @@ function AccountDashboard() {
                     {appoinmentLink}
                     {networkSettingsLink}
                     {/*bankAccontSettings*/}
+                    {resiliationLink}
                 </>
             );
         } else {
             drawerContent = (
                 <>
                     {appoinmentLink}
+                    {resiliationLink}
                 </>
             );
         }
@@ -85,6 +97,7 @@ function AccountDashboard() {
         drawerContent = (
             <>
                 {networkSettingsLink}
+                {resiliationLink}
             </>
         );
     }

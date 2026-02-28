@@ -24,6 +24,7 @@ import LoginOrSignupPage from "./pages/auth/LoginOrSignupPage";
 import { AdminLoginRedirect, LoginRedirect } from "./pages/auth/AuthRedirect";
 import PtahImageDownloader from "./components/AdminDashboard/Ptah/Ptah";
 import HelloAssoCheckoutCallback from "./components/MembershipRequest/HelloAssoCheckoutCallback";
+import PageResiliation from "./pages/account/PageResiliation";
 
 function AppRouter() {
     const { user, admin, isLoading } = useAuthContext();
@@ -92,6 +93,9 @@ function accountRoute({ user }: { user?: any } = {}) {
     const bankSettingsRoute = (
         <Route path="bank-settings" element={<PageNetworkSettings />} />
     );
+    const resiliationRoute = (
+        <Route path="resiliation" element={<PageResiliation />} />
+    );
 
     if (!user) {
         return <Route path="account" element={<LoginRedirect/>} />
@@ -104,12 +108,14 @@ function accountRoute({ user }: { user?: any } = {}) {
                         {appointmentRoute}
                         {networkSettingsRoute}
                         {bankSettingsRoute}
+                        {resiliationRoute}
                     </Route>
                 )
             } else {
                 return (
                     <Route path="account" element={<AccountDashboard />}>
                         {appointmentRoute}
+                        {resiliationRoute}
                     </Route>
                 )
             }
@@ -117,6 +123,7 @@ function accountRoute({ user }: { user?: any } = {}) {
             return (
                 <Route path="account" element={<AccountDashboard />}>
                     {networkSettingsRoute}
+                    {resiliationRoute}
                 </Route>
             )
         }
