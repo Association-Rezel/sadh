@@ -105,7 +105,7 @@ export default function IpamLogs() {
                     Peut être utile pour des actions manuelles sur la base de
                     données ou pour ajouter du contexte sur une ressource à un instant donné.
                 </Typography>
-                <form className="flex flex-row gap-12 items-end min-w-max" onSubmit={createLogForm.handleSubmit(handleSubmitCreateLog)}>
+                <form className="grid grid-cols-1 md:flex flex-row gap-12 items-end min-w-max" onSubmit={createLogForm.handleSubmit(handleSubmitCreateLog)}>
                     <Controller
                         name="source"
                         control={createLogForm.control}
@@ -154,7 +154,7 @@ export default function IpamLogs() {
                     Période à charger auprès de la base de données
                 </Typography>
             </div>
-            <div className="flex flex-row gap-12 items-center">
+            <div className="grid grid-cols-1 md:flex flex-row gap-12 items-center">
                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
                     <Controller
                         name="start"

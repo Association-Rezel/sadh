@@ -61,7 +61,7 @@ export default function Dashboards() {
     };
 
     return (
-        <div className="grid grid-cols-2 gap-4 mt-5 gap-y-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 gap-y-10">
             <div>
                 <Typography variant="h6" align="center" color="text.primary" component="div" sx={{ marginBottom: 3 }}>
                     Validés - Sans rendez-vous
