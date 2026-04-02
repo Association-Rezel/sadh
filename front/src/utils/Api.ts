@@ -344,6 +344,10 @@ class Api {
     async deleteUnet(user_id: string): Promise<Box> {
         return await this.myFetcher<Box>(`/users/${user_id}/unet`, null, "DELETE");
     }
+    
+    async updateUnetWifiStatus(user_id: string, disabled: boolean): Promise<Box> {
+        return await this.myFetcher<Box>(`/users/${user_id}/unet/disabled?disabled=${disabled}`, null, "PATCH");
+    }
 
     async updateBoxMacAddress(mac_address: string, new_mac_address: string): Promise<Box> {
         return await this.myFetcher<Box>(`/devices/box/${mac_address}/mac/${new_mac_address}`, null, "PATCH");

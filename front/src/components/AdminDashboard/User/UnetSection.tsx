@@ -1,15 +1,16 @@
-import { useContext, useEffect, useState } from "react";
-import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Paper, Select, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
 import Api from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
-import { Controller, set, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { ONTInfo } from "../../../utils/types/pon_types";
 import TrashIcon from '@mui/icons-material/Delete';
 import ConfirmableButton from "../../utils/ConfirmableButton";
 import EditIcon from '@mui/icons-material/Edit';
-import { ContentCopy, Download, ExitToApp, ImportExport, QrCodeScanner, TransferWithinAStation } from "@mui/icons-material";
+import { ContentCopy, Download, ExitToApp, QrCodeScanner } from "@mui/icons-material";
 import QRCodeScannerDialog from "./QRCodeScannerDialog_zbar";
+;
 type FormValues = {
     boxType?: string;
     macAddress: string;
@@ -47,6 +48,7 @@ export default function UnetSection({
         }
     });
 
+
     const [maskedPsk, setMaskedPsk] = useState("**********");
     const [editingMac, setEditingMac] = useState(false);
     const [newMac, setNewMac] = useState("");
@@ -59,6 +61,9 @@ export default function UnetSection({
     const [isDownloadingPtah, setIsDownloadingPtah] = useState(false);
 
     const [qrScannerOpen, setQrScannerOpen] = useState(false);
+    
+    const [isWifiDisabled, setWifiDisabled] = useState(false)
+    const wifiStatusString = (isWifiDisabled) ? "Le Wifi du client est désactivé" : "Désactiver le Wifi du client"
 
     if (box && newMac === "") {
         setNewMac(box.mac);
@@ -76,7 +81,6 @@ export default function UnetSection({
         myUnetProfile = box.unets.filter(u => user.membership.unetid === u.unet_id)[0];
         isMainUnet = myUnetProfile?.unet_id === box.main_unet_id;
     }
-
 
     const onSubmit = async (event: FormValues) => {
         //Check not empty 
@@ -217,6 +221,23 @@ export default function UnetSection({
         }
     }, [user.membership.type]);
 
+
+    useEffect(() => {
+        if (myUnetProfile !== null) {
+            setWifiDisabled(myUnetProfile.disabled ?? false);
+        }
+    }, [myUnetProfile?.disabled]);
+
+    const handleDisableWifi = () => {
+        myUnetProfile.disabled = !myUnetProfile.disabled
+        Api.updateUnetWifiStatus(user.id, myUnetProfile.disabled)
+            .then(() => setWifiDisabled(myUnetProfile.disabled))
+            .catch(() => {
+                myUnetProfile.disabled = !myUnetProfile.disabled
+                setWifiDisabled(myUnetProfile.disabled)
+            })
+
+    }
 
     return (
         <div className="mt-10 max-w-xs">
@@ -504,7 +525,11 @@ export default function UnetSection({
                             <strong>IPv6 WAN</strong> : {myUnetProfile?.network.wan_ipv6.ip}<br />
                             <strong>SSID</strong> : {myUnetProfile?.wifi.ssid}<br /> 
                             <strong>PSK</strong> : {maskedPsk}<br />
-                            <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>Afficher PSK</Button>
+                            <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>Afficher PSK</Button><br />
+                            <FormControlLabel label={wifiStatusString} control={
+                                <Switch checked={isWifiDisabled} disabled={isMainUnet} onChange={handleDisableWifi} color="warning" />} 
+                            />
+
                         </div>
                         
                         {/* Section Ports ouverts / Redirections */}
@@ -688,3 +713,4 @@ function generateManagementIPv6(macAddress: string): string {
 
     return ipv6Address;
 }
+

@@ -41,7 +41,11 @@ from back.core.scholarship_student import (
     get_all_scholarship_students,
     reset_all_scholarship_students,
 )
-from back.core.status_update import StatusUpdateInfo, delete_unet_of_wifi_adherent
+from back.core.status_update import (
+    StatusUpdateInfo,
+    delete_unet_of_wifi_adherent,
+    set_unet_disabled,
+)
 from back.messaging.matrix import send_matrix_message
 from back.messaging.sms import send_code
 from back.mongodb.db import GetDatabase
@@ -752,6 +756,28 @@ async def _user_delete_unet(
     updated_box = Box.model_validate(await db.boxes.find_one({"mac": str(box.mac)}))
 
     return updated_box
+
+
+@router.patch(
+    "/{user_id}/unet/disabled",
+    dependencies=[Depends(must_be_admin)],
+    response_model=Box,
+)
+async def _unet_disable_wifi(
+    disabled: bool, db: GetDatabase, user: UserFromPath, box: BoxFromUserInPath
+) -> Box:
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    if not user.membership or not user.membership.unetid:
+        raise HTTPException(
+            status_code=400,
+            detail="User has no unetid attached",
+        )
+
+    await set_unet_disabled(user, disabled, db)
+
+    return box
 
 
 @router.get(

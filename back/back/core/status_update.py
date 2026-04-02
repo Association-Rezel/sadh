@@ -17,6 +17,7 @@ from back.core.dolibarr import create_dolibarr_user
 from back.core.hermes import get_box_from_user, get_users_on_box
 from back.core.ipam_logging import IpamLog, create_log
 from back.core.pon import get_ont_from_box
+from back.env import ENV
 from back.messaging.mails import (
     send_email_validated_ftth,
     send_email_validated_wifi,
@@ -26,7 +27,6 @@ from back.messaging.mails import (
     send_satisfaction_survey,
 )
 from back.messaging.matrix import send_matrix_message
-from back.env import ENV
 
 
 class StatusUpdateEffect:
@@ -561,6 +561,22 @@ async def _send_mail_if_no_more_wifi_on_box(
 
     if len(box.unets) == 2:  # Main unet + user who will become inactive
         send_mail_no_more_wifi_on_box((await get_users_on_box(db, box))[0])
+
+
+async def set_unet_disabled(
+    user: User, disabled: bool, db: AsyncIOMotorDatabase
+) -> None:
+    if not user.membership or not user.membership.unetid:
+        raise ValueError("User has no membership or no unetid")
+
+    boxdict = await db.boxes.find_one({"unets.unet_id": user.membership.unetid})
+    if not boxdict:
+        raise ValueError("User has no box")
+
+    await db.boxes.find_one_and_update(
+        {"unets.unet_id": user.membership.unetid},
+        {"$set": {"unets.$.disabled": disabled}},
+    )
 
 
 async def delete_unet_of_wifi_adherent(user: User, db: AsyncIOMotorDatabase) -> None:

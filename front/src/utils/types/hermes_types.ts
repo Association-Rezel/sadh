@@ -62,6 +62,7 @@ export interface UnetProfile {
     wifi: WifiDetails;
     firewall: UnetFirewall;
     dhcp: Dhcp;
+	disabled: boolean;
 }
 
 export interface WanVlan {
@@ -84,3 +85,4 @@ export interface Box {
     wan_vlan: WanVlan[];
     ping_history: PingHistory[];
 }
+
