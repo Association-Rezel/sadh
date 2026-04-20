@@ -1,3 +1,4 @@
+import { ConnectedDevice } from "./faistos_types";
 import { Box, UnetProfile } from "./hermes_types";
 import { IpamLog } from "./log_types";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./pon_types";

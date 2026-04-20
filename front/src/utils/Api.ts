@@ -17,6 +17,7 @@ import {
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
 import { IpamLog } from "./types/log_types";
+import { ConnectedDevice } from "./types/faistos_types";
 import { toast } from "react-toastify";
 import type { AuthStatusResponse, JwtUserData } from "./types/auth";
 
@@ -210,6 +211,10 @@ class Api {
 
     async updateMyUnet(unet: UnetProfile): Promise<UnetProfile> {
         return await this.myFetcher<UnetProfile>("/users/me/unet", unet, "PATCH");
+    }
+
+    async getMyConnectedDevices(): Promise<ConnectedDevice[]> {
+        return await this.fetchOrDefault("/users/me/connected-devices", []);
     }
 
     // ADMIN

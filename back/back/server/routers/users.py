@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime, timedelta
+from ipaddress import IPv6Network
 from secrets import randbelow
 
 from common_models.hermes_models import Box, UnetProfile
@@ -14,6 +15,8 @@ from common_models.user_models import (
     MembershipType,
     User,
 )
+from faistos import Faistos
+from faistos.utils.models import ConnectedDevice
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pymongo import ReturnDocument
@@ -46,6 +49,7 @@ from back.core.status_update import (
     delete_unet_of_wifi_adherent,
     set_unet_disabled,
 )
+from back.env import ENV
 from back.messaging.matrix import send_matrix_message
 from back.messaging.sms import send_code
 from back.mongodb.db import GetDatabase
@@ -386,6 +390,29 @@ async def _user_update_unet(
             return unet
 
     raise HTTPException(status_code=404, detail="No unet found for this user")
+
+
+@router.get(
+    "/me/connected-devices", dependencies=[], response_model=list[ConnectedDevice]
+)
+async def _user_get_connected_devices(
+    user: RequireCurrentUser,
+    box: OptionalCurrentUserBox,
+) -> list[ConnectedDevice]:
+    if not user.membership:
+        raise HTTPException(status_code=400, detail="User has no membership")
+
+    if not user.membership.unetid:
+        raise HTTPException(status_code=400, detail="User has no unetid")
+
+    if not box:
+        raise HTTPException(status_code=404, detail="No box found for this user")
+
+    faistos = Faistos(
+        ENV.box_ula_prefix,
+    )
+
+    return await faistos.get_unet_connected_devices(box, user.membership.unetid)
 
 
 ### ADMIN

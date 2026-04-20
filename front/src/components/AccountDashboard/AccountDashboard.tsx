@@ -13,6 +13,7 @@ import { Link, Outlet } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SettingsIcon from '@mui/icons-material/Settings';
+import WifiFindIcon from '@mui/icons-material/WifiFind';
 import MenuBar from "../Menus/MenuBar";
 import { MembershipType } from "../../utils/types/types";
 import { AccountBalance, Cancel } from "@mui/icons-material";
@@ -37,7 +38,7 @@ function AccountDashboard() {
 
     const appoinmentLink = (
         <Link to={"appointment"}>
-            <ListItemButton>
+            <ListItemButton sx={{ whiteSpace: "normal" }}>
                 <ListItemIcon>
                     <CalendarMonthIcon />
                 </ListItemIcon>
@@ -63,6 +64,18 @@ function AccountDashboard() {
             <ListItemText primary="Mon RIB" />
         </ListItemButton>
     </Link>;
+    const connectedDevicesLink = (
+        <Link to={"connected-devices"}>
+            <ListItemButton sx={{ whiteSpace: "normal" }}>
+                <ListItemIcon>
+                    <WifiFindIcon />
+                </ListItemIcon>
+                <ListItemText 
+                    primary="Mes appareils connectés" 
+                />
+            </ListItemButton>
+        </Link>
+    );
     const resiliationLink = (
         <Link to={"resiliation"}>
             <ListItemButton>
@@ -81,11 +94,12 @@ function AccountDashboard() {
                 <>
                     {appoinmentLink}
                     {networkSettingsLink}
+                    {connectedDevicesLink}
                     {/*bankAccontSettings*/}
                     {resiliationLink}
                 </>
             );
-        } else {
+        } else { // S'il n'a pas encore eu son rendez-vous
             drawerContent = (
                 <>
                     {appoinmentLink}
@@ -97,6 +111,7 @@ function AccountDashboard() {
         drawerContent = (
             <>
                 {networkSettingsLink}
+                {connectedDevicesLink}
                 {resiliationLink}
             </>
         );
@@ -108,7 +123,7 @@ function AccountDashboard() {
 
             <Box sx={{ display: "flex" }}>
                 <CssBaseline />
-                <Drawer variant="permanent" open={open}>
+                <Drawer variant="permanent" open={open} >
                     <Toolbar
                         sx={{
                             display: "flex",
@@ -121,7 +136,7 @@ function AccountDashboard() {
                             <ChevronLeftIcon />
                         </IconButton>
                     </Toolbar>
-                    <List component="nav">
+                    <List component="nav" >
                         {drawerContent}
                     </List>
                 </Drawer>

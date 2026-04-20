@@ -11,6 +11,7 @@ import CalendarComponent from "./components/Calendar/Calendar";
 import UserComponent from "./components/AdminDashboard/User/User";
 import { MembershipStatus, MembershipType } from "./utils/types/types";
 import PageAppointment from "./pages/appointment/PageAppointment";
+import ConnectedDevices from "./pages/account/settings/ConnectedDevices";
 import { CircularProgress } from "@mui/material";
 import OLTDebug from "./components/AdminDashboard/Debug/OLTDebug";
 import IpamLogs from "./components/AdminDashboard/Logs/IpamLogs";
@@ -93,6 +94,9 @@ function accountRoute({ user }: { user?: any } = {}) {
     const bankSettingsRoute = (
         <Route path="bank-settings" element={<PageNetworkSettings />} />
     );
+    const networkManagementRoute = (
+        <Route path="connected-devices" element={<ConnectedDevices />} />
+    );
     const resiliationRoute = (
         <Route path="resiliation" element={<PageResiliation />} />
     );
@@ -108,10 +112,11 @@ function accountRoute({ user }: { user?: any } = {}) {
                         {appointmentRoute}
                         {networkSettingsRoute}
                         {bankSettingsRoute}
+                        {networkManagementRoute}
                         {resiliationRoute}
                     </Route>
                 )
-            } else {
+            } else { // S'il n'a pas encore eu son rendez-vous
                 return (
                     <Route path="account" element={<AccountDashboard />}>
                         {appointmentRoute}
@@ -123,6 +128,7 @@ function accountRoute({ user }: { user?: any } = {}) {
             return (
                 <Route path="account" element={<AccountDashboard />}>
                     {networkSettingsRoute}
+                    {networkManagementRoute}
                     {resiliationRoute}
                 </Route>
             )

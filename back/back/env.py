@@ -1,5 +1,6 @@
 """Environment definitions for the back-end."""
 
+from ipaddress import IPv6Network
 from os import getenv
 
 from dotenv import load_dotenv
@@ -103,6 +104,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
     ovh_service_name: str | None
     ovh_enabled: bool
 
+    box_ula_prefix: IPv6Network
+
     helloasso_base_url: str | None
     helloasso_client_id: str | None
     helloasso_client_secret: str | None
@@ -189,6 +192,8 @@ class Env:  # pylint: disable=too-many-instance-attributes
         self.ovh_service_name = get_or_none("OVH_SERVICE_NAME")
         self.ovh_user_name = get_or_none("OVH_USER_NAME")
         self.ovh_enabled = get_or_default("OVH_ENABLED", "false").lower() == "true"
+
+        self.box_ula_prefix = IPv6Network(get_or_raise("BOX_ULA_PREFIX"))
 
         self.helloasso_base_url = get_or_none("HELLOASSO_BASE_URL")
         self.helloasso_client_id = get_or_none("HELLOASSO_CLIENT_ID")
