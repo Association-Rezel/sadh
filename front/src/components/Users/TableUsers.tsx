@@ -201,7 +201,7 @@ export function TableUsers({ users,
                         ).map((user: User) => (
                             <TableRow key={user.id}>
                                 <TableCell component="th" scope="row">
-                                    <Link to={"/admin/users/" + user.id}>
+                                     <Link to={"/admin/users/" + user.id}>
                                         {user.first_name} {user.last_name}
                                     </Link>
                                 </TableCell>
@@ -227,7 +227,7 @@ export function TableUsers({ users,
                         ))}
                         {emptyRows > 0 && (
                             <TableRow style={{ height: 53 * emptyRows }}>
-                                <TableCell colSpan={6} />
+                                <TableCell colSpan={7} />
                             </TableRow>
                         )}
                     </TableBody>
@@ -235,7 +235,7 @@ export function TableUsers({ users,
                         <TableRow>
                             <TablePagination
                                 rowsPerPageOptions={rowsPerPageOptions}
-                                colSpan={5}
+                                colSpan={7}
                                 count={shownUsers.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
