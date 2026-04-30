@@ -36,7 +36,7 @@ def send_code(phone_number, code) -> None:
             noStopClause=True,
         )
         quota = client.get(f"/sms/{service_name}/users/{user_name}/")
-        if quota == None:
+        if quota is None:
             raise Exception("Failed to get SMS quota")
         if quota["quotaInformations"]["quotaLeft"] % 20 == 0:
             send_matrix_message(

@@ -51,6 +51,7 @@ export default function MembershipSection({
     const [openDialogTransferMembership, setOpenDialogTransferMembership] = useState<boolean>(false);
     const [recreateContractLoading, setRecreateContractLoading] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [subscriptionEnd, setSubscriptionEnd] = useState<number | null>(null);
 
     const onRecreateContract = () => {
         setRecreateContractLoading(true);
@@ -85,6 +86,14 @@ export default function MembershipSection({
         if (user?.membership)
             startDateForm.reset({ start: dayjs(user.membership.start_date) })
     }, [user])
+
+    useEffect(() => {
+        if (user?.id && user?.membership) {
+            Api.fetchUserSubscriptionInfo(user.id).then((info) => {
+                setSubscriptionEnd(info.subscription_end);
+            }).catch(() => {});
+        }
+    }, [user?.id, user?.membership?.status, user?.membership?.start_date]);
 
     const onEditStartDate = () => {
         const date: Date = startDateForm.getValues("start").toDate();
@@ -135,7 +144,7 @@ export default function MembershipSection({
                 <div className="flex flex-col gap-3 justify-items-start">
                     <span><strong>Adresse</strong> : {user?.membership.address.appartement_id} - {user?.membership.address.residence}</span>
                     <div className="grid grid-cols-3 gap-y-6">
-                        {user.membership.type === MembershipType.FTTH && (
+                        {user.membership.type && (
                             <>
                                 <strong>Début de l'abonnement</strong>
                                 <div className="flex flex-row gap-4 col-span-2">
@@ -174,6 +183,21 @@ export default function MembershipSection({
                                 Enregistrer la date de début
                             </Button>
                         }
+                        <>
+                            <strong>Abonné jusqu'au</strong>
+                            <div className="col-span-2">
+                                <span>
+                                    {subscriptionEnd != null
+                                        ? new Date(subscriptionEnd * 1000).toLocaleDateString("fr-FR")
+                                        : "---"}
+                                </span>
+                                {subscriptionEnd != null && subscriptionEnd * 1000 < Date.now() && (
+                                    <Typography variant="caption" color="error" display="block">
+                                        Abonnement non à jour
+                                    </Typography>
+                                )}
+                            </div>
+                        </>
                         <strong>Statut</strong>
                         <div className="flex flex-row gap-4 col-span-2">
                             <StatusSelect

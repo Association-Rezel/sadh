@@ -1,3 +1,3 @@
 """FastApi definition."""
 
-import back.server.routers
+import back.server.routers  # noqa: F401

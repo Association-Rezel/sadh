@@ -11,8 +11,6 @@ import {
     MembershipStatus,
     AttachedWifiAdherent,
     PartialRefund,
-    HelloAssoCheckoutInitResponse,
-    HelloAssoCheckoutStatusResponse
 } from "./types/types";
 import { ONTInfo, PMInfo, RawDBONT, RegisterONT } from "./types/pon_types";
 import { Box, UnetProfile } from "./types/hermes_types";
@@ -20,6 +18,12 @@ import { IpamLog } from "./types/log_types";
 import { ConnectedDevice } from "./types/faistos_types";
 import { toast } from "react-toastify";
 import type { AuthStatusResponse, JwtUserData } from "./types/auth";
+
+export interface OverdueEntry {
+    user: User;
+    amount_owed: number;
+    last_reminder_at: number | null;
+}
 
 export class BackendResponseError extends Error {
     constructor(message: string, public code: number) {
@@ -414,13 +418,73 @@ class Api {
         return response.user;
     }
 
-    async helloAssoInitCheckout(checkoutItemsIds: string[]): Promise<HelloAssoCheckoutInitResponse> {
-        // TOOD: make helloassocheckoutinitrequest type
-        return await this.myFetcher<HelloAssoCheckoutInitResponse>(`/helloasso/init_checkout`, { checkout_item_ids: checkoutItemsIds }, "POST");
+
+    async fetchMySubscriptions(): Promise<any[]> {
+        return await this.fetchOrDefault<any[]>("/payments/me/subscriptions", []);
     }
 
-    async getCheckoutStatus(checkoutId: number): Promise<HelloAssoCheckoutStatusResponse> {
-        return await this.myFetcher<HelloAssoCheckoutStatusResponse>(`/helloasso/get_checkout_status/${checkoutId}`);
+    async fetchMyInvoices(): Promise<any[]> {
+        return await this.fetchOrDefault<any[]>("/payments/me/invoices", []);
+    }
+
+    async fetchMyArchivedInvoices(): Promise<any[]> {
+        return await this.fetchOrDefault<any[]>("/payments/me/archived-invoices", []);
+    }
+
+    async pollDolibarrPaymentStatus(): Promise<{ paid: boolean }> {
+        return await this.myFetcher<{ paid: boolean }>("/payments/me/dolibarr-payment-status");
+    }
+
+    async createSelectivePayment(items: string[]): Promise<{ payment_url: string | null; invoice_id: number | null }> {
+        return await this.myFetcher<{ payment_url: string | null; invoice_id: number | null }>("/payments/me/selective-payment", { items }, "POST");
+    }
+
+    async fetchInvoicePaymentUrl(invoiceId: string): Promise<{ payment_url: string | null }> {
+        return await this.myFetcher<{ payment_url: string | null }>(`/payments/me/invoices/${invoiceId}/payment-url`);
+    }
+
+    async createAdvancePayment(numMonths: number): Promise<{ payment_url: string | null; invoice_id: number | null }> {
+        return await this.myFetcher<{ payment_url: string | null; invoice_id: number | null }>(`/payments/me/advance-payment?num_months=${numMonths}`, null, "POST");
+    }
+
+    async downloadInvoicePdf(invoiceId: string): Promise<void> {
+        await this.myFetcher(`/payments/me/invoices/${invoiceId}/pdf`, null, 'GET', 'download', 'facture.pdf');
+    }
+
+    async checkInvoicePaid(invoiceId: string): Promise<{ paid: boolean }> {
+        return await this.myFetcher<{ paid: boolean }>(`/payments/me/invoices/${invoiceId}/status`);
+    }
+
+    async cancelInvoice(invoiceId: string): Promise<void> {
+        await this.myFetcher(`/payments/me/invoices/${invoiceId}/cancel`, null, "POST");
+    }
+
+    async fetchSubscriptionInfo(): Promise<{ total_months_paid: number | null; subscription_end: number | null; membership_end: number | null }> {
+        return await this.myFetcher<{ total_months_paid: number | null; subscription_end: number | null; membership_end: number | null }>("/payments/me/subscription-info");
+    }
+
+    async fetchUserSubscriptionInfo(userId: string): Promise<{ total_months_paid: number | null; subscription_end: number | null; membership_end: number | null }> {
+        return await this.myFetcher<{ total_months_paid: number | null; subscription_end: number | null; membership_end: number | null }>(`/payments/${userId}/subscription-info`);
+    }
+
+    async fetchOverdueUsers(): Promise<{ subscription_expired: OverdueEntry[]; cotisation_expired: OverdueEntry[] }> {
+        return await this.myFetcher<{ subscription_expired: OverdueEntry[]; cotisation_expired: OverdueEntry[] }>("/overdue/");
+    }
+
+    async remindOverdueSubscription(userId: string): Promise<{ user_id: string; invoice_id: number | null; mail_sent: boolean }> {
+        return await this.myFetcher<{ user_id: string; invoice_id: number | null; mail_sent: boolean }>(`/overdue/${userId}/remind-subscription`, null, "POST");
+    }
+
+    async remindOverdueCotisation(userId: string): Promise<{ user_id: string; invoice_id: number | null; mail_sent: boolean }> {
+        return await this.myFetcher<{ user_id: string; invoice_id: number | null; mail_sent: boolean }>(`/overdue/${userId}/remind-cotisation`, null, "POST");
+    }
+
+    async remindAllOverdueSubscription(): Promise<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]> {
+        return await this.myFetcher<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]>("/overdue/remind-all-subscription", null, "POST");
+    }
+
+    async remindAllOverdueCotisation(): Promise<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]> {
+        return await this.myFetcher<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]>("/overdue/remind-all-cotisation", null, "POST");
     }
 }
 

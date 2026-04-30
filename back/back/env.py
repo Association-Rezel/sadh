@@ -97,6 +97,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     dolibarr_api_token: str
     dolibarr_base_url: str
+    dolibarr_service_ftth_id: int | None
+    dolibarr_service_wifi_id: int | None
+    dolibarr_product_deposit_id: int | None
 
     ovh_application_key: str | None
     ovh_application_secret: str | None
@@ -106,13 +109,10 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     box_ula_prefix: IPv6Network
 
-    helloasso_base_url: str | None
-    helloasso_client_id: str | None
-    helloasso_client_secret: str | None
-    helloasso_organization_slug: str | None
-    helloasso_webhook_secret: str | None
     helloasso_wifi_price: int
     helloasso_ftth_price: int
+    helloasso_wifi_price_scholarship: int
+    helloasso_ftth_price_scholarship: int
     helloasso_ftth_deposit_price: int
     helloasso_membership_price: int
 
@@ -185,6 +185,12 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.dolibarr_api_token = get_or_raise("DOLIBARR_API_TOKEN")
         self.dolibarr_base_url = get_or_raise("DOLIBARR_BASE_URL")
+        _svc_ftth = get_or_none("DOLIBARR_SERVICE_FTTH_ID")
+        self.dolibarr_service_ftth_id = int(_svc_ftth) if _svc_ftth else None
+        _svc_wifi = get_or_none("DOLIBARR_SERVICE_WIFI_ID")
+        self.dolibarr_service_wifi_id = int(_svc_wifi) if _svc_wifi else None
+        _prod_deposit = get_or_none("DOLIBARR_PRODUCT_DEPOSIT_ID")
+        self.dolibarr_product_deposit_id = int(_prod_deposit) if _prod_deposit else None
 
         self.ovh_application_key = get_or_none("OVH_APPLICATION_KEY")
         self.ovh_application_secret = get_or_none("OVH_APPLICATION_SECRET")
@@ -195,13 +201,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.box_ula_prefix = IPv6Network(get_or_raise("BOX_ULA_PREFIX"))
 
-        self.helloasso_base_url = get_or_none("HELLOASSO_BASE_URL")
-        self.helloasso_client_id = get_or_none("HELLOASSO_CLIENT_ID")
-        self.helloasso_client_secret = get_or_none("HELLOASSO_CLIENT_SECRET")
-        self.helloasso_organization_slug = get_or_none("HELLOASSO_ORGANIZATION_SLUG")
-        self.helloasso_webhook_secret = get_or_none("HELLOASSO_WEBHOOK_SECRET")
         self.helloasso_wifi_price = int(get_or_default("HELLOASSO_WIFI_PRICE", "1000"))
         self.helloasso_ftth_price = int(get_or_default("HELLOASSO_FTTH_PRICE", "2000"))
+        self.helloasso_wifi_price_scholarship = int(
+            get_or_default("HELLOASSO_WIFI_PRICE_SCHOLARSHIP", "500")
+        )
+        self.helloasso_ftth_price_scholarship = int(
+            get_or_default("HELLOASSO_FTTH_PRICE_SCHOLARSHIP", "1500")
+        )
         self.helloasso_ftth_deposit_price = int(
             get_or_default("HELLOASSO_FTTH_DEPOSIT_PRICE", "5000")
         )

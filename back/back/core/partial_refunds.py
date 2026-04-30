@@ -115,12 +115,6 @@ async def refresh_partial_refund_database(db: AsyncIOMotorDatabase) -> Result:
                     {"_id": str(existing_partial_refund.id)}
                 )
 
-            attached_wifi_adherents_users = [
-                user
-                for user in users
-                if user.id in map(lambda x: x.user_id, wifi_adherents)
-            ]
-
             # Create a new partial refund object
             partial_refund = PartialRefund(
                 id=uuid4(),

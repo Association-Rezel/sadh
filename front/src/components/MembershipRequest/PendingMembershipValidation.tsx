@@ -3,12 +3,10 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import DownloadIcon from '@mui/icons-material/Download';
 import PendingIcon from '@mui/icons-material/Pending';
-import {Alert, Button, Typography} from "@mui/material";
+import {Alert, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Typography} from "@mui/material";
 import {useAuthContext} from "../../pages/auth/AuthContext";
 import {DepositStatus, MembershipType, User} from "../../utils/types/types";
-import HelloAssoPayment from "./HelloassoPayment";
-import {useState} from "react";
-import PurchaseSelect from "./PurchaseSelect";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {Paper} from "@mui/material";
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import PaymentsIcon from '@mui/icons-material/Payments';
@@ -17,6 +15,8 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Chip from '@mui/material/Chip';
+import Api from "../../utils/Api";
+import PurchaseSelect from "./PurchaseSelect";
 
 export default function PendingMembershipValidation({ user }: { user: User }): JSX.Element {
     if (user.membership.type === MembershipType.FTTH) {
@@ -46,49 +46,183 @@ function PaymentStatus({ paid, display }: { paid: boolean, display: string }) {
 
 }
 
-function HelloAssoMultiPayment({ user }: { user: User }) {
-    let availableItems: { itemId: string, displayName: string, price: number }[] = [];
+function DolibarrPayment({ user }: { user: User }) {
+    const { checkAuthStatus } = useAuthContext();
+    const [polling, setPolling] = useState(false);
+    const [opened, setOpened] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelError, setCancelError] = useState(false);
+    const [pendingInvoiceId, setPendingInvoiceId] = useState<string | null>(null);
+    const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+    const paymentWindowRef = useRef<Window | null>(null);
+
+    const scholarship = Boolean(user.scholarship_student);
+    const ftthMonthly = scholarship ? 15 : 20;
+    const wifiMonthly = scholarship ? 5 : 10;
+    const availableItems: { itemId: string; displayName: string; price: number }[] = [];
     if (!user.membership.paid_first_month) {
         if (user.membership.type === MembershipType.FTTH)
-            availableItems.push({ itemId: "FIRST_MONTH_FTTH", displayName: "1er mois Fibre", price: 20 });
+            availableItems.push({ itemId: "first_month", displayName: "1er mois Fibre", price: ftthMonthly });
         else if (user.membership.type === MembershipType.WIFI)
-            availableItems.push({ itemId: "FIRST_MONTH_WIFI", displayName: "1er mois Wi-Fi", price: 10 });
+            availableItems.push({ itemId: "first_month", displayName: "1er mois Wi-Fi", price: wifiMonthly });
     }
     if (user.membership.type === MembershipType.FTTH && user.membership.deposit_status !== DepositStatus.PAID) {
-        availableItems.push({ itemId: "FTTH_DEPOSIT", displayName: "Caution Matériel", price: 50 });
+        availableItems.push({ itemId: "deposit", displayName: "Caution Matériel", price: 50 });
     }
     if (!user.membership.paid_membership) {
-        availableItems.push({ itemId: "MEMBERSHIP", displayName: "Cotisation annuelle", price: 1 });
+        availableItems.push({ itemId: "membership", displayName: "Cotisation annuelle", price: 1 });
     }
 
     const [itemsChecked, setItemsChecked] = useState<string[]>(availableItems.map(item => item.itemId));
 
-    return <div className={"flex flex-col gap-2 sm:items-start items-stretch"}>
-        <div>
-            <Typography variant="body1" color="text.secondary" component="p" align="left">
-                Tu peux payer <strong>par carte bancaire</strong> via le service tiers HelloAsso.
-                <br/> <br/>
-                Sélectionne les paiements que tu souhaites réaliser par carte, puis clique sur le bouton pour être
-                redirigé:
-            </Typography>
-        </div>
-        <Paper elevation={2} >
-            <PurchaseSelect availableItems={availableItems} itemsChecked={itemsChecked}
-                            setItemsChecked={setItemsChecked}/>
-        </Paper>
-        <HelloAssoPayment checkoutItems={itemsChecked}/>
+    const handleCreateAndPay = useCallback(async () => {
+        if (itemsChecked.length === 0) return;
+        setCreating(true);
+        try {
+            const result = await Api.createSelectivePayment(itemsChecked);
+            if (!result?.payment_url) {
+                throw new Error("Lien de paiement introuvable");
+            }
+            // on garde un tag sur l'onglet pouyr tenter de le fermer
+            paymentWindowRef.current = window.open(result.payment_url, "_blank");
+            setOpened(true);
+            setPolling(true);
+            if (result.invoice_id) setPendingInvoiceId(String(result.invoice_id));
+        } catch (e) {
+            console.error("Error creating selective payment:", e);
+        } finally {
+            setCreating(false);
+        }
+    }, [itemsChecked]);
 
-        <Alert severity={"warning"} className={"text-left"}>
-            HelloAsso ajoute automatiquement une contribution volontaire (quelques euros) qui leur est destinée,
-            pour  financer leur plateforme et leur modèle solidaire.
-            Grâce leur modèle, notre association ne paie aucun frais sur le paiement.
-            <br/>
-            Cette contribution n’est <strong>pas obligatoire</strong> : vous pouvez la réduire ou la supprimer en
-            cliquant sur « Modifier
-            la contribution volontaire » sur la page de règlement.
-        </Alert>
-    </div>
+    const handleCancel = useCallback(async () => {
+        setConfirmCancelOpen(false);
+        setCancelling(true);
+        setCancelError(false);
+
+        const invoiceId = pendingInvoiceId;
+        setOpened(false);
+        setPolling(false);
+        setPendingInvoiceId(null);
+
+        // close l'onglet (best effort hein, ça marche sur bcp de navigatuers)
+        if (paymentWindowRef.current && !paymentWindowRef.current.closed) {
+            try { paymentWindowRef.current.close(); } catch { /* ignore */ }
+        }
+        paymentWindowRef.current = null;
+
+        try {
+            if (invoiceId) await Api.cancelInvoice(invoiceId);
+        } catch (e) {
+            console.error("Error cancelling invoice:", e);
+            setCancelError(true);
+        } finally {
+            setCancelling(false);
+        }
+    }, [pendingInvoiceId]);
+
+    // un fire and forget pour close les onglets + cancel les factures
+    useEffect(() => {
+        if (!pendingInvoiceId) return;
+        const handler = () => {
+            navigator.sendBeacon(`/api/payments/me/invoices/${pendingInvoiceId}/cancel`);
+        };
+        window.addEventListener("beforeunload", handler);
+        return () => window.removeEventListener("beforeunload", handler);
+    }, [pendingInvoiceId]);
+
+    useEffect(() => {
+        if (!polling || !pendingInvoiceId) return;
+        const interval = setInterval(async () => {
+            try {
+                const status = await Api.checkInvoicePaid(pendingInvoiceId);
+                if (status.paid) {
+                    setPolling(false);
+                    await Api.pollDolibarrPaymentStatus();
+                    await checkAuthStatus();
+                }
+            } catch (e) {
+                console.error("Error polling invoice status:", e);
+            }
+        }, 5000);
+        return () => clearInterval(interval);
+    }, [polling, pendingInvoiceId, checkAuthStatus]);
+
+    if (availableItems.length === 0) {
+        return <Alert severity="success">Tous les paiements ont été effectués !</Alert>;
+    }
+
+    return <div className={"flex flex-col gap-2 sm:items-start items-stretch"}>
+        <Typography variant="body1" color="text.secondary" component="p" align="left">
+            Sélectionne les paiements que tu souhaites réaliser, puis clique sur le bouton pour être redirigé
+            vers la page de paiement sécurisée.
+        </Typography>
+        <Paper elevation={2}>
+            <PurchaseSelect availableItems={availableItems} itemsChecked={itemsChecked}
+                            setItemsChecked={setItemsChecked} disabled={opened}/>
+        </Paper>
+        {!opened ? (
+            <Button
+                variant="contained"
+                color="primary"
+                startIcon={<CreditCardIcon/>}
+                onClick={handleCreateAndPay}
+                disabled={creating || itemsChecked.length === 0}
+            >
+                {creating ? "Création de la facture..." : "Payer en ligne"}
+            </Button>
+        ) : (
+            <>
+                <Typography variant="caption" color="error" display="block">
+                    ⚠️ Si tu annules ou rafraîchis cette page, ferme tous les onglets de paiement ouverts.
+                </Typography>
+                <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => setConfirmCancelOpen(true)}
+                    disabled={cancelling}
+                >
+                    {cancelling ? "Annulation..." : "Annuler et changer la sélection"}
+                </Button>
+            </>
+        )}
+        <Dialog open={confirmCancelOpen} onClose={() => setConfirmCancelOpen(false)}>
+            <DialogTitle>⚠️ Annuler le paiement</DialogTitle>
+            <DialogContent>
+                <DialogContentText>
+                    La facture va être annulée.<br/><br/>
+                    <strong>Important :</strong> l'onglet de paiement va être fermé automatiquement.<br/><br/>
+                    Si il est toujours ouvert, fermez-le manuellement !<br /><br />
+                    Si vous payez sur un onglet après annulation, contactez rapidement <a href="mailto:support@rezel.net">support@rezel.net</a>
+                </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setConfirmCancelOpen(false)}>Revenir</Button>
+                <Button onClick={handleCancel} color="error" variant="contained">
+                    Annuler le paiement
+                </Button>
+            </DialogActions>
+        </Dialog>
+        {cancelError && (
+            <Alert severity="error">
+                Impossible d'annuler la facture. Ferme l'onglet de paiement manuellement pour éviter un paiement accidentel, puis réessaie.
+            </Alert>
+        )}
+        {opened && polling && (
+            <Alert severity="info" icon={<CircularProgress size="1.2em"/>}>
+                Paiement ouvert dans un nouvel onglet. <strong>Ferme ce dernier si tu ne souhaites pas payer.</strong><br/>
+                En attente de la confirmation...
+            </Alert>
+        )}
+        {opened && !polling && (
+            <Alert severity="success">
+                Paiement confirmé !
+            </Alert>
+        )}
+    </div>;
 }
+
 
 function ReglementInfo() {
     return <div className="flex flex-col gap-4 items-start">
@@ -152,7 +286,9 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                         </Typography>
 
                         <PaymentStatus paid={user.membership.paid_first_month}
-                                       display={"Premier mois d'abonnement 20€ (puis 20€/mois)"}/>
+                                       display={user.scholarship_student
+                                           ? "Premier mois d'abonnement 15€ (puis 15€/mois) — tarif boursier"
+                                           : "Premier mois d'abonnement 20€ (puis 20€/mois)"}/>
                         <Typography variant="body1" color="text.secondary" component="p" align="left">
                             Le premier mois d'abonnement est à régler dès maintenant.<br/>
                             Votre abonnement ne commencera qu'à partir de la date de votre rendez-vous d'installation.
@@ -166,9 +302,6 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                                 Votre adhésion commencera le jour de la signature de votre contrat.<br/>
                                 Elle est à renouveler chaque année à la date anniversaire de votre adhésion.
                             </Typography>
-                            {!user.membership.paid_membership && <Alert className={"text-left"} severity={"warning"}>Nous ne vérifions pas automatiquement
-                                que la cotisation a été prise en compte. Si tu as déjà cotisé à
-                                l'association, il n'est pas nécessaire de le faire de nouveau</Alert>}
                         </div>
                     </div>
                 </div>
@@ -187,7 +320,7 @@ export function FTTHPendingMembershipValidation(): JSX.Element {
                     mandaté par Orange procède à l'installation de la fibre. Cette étape est obligatoire
                     car les infrastructures FTTH (Fibre To The Home) sont mutualisées. Ton adhésion
                     commencera le jour de l'installation de la fibre, et nous te demanderons de régler
-                    ton abonnement de 20€ tous les mois à partir de ce moment.
+                    ton abonnement de {user.scholarship_student ? "15€" : "20€"} tous les mois à partir de ce moment.
                     <br/>
                     <br/>
                     Si tu as la moindre question, n'hésites pas à paser au local de l'association,
@@ -235,7 +368,9 @@ export function WifiPendingMembershipValidation(): JSX.Element {
 
                     <div className={"pl-4 flex flex-col gap-4"}>
                         <PaymentStatus paid={user.membership.paid_first_month}
-                                       display={"Premier mois d'abonnement 10€ (puis 10€/mois)"}/>
+                                       display={user.scholarship_student
+                                           ? "Premier mois d'abonnement 5€ (puis 5€/mois) — tarif boursier"
+                                           : "Premier mois d'abonnement 10€ (puis 10€/mois)"}/>
                         <Typography variant="body1" color="text.secondary" component="p" align="left">
                             Le premier mois d'abonnement est à régler dès maintenant.<br/>
                             Votre abonnement ne commencera qu'à partir de la date de votre rendez-vous d'installation.
@@ -267,7 +402,7 @@ export function WifiPendingMembershipValidation(): JSX.Element {
                 <Typography variant="body1" color="text.secondary" component="p" align="justify">
                     Nous t'enverrons un mail dès que les paiements auront été vérifiés. Ensuite,
                     tu recevras un mail te confirmant qu'un nouveau réseau Wi-Fi a été crée pour toi,
-                    et nous te demanderons de régler ton abonnement de 10€ tous les mois à partir de ce moment.
+                    et nous te demanderons de régler ton abonnement de {user.scholarship_student ? "5€" : "10€"} tous les mois à partir de ce moment.
                     <br/>
                     <br/>
                     Si tu as la moindre question, n'hésites pas à paser au local de l'association,
@@ -287,22 +422,22 @@ function PaymentInstructions({user}: {user: User}) {
         </Typography>
 
         <div className={"pl-4 mt-4 flex flex-col"}>
-                <Accordion>
+                <Accordion defaultExpanded>
                     <AccordionSummary
                         expandIcon={<ExpandMoreIcon />}
-                        aria-controls="panel1-content"
-                        id="panel1-header"
+                        aria-controls="panel-dolibarr-content"
+                        id="panel-dolibarr-header"
                     >
                     <Typography variant={"h6"} color={"text.secondary"} component={"div"} align={"left"} className="flex items-center gap-2">
                         <CreditCardIcon/> Carte bancaire
                         <Chip label="Recommandé" color="primary" size={"small"}/>
                     </Typography>
-
                     </AccordionSummary>
                     <AccordionDetails>
-                        <HelloAssoMultiPayment user={user}/>
+                        <DolibarrPayment user={user}/>
                     </AccordionDetails>
                 </Accordion>
+
 
             <Accordion>
                 <AccordionSummary

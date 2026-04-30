@@ -13,7 +13,7 @@ from common_models.user_models import (
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pymongo import ReturnDocument
 
-from back.core.dolibarr import create_dolibarr_user
+from back.core.dolibarr import create_dolibarr_member_subscription, create_dolibarr_user
 from back.core.hermes import get_box_from_user, get_users_on_box
 from back.core.ipam_logging import IpamLog, create_log
 from back.core.pon import get_ont_from_box
@@ -345,6 +345,14 @@ class StatusUpdateManager:
                     "Mise à jour de la date de début d'abonnement à aujourd'hui",
                     _set_adhesion_date_today,
                 ),
+                StatusUpdateEffect(
+                    "Activation de la cotisation Dolibarr pour 1 an (si cotisation payée)",
+                    lambda user, _: (
+                        create_dolibarr_member_subscription(user)
+                        if user.membership and user.membership.paid_membership
+                        else None
+                    ),
+                ),
             ],
         )
 
@@ -446,6 +454,18 @@ class StatusUpdateManager:
                 StatusUpdateEffect(
                     "Ajout de l'adhérent dans dolibarr",
                     create_dolibarr_user,
+                ),
+                StatusUpdateEffect(
+                    "Mise à jour de la date de début d'abonnement à aujourd'hui",
+                    _set_adhesion_date_today,
+                ),
+                StatusUpdateEffect(
+                    "Activation de la cotisation Dolibarr pour 1 an (si cotisation payée)",
+                    lambda user, _: (
+                        create_dolibarr_member_subscription(user)
+                        if user.membership and user.membership.paid_membership
+                        else None
+                    ),
                 ),
             ],
         )

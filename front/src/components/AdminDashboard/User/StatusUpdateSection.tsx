@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MembershipStatus, User, StatusUpdateInfo } from "../../../utils/types/types";
 import Api from "../../../utils/Api";
-import { Button, Typography } from "@mui/material";
+import { Button, CircularProgress, Typography } from "@mui/material";
 import { Close, Check, AutoMode } from "@mui/icons-material";
 
 
@@ -10,6 +10,7 @@ export default function StatusUpdateSection({ user, setUser }: { user: User, set
 
     const [nextUpdate, setNextUpdate] = useState<StatusUpdateInfo>(null)
     const [loading, setLoading] = useState<boolean>(true);
+    const [updating, setUpdating] = useState<boolean>(false);
 
     useEffect(() => {
         Api.fetchNextMembershipStatus(user.id).then((update) => {
@@ -20,6 +21,7 @@ export default function StatusUpdateSection({ user, setUser }: { user: User, set
     }, [user])
 
     const onUpdate = (status: MembershipStatus) => {
+        setUpdating(true);
         Api.updateMembershipStatus(user.id, status).then((updatedUser) => {
             if (updatedUser == null) {
                 alert("Erreur lors de la modification.");
@@ -28,6 +30,8 @@ export default function StatusUpdateSection({ user, setUser }: { user: User, set
             setUser(updatedUser);
         }).catch((error) => {
             alert("Erreur lors de la modification. Message d'erreur : " + error.message);
+        }).finally(() => {
+            setUpdating(false);
         });
     }
 
@@ -53,11 +57,12 @@ export default function StatusUpdateSection({ user, setUser }: { user: User, set
                 </div>
                 <div className="pt-4">
                     <Button
-                        disabled={nextUpdate.conditions_not_met.length !== 0}
+                        disabled={nextUpdate.conditions_not_met.length !== 0 || updating}
                         onClick={() => onUpdate(nextUpdate.to_status)}
                         variant="contained"
-                        color="warning">
-                        Passer à l'état suivant ({MembershipStatus[nextUpdate.to_status]})
+                        color="warning"
+                        startIcon={updating ? <CircularProgress size={18} color="inherit" /> : null}>
+                        {updating ? "Application en cours..." : `Passer à l'état suivant (${MembershipStatus[nextUpdate.to_status]})`}
                     </Button>
                 </div>
             </Typography>

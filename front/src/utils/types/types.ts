@@ -92,6 +92,7 @@ export interface Membership {
     documenso_contract_id?: number;
     documenso_adherent_url?: string;
     documenso_president_url?: string;
+    dolibarr_payment_url?: string;
     deleted_date?: Date;
     start_date?: Date;
     attached_wifi_adherents: AttachedWifiAdherent[];
@@ -186,11 +187,3 @@ export interface PartialRefund {
     refunded_amount: number;
 }
 
-export interface HelloAssoCheckoutInitResponse {
-  redirectUrl?: string
-}
-
-export interface HelloAssoCheckoutStatusResponse {
-  is_complete: boolean,
-  return_url: string
-}

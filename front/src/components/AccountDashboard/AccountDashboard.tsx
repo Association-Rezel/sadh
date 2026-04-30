@@ -9,29 +9,29 @@ import Container from "@mui/material/Container";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import Drawer from "../Dashboard/Drawer";
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import { Link, Outlet } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import SettingsIcon from '@mui/icons-material/Settings';
 import WifiFindIcon from '@mui/icons-material/WifiFind';
 import MenuBar from "../Menus/MenuBar";
 import { MembershipType } from "../../utils/types/types";
-import { AccountBalance, Cancel } from "@mui/icons-material";
+import { AccountBalance, Cancel, Payment } from "@mui/icons-material";
 import { useAuthContext } from "../../pages/auth/AuthContext";
 
 function AccountDashboard() {
     const { user } = useAuthContext();
     const [open, setOpen] = React.useState(true);
+    const path = useLocation().pathname;
+
     const toggleDrawer = () => {
         setOpen(!open);
     };
 
-    const path = useLocation().pathname;
     let dashboardContent = <Outlet />;
     if (path === "/account") {
         dashboardContent = (
-            <Typography>
-                Bienvenue sur votre compte !<br />
+            <Typography sx={{ p: 3 }}>
+                Bienvenue sur votre compte !
             </Typography>
         );
     }
@@ -64,6 +64,16 @@ function AccountDashboard() {
             <ListItemText primary="Mon RIB" />
         </ListItemButton>
     </Link>;
+    const paymentsLink = (
+        <Link to={"payments"}>
+            <ListItemButton>
+                <ListItemIcon>
+                    <Payment />
+                </ListItemIcon>
+                <ListItemText primary="Mes paiements" />
+            </ListItemButton>
+        </Link>
+    );
     const connectedDevicesLink = (
         <Link to={"connected-devices"}>
             <ListItemButton sx={{ whiteSpace: "normal" }}>
@@ -96,6 +106,7 @@ function AccountDashboard() {
                     {networkSettingsLink}
                     {connectedDevicesLink}
                     {/*bankAccontSettings*/}
+                    {paymentsLink}
                     {resiliationLink}
                 </>
             );
@@ -103,6 +114,7 @@ function AccountDashboard() {
             drawerContent = (
                 <>
                     {appoinmentLink}
+                    {paymentsLink}
                     {resiliationLink}
                 </>
             );
@@ -111,6 +123,7 @@ function AccountDashboard() {
         drawerContent = (
             <>
                 {networkSettingsLink}
+                {paymentsLink}
                 {connectedDevicesLink}
                 {resiliationLink}
             </>

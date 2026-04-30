@@ -2,7 +2,6 @@
 
 import logging
 from datetime import datetime, timedelta
-from ipaddress import IPv6Network
 from secrets import randbelow
 
 from common_models.hermes_models import Box, UnetProfile
@@ -28,6 +27,7 @@ from back.core.documenso import (
     generate_contract_draft_for_user,
     prefill_address_in_draft,
 )
+from back.core.dolibarr import archive_user_invoices, create_dolibarr_user
 from back.core.hermes import (
     get_box_by_ssid,
     get_box_from_user,
@@ -70,6 +70,8 @@ from back.server.dependencies import (
     get_box,
     must_be_admin,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -255,6 +257,11 @@ async def _me_create_membership_request(
         f"Un utilisateur a demandé à s'abonner: {user.first_name} {user.last_name} - {user.email}",
         f"🔗 https://fai.rezel.net/admin/users/{user.id}",
     )
+
+    try:
+        user = await create_dolibarr_user(user, db)
+    except Exception as e:
+        logger.warning("Failed to create Dolibarr user: %s", e)
 
     user.redact_for_non_admin()
     return user
@@ -543,6 +550,11 @@ async def _user_delete_membership(
 
     if box and await get_ont_from_box(db, box):
         raise HTTPException(status_code=400, detail="User is still linked to an ONT")
+
+    try:
+        archive_user_invoices(user)
+    except Exception as e:
+        logger.warning("Failed to archive Dolibarr invoices for %s: %s", user_id, e)
 
     # Actually just move the membership to prev_memberships so we keep
     # Orange references and stuff. Let's archive instead of pure deletion.

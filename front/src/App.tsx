@@ -24,8 +24,9 @@ import { AuthProvider, useAuthContext } from "./pages/auth/AuthContext";
 import LoginOrSignupPage from "./pages/auth/LoginOrSignupPage";
 import { AdminLoginRedirect, LoginRedirect } from "./pages/auth/AuthRedirect";
 import PtahImageDownloader from "./components/AdminDashboard/Ptah/Ptah";
-import HelloAssoCheckoutCallback from "./components/MembershipRequest/HelloAssoCheckoutCallback";
 import PageResiliation from "./pages/account/PageResiliation";
+import PagePayments from "./pages/account/PagePayments";
+import Overdue from "./components/AdminDashboard/Overdue/Overdue";
 
 function AppRouter() {
     const { user, admin, isLoading } = useAuthContext();
@@ -42,7 +43,6 @@ function AppRouter() {
                 <Route index element={<Index />} />
                 <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
                 <Route path="adherer/*" Component={user ? BecomeMember : LoginOrSignupPage} />
-                <Route path="ha-checkout-callback" element={<HelloAssoCheckoutCallback/>}/>
 
                 {accountRoute({ user })}
 
@@ -55,6 +55,7 @@ function AppRouter() {
                         <Route path="olt-debug" Component={OLTDebug} />
                         <Route path="logs-ipam" Component={IpamLogs} />
                         <Route path="partial-refunds" Component={PartialRefunds} />
+                        <Route path="overdue" Component={Overdue} />
                         <Route path="scholarship-student" Component={ScholarshipStudent} />
                         <Route path="ptah-images" Component={PtahImageDownloader} />
                     </Route>
@@ -100,6 +101,9 @@ function accountRoute({ user }: { user?: any } = {}) {
     const resiliationRoute = (
         <Route path="resiliation" element={<PageResiliation />} />
     );
+    const paymentsRoute = (
+        <Route path="payments" element={<PagePayments />} />
+    );
 
     if (!user) {
         return <Route path="account" element={<LoginRedirect/>} />
@@ -112,6 +116,7 @@ function accountRoute({ user }: { user?: any } = {}) {
                         {appointmentRoute}
                         {networkSettingsRoute}
                         {bankSettingsRoute}
+                        {paymentsRoute}
                         {networkManagementRoute}
                         {resiliationRoute}
                     </Route>
@@ -120,6 +125,7 @@ function accountRoute({ user }: { user?: any } = {}) {
                 return (
                     <Route path="account" element={<AccountDashboard />}>
                         {appointmentRoute}
+                        {paymentsRoute}
                         {resiliationRoute}
                     </Route>
                 )
@@ -128,6 +134,7 @@ function accountRoute({ user }: { user?: any } = {}) {
             return (
                 <Route path="account" element={<AccountDashboard />}>
                     {networkSettingsRoute}
+                    {paymentsRoute}
                     {networkManagementRoute}
                     {resiliationRoute}
                 </Route>

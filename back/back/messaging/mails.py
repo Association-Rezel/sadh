@@ -207,6 +207,47 @@ def send_mail_no_more_wifi_on_box(user: User) -> None:
     )
 
 
+def send_payment_reminder_subscription(user: User, num_months: int = 1) -> None:
+    if num_months <= 1:
+        invoice_desc = "Une facture correspondant à un mois d'abonnement"
+    else:
+        invoice_desc = f"Une facture couvrant {num_months} mois "
+    body = (
+        f"<p>Bonjour {user.first_name},</p>"
+        "<p>Nous te contactons car ton abonnement au service FAI Rezel est arrivé à "
+        "échéance. Pour éviter toute interruption, merci de régulariser ton paiement "
+        'depuis ton espace <a href="https://fai.rezel.net/account/payments">Mes paiements</a>.</p>'
+        f"<p>{invoice_desc} est disponible pour paiement en ligne.</p>"
+        '<p>Pour toute question, contacte <a href="mailto:support@rezel.net">support@rezel.net</a>.</p>'
+        "<p>— L'équipe FAI Rezel</p>"
+    )
+    _send_email(
+        "Rezel - Rappel : ton abonnement FAI est arrivé à échéance",
+        body,
+        user.email,
+        html=True,
+    )
+
+
+def send_payment_reminder_cotisation(user: User) -> None:
+    body = (
+        f"<p>Bonjour {user.first_name},</p>"
+        "<p>Nous te contactons car ta cotisation annuelle à l'association Rezel est "
+        "arrivée à échéance. La cotisation est obligatoire pour bénéficier du service "
+        "FAI.</p>"
+        "<p>Une facture correspondant à la cotisation est disponible pour paiement en ligne"
+        'depuis ton espace <a href="https://fai.rezel.net/account/payments">Mes paiements</a>.</p>'
+        '<p>Pour toute question, contacte <a href="mailto:support@rezel.net">support@rezel.net</a>.</p>'
+        "<p>— L'équipe FAI Rezel</p>"
+    )
+    _send_email(
+        "Rezel - Rappel : ta cotisation annuelle est arrivée à échéance",
+        body,
+        user.email,
+        html=True,
+    )
+
+
 def send_satisfaction_survey(user: User) -> None:
     _send_email(
         "Rezel - Faites-nous savoir ce que vous pensez",

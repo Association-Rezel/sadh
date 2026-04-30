@@ -1,5 +1,6 @@
 """Build the server."""
 
+import asyncio
 import logging
 
 from fastapi import FastAPI
@@ -7,8 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 
+from back.core.auto_invoicing import auto_invoicing_loop
 from back.env import ENV
-from back.mongodb.db import close_db, init_db
+from back.mongodb.db import close_db, get_database, init_db
 from back.server.routers.appointments import router as router_appointments
 from back.server.routers.auth import router_auth
 from back.server.routers.devices import router as router_devices
@@ -20,8 +22,9 @@ from back.server.routers.ptah import router as router_ptah
 from back.server.routers.partial_refunds import router as router_partial_refunds
 from back.server.routers.pms import router as router_pms
 from back.server.routers.users import router as router_users
-from back.server.routers.helloasso import router as router_helloasso_notif
 from back.server.routers.features import router as router_features
+from back.server.routers.payments import router as router_payments
+from back.server.routers.overdue import router as router_overdue
 from back.utils.logger import init_logger
 
 logger = logging.getLogger(__name__)
@@ -73,6 +76,25 @@ def build() -> FastAPI:
     app.add_event_handler("startup", init_db)
     app.add_event_handler("shutdown", close_db)
 
+    background_tasks: dict[str, asyncio.Task] = {}
+
+    async def _start_background_tasks() -> None:
+        background_tasks["auto_invoicing"] = asyncio.create_task(
+            auto_invoicing_loop(get_database())
+        )
+
+    async def _stop_background_tasks() -> None:
+        for task in background_tasks.values():
+            task.cancel()
+        for task in background_tasks.values():
+            try:
+                await task
+            except (asyncio.CancelledError, Exception):
+                pass
+
+    app.add_event_handler("startup", _start_background_tasks)
+    app.add_event_handler("shutdown", _stop_background_tasks)
+
     app.get("/")(root)
 
     app.include_router(router_auth)
@@ -87,7 +109,8 @@ def build() -> FastAPI:
     app.include_router(router_pms)
     app.include_router(router_users)
     app.include_router(router_features)
-    app.include_router(router_helloasso_notif)
+    app.include_router(router_payments)
+    app.include_router(router_overdue)
 
     logger.info("Server built")
 

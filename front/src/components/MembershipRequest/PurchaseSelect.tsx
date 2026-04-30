@@ -8,12 +8,14 @@ import {
 } from "@mui/material";
 
 
-export default function PurchaseSelect({ availableItems = [], itemsChecked, setItemsChecked }: {
+export default function PurchaseSelect({ availableItems = [], itemsChecked, setItemsChecked, disabled = false }: {
     availableItems: { itemId: string, displayName: string, price: number }[],
     setItemsChecked: (fn: (prev: string[]) => string[]) => void,
     itemsChecked: string[],
+    disabled?: boolean,
 }) {
     const handleToggle = (item: string) => () => {
+        if (disabled) return;
         setItemsChecked((prev) => {
             if (prev.includes(item)) {
                 return prev.filter((i) => i !== item);
@@ -31,7 +33,7 @@ export default function PurchaseSelect({ availableItems = [], itemsChecked, setI
                     key={value.itemId}
                     disablePadding
                 >
-                    <ListItemButton onClick={handleToggle(value.itemId)} dense>
+                    <ListItemButton onClick={handleToggle(value.itemId)} dense disabled={disabled}>
                         <ListItemIcon>
                             <Checkbox
                                 edge="start"
