@@ -22,7 +22,6 @@ def _esc(s: str) -> str:
 
 
 TYPE_ADHERENT = "2"  # adhérent 1€/an
-SADH_TAG = "__sadh__"
 ADVANCE_INVOICE_TAG = "__advance_payment__"
 SELECTIVE_TAG_PREFIX = "__selective__:"
 SUBSCRIPTION_REMINDER_TAG = "__subscription_reminder__"
@@ -30,17 +29,9 @@ ARCHIVED_TAG = "__archived__"
 TAG_SEP = "|"
 
 
-def _has_sadh_tag(note: str | None) -> bool:
-    return SADH_TAG in (note or "")
-
-
-def _with_sadh_tag(specific_tag: str) -> str:
-    return f"{SADH_TAG}{TAG_SEP}{specific_tag}"
-
-
 def _strip_meta_prefixes(note: str | None) -> str:
     n = (note or "").strip()
-    for meta in (SADH_TAG, ARCHIVED_TAG):
+    for meta in ARCHIVED_TAG:
         prefix = f"{meta}{TAG_SEP}"
         while n.startswith(prefix):
             n = n[len(prefix) :]
@@ -746,7 +737,7 @@ def archive_user_invoices(user: User) -> int:
     count = 0
     for inv in _client.get_invoices_by_thirdparty(thirdparty_id):
         note = inv.get("note_private") or ""
-        if not _has_sadh_tag(note) or _is_archived_note(note):
+        if _is_archived_note(note):
             continue
         new_note = _with_archived_tag(note)
         if _client.update_invoice(inv.get("id"), {"note_private": new_note}):
@@ -759,8 +750,6 @@ def _filter_sadh_invoices(invoices: list[dict], archived: bool) -> list[dict[str
     clean = []
     for inv in invoices:
         note = inv.get("note_private") or ""
-        if not _has_sadh_tag(note):
-            continue
         if _is_advance_tag(note) and inv.get("paye") not in ("1", 1):
             _client.cancel_invoice(inv.get("id"))
             continue
@@ -822,7 +811,7 @@ async def check_dolibarr_payment_status(
     paid_items: set[str] = set()
     for inv in invoices:
         note = (inv.get("note_private") or "").strip()
-        if not _has_sadh_tag(note) or _invoice_is_archived(inv):
+        if _invoice_is_archived(inv):
             continue
         if inv.get("paye") not in ("1", 1):
             continue
@@ -863,7 +852,7 @@ async def create_selective_invoice(
         {"$set": {"membership.dolibarr_thirdparty_id": thirdparty_id}},
     )
 
-    tag = _with_sadh_tag(_selective_tag(items))
+    tag = _selective_tag(items)
     for inv in _client.get_invoices_by_thirdparty(thirdparty_id):
         note = (inv.get("note_private") or "").strip()
         is_paid = inv.get("paye") in ("1", 1)
@@ -916,7 +905,7 @@ async def create_advance_invoice(
         )
     ]
     invoice_id = _client.create_invoice(
-        thirdparty_id, lines, note_private=_with_sadh_tag(ADVANCE_INVOICE_TAG)
+        thirdparty_id, lines, note_private=ADVANCE_INVOICE_TAG
     )
     if invoice_id is None:
         return None
@@ -954,7 +943,7 @@ async def create_subscription_reminder_invoice(
     invoice_id = _client.create_invoice(
         thirdparty_id,
         lines,
-        note_private=_with_sadh_tag(f"{SUBSCRIPTION_REMINDER_TAG}:{num_months}"),
+        note_private=f"{SUBSCRIPTION_REMINDER_TAG}:{num_months}",
     )
     if invoice_id is None:
         return None
@@ -1026,7 +1015,7 @@ def find_unpaid_invoice_for(user: User, kind: str) -> dict | None:
         return None
     for inv in _client.get_invoices_by_thirdparty(thirdparty_id):
         note = (inv.get("note_private") or "").strip()
-        if not _has_sadh_tag(note) or _invoice_is_archived(inv):
+        if _invoice_is_archived(inv):
             continue
         if inv.get("paye") in ("1", 1):
             continue
