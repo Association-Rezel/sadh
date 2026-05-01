@@ -1,45 +1,45 @@
 export interface OperationalData {
-    path: string;
-    admin_status: boolean;
-    operational_status: boolean;
-    dbm_level: string;
-    estimation_distance: string;
-    last_operational_up: number;
-    last_fetched: number;
+  path: string;
+  admin_status: boolean;
+  operational_status: boolean;
+  dbm_level: string;
+  estimation_distance: string;
+  last_operational_up: number;
+  last_fetched: number;
 }
 
 export interface ONTInfo {
-    serial_number: string;
-    software_version: string;
-    box_mac_address: string;
-    mec128_position: string;
-    olt_interface: string;
-    pm_description: string;
-    position_in_subscriber_panel: string;
-    pon_rack: number;
-    pon_tiroir: number;
-    operational_data?: OperationalData;
-    configured_in_olt?: boolean;
+  serial_number: string;
+  software_version: string;
+  box_mac_address: string;
+  mec128_position: string;
+  olt_interface: string;
+  pm_description: string;
+  position_in_subscriber_panel: string;
+  pon_rack: number;
+  pon_tiroir: number;
+  operational_data?: OperationalData;
+  configured_in_olt?: boolean;
 }
 
 export interface RawDBONT {
-    serial_number: string;
-    software_version: string;
-    box_mac_address: string;
-    position_in_pon: number;
-    position_in_subscriber_panel?: string;
-    operational_data?: OperationalData;
-    configured_in_olt?: boolean;
+  serial_number: string;
+  software_version: string;
+  box_mac_address: string;
+  position_in_pon: number;
+  position_in_subscriber_panel?: string;
+  operational_data?: OperationalData;
+  configured_in_olt?: boolean;
 }
 
 export interface PMInfo {
-    id: string;
-    description: string;
+  id: string;
+  description: string;
 }
 
 export interface RegisterONT {
-    serial_number: string;
-    software_version: string;
-    pm_id: string;
-    position_pm?: string;
+  serial_number: string;
+  software_version: string;
+  pm_id: string;
+  position_pm?: string;
 }

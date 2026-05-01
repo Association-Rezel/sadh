@@ -1,716 +1,971 @@
 import { useEffect, useState } from "react";
-import { Alert, Autocomplete, Button, Checkbox, Chip, CircularProgress, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, IconButton, InputLabel, Link, List, MenuItem, OutlinedInput, Paper, Select, Stack, Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Tooltip, Typography } from "@mui/material";
+import {
+  Alert,
+  Autocomplete,
+  Button,
+  Checkbox,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  FormControlLabel,
+  IconButton,
+  InputLabel,
+  Link,
+  List,
+  MenuItem,
+  OutlinedInput,
+  Paper,
+  Select,
+  Stack,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import Api from "../../../utils/Api";
 import { Box, UnetProfile } from "../../../utils/types/hermes_types";
 import { MembershipType, User } from "../../../utils/types/types";
 import { Controller, useForm } from "react-hook-form";
 import { ONTInfo } from "../../../utils/types/pon_types";
-import TrashIcon from '@mui/icons-material/Delete';
+import TrashIcon from "@mui/icons-material/Delete";
 import ConfirmableButton from "../../utils/ConfirmableButton";
-import EditIcon from '@mui/icons-material/Edit';
-import { ContentCopy, Download, ExitToApp, QrCodeScanner } from "@mui/icons-material";
+import EditIcon from "@mui/icons-material/Edit";
+import {
+  ContentCopy,
+  Download,
+  ExitToApp,
+  QrCodeScanner,
+} from "@mui/icons-material";
 import QRCodeScannerDialog from "./QRCodeScannerDialog_zbar";
-;
 type FormValues = {
-    boxType?: string;
-    macAddress: string;
-    isTelecomian: boolean;
-    ptahProfile: string | null;
+  boxType?: string;
+  macAddress: string;
+  isTelecomian: boolean;
+  ptahProfile: string | null;
 };
 
 export default function UnetSection({
-    user,
-    ont,
-    setBox,
-    box,
-    boxLoading,
-    setBoxLoading,
+  user,
+  ont,
+  setBox,
+  box,
+  boxLoading,
+  setBoxLoading,
 }: {
-    user: User,
-    ont: ONTInfo | null,
-    setBox: (box: Box | null) => void,
-    box: Box | null,
-    boxLoading: boolean,
-    setBoxLoading: (loading: boolean) => void,
+  user: User;
+  ont: ONTInfo | null;
+  setBox: (box: Box | null) => void;
+  box: Box | null;
+  boxLoading: boolean;
+  setBoxLoading: (loading: boolean) => void;
 }) {
-    const {
-        getValues,
-        handleSubmit,
-        control,
-        reset,
-        setValue,
-    } = useForm<FormValues>({
-        defaultValues: {
-            boxType: "ac2350",
-            macAddress: "",
-            isTelecomian: false,
-            ptahProfile: null
-        }
+  const { getValues, handleSubmit, control, reset, setValue } =
+    useForm<FormValues>({
+      defaultValues: {
+        boxType: "ac2350",
+        macAddress: "",
+        isTelecomian: false,
+        ptahProfile: null,
+      },
     });
 
+  const [maskedPsk, setMaskedPsk] = useState("**********");
+  const [editingMac, setEditingMac] = useState(false);
+  const [newMac, setNewMac] = useState("");
+  const [usersOnBox, setUsersOnBox] = useState<User[]>([]);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [ptahProfiles, setPtahProfiles] = useState<string[]>([]);
+  const [ptahProfilesLoading, setPtahProfilesLoading] = useState(false);
+  const [editingPtahProfile, setEditingPtahProfile] = useState(false);
+  const [newPtahProfile, setNewPtahProfile] = useState<string | null>(null);
+  const [isDownloadingPtah, setIsDownloadingPtah] = useState(false);
 
-    const [maskedPsk, setMaskedPsk] = useState("**********");
-    const [editingMac, setEditingMac] = useState(false);
-    const [newMac, setNewMac] = useState("");
-    const [usersOnBox, setUsersOnBox] = useState<User[]>([]);
-    const [transferDialogOpen, setTransferDialogOpen] = useState(false);
-    const [ptahProfiles, setPtahProfiles] = useState<string[]>([]);
-    const [ptahProfilesLoading, setPtahProfilesLoading] = useState(false);
-    const [editingPtahProfile, setEditingPtahProfile] = useState(false);
-    const [newPtahProfile, setNewPtahProfile] = useState<string | null>(null);
-    const [isDownloadingPtah, setIsDownloadingPtah] = useState(false);
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
 
-    const [qrScannerOpen, setQrScannerOpen] = useState(false);
-    
-    const [isWifiDisabled, setWifiDisabled] = useState(false)
-    const wifiStatusString = (isWifiDisabled) ? "Le Wifi du client est désactivé" : "Désactiver le Wifi du client"
+  const [isWifiDisabled, setWifiDisabled] = useState(false);
+  const wifiStatusString = isWifiDisabled
+    ? "Le Wifi du client est désactivé"
+    : "Désactiver le Wifi du client";
 
-    if (box && newMac === "") {
-        setNewMac(box.mac);
+  if (box && newMac === "") {
+    setNewMac(box.mac);
+  }
+
+  if (box && box.ptah_profile && newPtahProfile === null) {
+    setNewPtahProfile(box.ptah_profile);
+  }
+
+  const mainUser = usersOnBox.find(
+    (u) => u.membership?.unetid === box?.main_unet_id,
+  );
+  let myUnetProfile: UnetProfile | null = null;
+  let isMainUnet: boolean = false;
+
+  if (box) {
+    myUnetProfile = box.unets.filter(
+      (u) => user.membership.unetid === u.unet_id,
+    )[0];
+    isMainUnet = myUnetProfile?.unet_id === box.main_unet_id;
+  }
+
+  const onSubmit = async (event: FormValues) => {
+    //Check not empty
+    if (
+      (user.membership.type === MembershipType.FTTH &&
+        (!event.boxType || !event.ptahProfile)) ||
+      !event.macAddress
+    ) {
+      alert("Veuillez remplir tous les champs");
+      return;
+    }
+    // Check MAC format
+    if (!event.macAddress.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
+      alert("Adresse MAC invalide");
+      return;
     }
 
-    if (box && box.ptah_profile && newPtahProfile === null) {
-        setNewPtahProfile(box.ptah_profile);
+    if (user.membership.type === MembershipType.FTTH) {
+      try {
+        const box = await Api.registerUserBox(
+          user.id,
+          event.boxType!,
+          event.ptahProfile!,
+          event.macAddress,
+          event.isTelecomian,
+        );
+        setBox(box);
+      } catch (e) {
+        alert("Erreur lors de l'assignation de la box : " + e);
+      }
+    } else if (user.membership.type === MembershipType.WIFI) {
+      try {
+        const box = await Api.createUnetOnBox(
+          user.id,
+          event.macAddress,
+          event.isTelecomian,
+        );
+        setBox(box);
+      } catch (e) {
+        alert("Erreur lors de la création de l'Unet : " + e);
+      }
+    }
+  };
+
+  const onDeleteBox = () => {
+    if (box.unets.length > 1) {
+      alert(
+        "Vous ne pouvez pas supprimer la box tant que d'autres unets que le principal sont associés à cette box.",
+      );
+      return;
+    } else if (ont) {
+      alert(
+        "Vous ne pouvez pas supprimer la box tant qu'un ONT est associé à cette box.",
+      );
+      return;
     }
 
-    const mainUser = usersOnBox.find(u => u.membership?.unetid === box?.main_unet_id);
-    let myUnetProfile: UnetProfile | null = null;
-    let isMainUnet: boolean = false;
+    setBoxLoading(true);
+    Api.deleteBox(box.mac)
+      .then(() => {
+        setBox(null);
+      })
+      .catch((e) => {
+        alert("Erreur lors de la suppression de la box : " + e);
+      })
+      .finally(() => {
+        setBoxLoading(false);
+      });
+  };
 
-    if (box) {
-        myUnetProfile = box.unets.filter(u => user.membership.unetid === u.unet_id)[0];
-        isMainUnet = myUnetProfile?.unet_id === box.main_unet_id;
+  const onDeleteUnet = () => {
+    if (isMainUnet) {
+      alert("Vous ne pouvez pas supprimer le unet principal de la box.");
+      return;
     }
 
-    const onSubmit = async (event: FormValues) => {
-        //Check not empty 
-        if ((user.membership.type === MembershipType.FTTH && (!event.boxType || !event.ptahProfile)) || !event.macAddress) {
-            alert("Veuillez remplir tous les champs");
-            return;
-        }
-        // Check MAC format
-        if (!event.macAddress.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
-            alert("Adresse MAC invalide");
-            return;
-        }
+    setBoxLoading(true);
+    Api.deleteUnet(user.id)
+      .then(() => {
+        setBox(null);
+      })
+      .catch((e) => {
+        alert("Erreur lors de la suppression de l'Unet : " + e);
+      })
+      .finally(() => {
+        setBoxLoading(false);
+      });
+  };
 
-        if (user.membership.type === MembershipType.FTTH) {
-            try {
-                const box = await Api.registerUserBox(user.id, event.boxType!, event.ptahProfile!, event.macAddress, event.isTelecomian);
-                setBox(box);
-            } catch (e) {
-                alert("Erreur lors de l'assignation de la box : " + e);
-            }
-
-        } else if (user.membership.type === MembershipType.WIFI) {
-            try {
-                const box = await Api.createUnetOnBox(user.id, event.macAddress, event.isTelecomian);
-                setBox(box);
-            } catch (e) {
-                alert("Erreur lors de la création de l'Unet : " + e);
-            }
-        }
+  const onUpdateMac = () => {
+    if (!newMac.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
+      alert("Adresse MAC invalide");
+      return;
     }
+    setBoxLoading(true);
+    Api.updateBoxMacAddress(box.mac, newMac)
+      .then((box) => {
+        setBox(box);
+      })
+      .catch((e) => {
+        alert("Erreur lors de la modification de la MAC : " + e);
+      })
+      .finally(() => {
+        setBoxLoading(false);
+        setEditingMac(false);
+      });
+  };
 
-    const onDeleteBox = () => {
-        if (box.unets.length > 1) {
-            alert("Vous ne pouvez pas supprimer la box tant que d'autres unets que le principal sont associés à cette box.");
-            return;
-        } else if (ont) {
-            alert("Vous ne pouvez pas supprimer la box tant qu'un ONT est associé à cette box.");
-            return;
-        }
+  const onUpdatePtahProfile = () => {
+    if (!newPtahProfile) {
+      alert("Veuillez sélectionner un profil Ptah.");
+      return;
+    }
+    setBoxLoading(true);
+    Api.updateBoxPtahProfile(box.mac, newPtahProfile)
+      .then((updatedBox) => {
+        setBox(updatedBox);
+      })
+      .catch((e) => {
+        alert("Erreur lors de la modification du profil Ptah : " + e);
+      })
+      .finally(() => {
+        setBoxLoading(false);
+        setEditingPtahProfile(false);
+      });
+  };
 
-        setBoxLoading(true);
-        Api.deleteBox(box.mac).then(() => {
-            setBox(null);
-        }).catch(e => {
-            alert("Erreur lors de la suppression de la box : " + e);
-        }).finally(() => {
-            setBoxLoading(false);
+  const handleQRScanSuccess = (macAddress: string) => {
+    setValue("macAddress", macAddress);
+    setQrScannerOpen(false);
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    if (user.membership.type === MembershipType.WIFI) {
+      Api.fetchBoxByUnetID(user.membership.init.main_unet_id).then((box) => {
+        reset({
+          ...getValues(),
+          macAddress: box.mac,
+        });
+      });
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!box) return;
+    Api.fetchAllUsersOnBox(box.mac)
+      .then((users) => {
+        setUsersOnBox(users);
+      })
+      .catch((e) => {
+        alert(e);
+      });
+  }, [box]);
+
+  useEffect(() => {
+    if (user.membership.type === MembershipType.FTTH) {
+      setPtahProfilesLoading(true);
+      Api.getPtahProfilesNameList()
+        .then((profiles) => {
+          setPtahProfiles(profiles);
+        })
+        .catch((e) => {
+          alert("Erreur lors de la récupération des profils Ptah : " + e);
+        })
+        .finally(() => {
+          setPtahProfilesLoading(false);
         });
     }
+  }, [user.membership.type]);
 
-    const onDeleteUnet = () => {
-        if (isMainUnet) {
-            alert("Vous ne pouvez pas supprimer le unet principal de la box.");
-            return;
-        }
-
-        setBoxLoading(true);
-        Api.deleteUnet(user.id).then(() => {
-            setBox(null);
-        }).catch(e => {
-            alert("Erreur lors de la suppression de l'Unet : " + e);
-        }).finally(() => {
-            setBoxLoading(false);
-        });
+  useEffect(() => {
+    if (myUnetProfile !== null) {
+      setWifiDisabled(myUnetProfile.disabled ?? false);
     }
+  }, [myUnetProfile?.disabled]);
 
-    const onUpdateMac = () => {
-        if (!newMac.match(/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/)) {
-            alert("Adresse MAC invalide");
-            return;
-        }
-        setBoxLoading(true);
-        Api.updateBoxMacAddress(box.mac, newMac).then((box) => {
-            setBox(box);
-        }).catch(e => {
-            alert("Erreur lors de la modification de la MAC : " + e);
-        }).finally(() => {
-            setBoxLoading(false);
-            setEditingMac(false);
-        });
-    }
+  const handleDisableWifi = () => {
+    myUnetProfile.disabled = !myUnetProfile.disabled;
+    Api.updateUnetWifiStatus(user.id, myUnetProfile.disabled)
+      .then(() => setWifiDisabled(myUnetProfile.disabled))
+      .catch(() => {
+        myUnetProfile.disabled = !myUnetProfile.disabled;
+        setWifiDisabled(myUnetProfile.disabled);
+      });
+  };
 
-    const onUpdatePtahProfile = () => {
-        if (!newPtahProfile) {
-            alert("Veuillez sélectionner un profil Ptah.");
-            return;
-        }
-        setBoxLoading(true);
-        Api.updateBoxPtahProfile(box.mac, newPtahProfile).then((updatedBox) => {
-            setBox(updatedBox);
-        }).catch(e => {
-            alert("Erreur lors de la modification du profil Ptah : " + e);
-        }).finally(() => {
-            setBoxLoading(false);
-            setEditingPtahProfile(false);
-        });
-    }
-
-    const handleQRScanSuccess = (macAddress: string) => {
-        setValue('macAddress', macAddress);
-        setQrScannerOpen(false);
-    }
-
-    useEffect(() => {
-        if (!user) return;
-        if (user.membership.type === MembershipType.WIFI) {
-            Api.fetchBoxByUnetID(user.membership.init.main_unet_id).then(box => {
-                reset({
-                    ...getValues(),
-                    macAddress: box.mac,
-                });
-            });
-        }
-    }, [user?.id]);
-
-    useEffect(() => {
-        if (!box) return;
-        Api.fetchAllUsersOnBox(box.mac).then(users => {
-            setUsersOnBox(users);
-        }).catch(e => {
-            alert(e);
-        });
-    }, [box]);
-
-    useEffect(() => {
-        if (user.membership.type === MembershipType.FTTH) {
-            setPtahProfilesLoading(true);
-            Api.getPtahProfilesNameList()
-                .then(profiles => {
-                    setPtahProfiles(profiles);
-                })
-                .catch(e => {
-                    alert("Erreur lors de la récupération des profils Ptah : " + e);
-                })
-                .finally(() => {
-                    setPtahProfilesLoading(false);
-                });
-        }
-    }, [user.membership.type]);
-
-
-    useEffect(() => {
-        if (myUnetProfile !== null) {
-            setWifiDisabled(myUnetProfile.disabled ?? false);
-        }
-    }, [myUnetProfile?.disabled]);
-
-    const handleDisableWifi = () => {
-        myUnetProfile.disabled = !myUnetProfile.disabled
-        Api.updateUnetWifiStatus(user.id, myUnetProfile.disabled)
-            .then(() => setWifiDisabled(myUnetProfile.disabled))
-            .catch(() => {
-                myUnetProfile.disabled = !myUnetProfile.disabled
-                setWifiDisabled(myUnetProfile.disabled)
-            })
-
-    }
-
-    return (
-        <div className="mt-10 max-w-xs">
-            <Typography variant="h5" align="left" color="text.primary" component="div">
-                Réseau de l'adhérent (UNetProfile)
-                {user.membership.type === MembershipType.WIFI &&
-                    <Tooltip title="Transférer le UnetProfile vers une autre box">
-                        <IconButton onClick={() => setTransferDialogOpen(true)}>
-                            <ExitToApp />
-                        </IconButton>
-                    </Tooltip>
-                }
-            </Typography>
-            <TransferUnetToMacDialog unet_id={user.membership.unetid} open={transferDialogOpen} setTransferDialogOpen={setTransferDialogOpen} />
-            <QRCodeScannerDialog 
-                open={qrScannerOpen} 
-                onClose={() => setQrScannerOpen(false)} 
-                onScanSuccess={handleQRScanSuccess}
-                scanType="mac"
-            />
-            <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                {(boxLoading) && <p>Chargement...</p>}
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    {!boxLoading && !box && (
-                        <Stack direction={"column"}
-                            spacing={2}>
-                            <Controller
-                                name="isTelecomian"
-                                control={control}
-                                render={({ field: { onChange, value } }) => (
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={value}
-                                            onChange={onChange}
-                                        />}
-                                        label="Assigner une IP du range 137.194.8.0/22 (Réservé au étudiants ou personnels de Télécom Paris)"
-                                    />
-                                )}
-                            />
-                            {user.membership.type === MembershipType.WIFI && user.membership.init.main_unet_id &&
-                                <Alert severity="info">
-                                    L'adhérent indique capter le Wi-Fi correspondant au unet id {user.membership.init.main_unet_id}. La mac correspondante est pré-renseignée ci-dessous
-                                </Alert>
-
-                            }
-                            {user.membership.type === MembershipType.WIFI && !user.membership.init.main_unet_id &&
-                                <Alert severity="error">
-                                    L'adhérent avait indiqué un SSID avant le changement de système du 23/11/2024 (https://gitlab.fai.rezel.net/fai/sadh/-/merge_requests/22) Il faut lui redemander le Wi-Fi qu'il capte.
-                                </Alert>
-                            }
-                            <div className={user.membership.type === MembershipType.WIFI ? "hidden" : ""}>
-                                <FormControl>
-                                    <InputLabel id="boxtype-label">Type de box</InputLabel>
-                                    <Controller
-                                        name="boxType"
-                                        control={control}
-                                        render={({ field: { onChange, value } }) => (
-                                            <Select
-                                                className="bg-white"
-                                                labelId="boxtype-label"
-                                                id="boxtype-select"
-                                                label="Type de box"
-                                                value={value}
-                                                onChange={onChange}
-                                            >
-                                                <MenuItem value="ac2350">AC 2350 (Box orange)</MenuItem>
-                                            </Select>
-                                        )}
-                                    />
-                                </FormControl>
-                            </div>
-                            <Stack direction="row" spacing={2}>
-                                <Controller
-                                    name="macAddress"
-                                    control={control}
-                                    render={({ field }) => (
-                                        <TextField
-                                            className="bg-white"
-                                            required
-                                            fullWidth
-                                            label="Adresse MAC"
-                                            {...field}
-                                        />
-                                    )}
-                                />
-                                <Tooltip title="Scanner le code barre de la box">
-                                    <IconButton onClick={() => setQrScannerOpen(true)}>
-                                        <QrCodeScanner />
-                                    </IconButton>
-                                </Tooltip>
-                                </Stack>
-                                {user.membership.type === MembershipType.FTTH &&
-                                    <Controller
-                                        name="ptahProfile"
-                                        control={control}
-                                        render={({ field: { onChange, value } }) => (
-                                            <Autocomplete
-                                                options={ptahProfiles}
-                                                loading={ptahProfilesLoading}
-                                                value={value}
-                                                onChange={(event, newValue) => onChange(newValue)}
-                                                sx={{ width: 300 }}
-                                                renderInput={(params) => (
-                                                    <FormControl fullWidth required>
-                                                        <InputLabel {...params.InputLabelProps}>Profil Ptah</InputLabel>
-                                                        <OutlinedInput
-                                                            {...params.InputProps}
-                                                            inputProps={params.inputProps}
-                                                            label="Profil Ptah"
-                                                            endAdornment={
-                                                                <>
-                                                                    {ptahProfilesLoading ? <CircularProgress color="inherit" size={20} sx={{ mr: 1 }} /> : null}
-                                                                    {params.InputProps.endAdornment}
-                                                                </>
-                                                            }
-                                                        />
-                                                    </FormControl>
-                                                )}
-                                            />
-                                        )}
-                                    />
-                                }
-                            <Button variant="contained" type="submit">
-                                {user.membership.type === MembershipType.FTTH ? "Assigner la box" : "Créer un Unet sur cette box"}
-                            </Button>
-                        </Stack>
-                    )}
-                </form>
-
-                {!boxLoading && box && (
-                    <>
-                        <div className="mb-4">
-                            <Typography variant="h6" align="left" component="div" >
-                                Box
-                            </Typography>
-                            <div style={{ margin: '0.5rem 0' }}>
-                                {box.ping_history && box.ping_history.length > 0 && (() => {
-                                    const lastPing = box.ping_history[0]; // Le ping le plus récent
-                                    const lastSuccessfulPing = box.ping_history.find(p => p.success);
-                                    const lastPingDate = new Date(lastPing.timestamp * 1000);
-                                    const isDataObsolete = new Date().getTime() - lastPingDate.getTime() > 6 * 60 * 60 * 1000;
-
-                                    return (
-                                        <>
-                                            {isDataObsolete && (
-                                                <Alert severity="warning" sx={{ mb: 2 }}>
-                                                    Attention : La supervision semble obsolète. La dernière donnée date du {lastPingDate.toLocaleString('fr-FR')}.
-                                                </Alert>
-                                            )}
-
-                                            <strong>Ping fonctionnel</strong> : {
-                                                lastPing.success ?
-                                                    <Chip variant="outlined" color="success" label="Oui" /> :
-                                                    <Chip color="error" label="Non" />
-                                            }
-                                            <br />
-                                            <strong>Dernier ping réussi</strong> : {
-                                                lastSuccessfulPing ?
-                                                    new Date(lastSuccessfulPing.timestamp * 1000).toLocaleString('fr-FR') :
-                                                    " Jamais"
-                                            }
-                                        </>
-                                    );
-                                })()}
-                            </div>
-                            <Button
-                                onClick={() => navigator.clipboard.writeText(generateManagementIPv6(box?.mac))}
-                                startIcon={<ContentCopy />}
-                                size="small"
-                            >
-                                {generateManagementIPv6(box?.mac)}
-                            </Button>
-                            <br />
-                            <strong>MAC</strong> :<span className="pr-2" />
-                            {editingMac ?
-                                <TextField
-                                    value={newMac}
-                                    onChange={(e) => setNewMac(e.target.value)}
-                                    size="small"
-                                /> :
-                                <Button
-                                    onClick={() => navigator.clipboard.writeText(box.mac)}
-                                    startIcon={<ContentCopy />}
-                                    size="small"
-                                >{box.mac}
-                                </Button>
-                            }
-                            {isMainUnet && <IconButton onClick={() => setEditingMac(!editingMac)}><EditIcon /></IconButton>}
-                            {editingMac && <ConfirmableButton
-                                variant="contained"
-                                buttonColor="error"
-                                onConfirm={onUpdateMac}
-                                confirmationText={<p>La MAC de la box sera modifée en base de donnée,
-                                    et l'ONT associé sera mis à jour avec la nouvelle MAC.<br />
-                                    <br />
-                                    Les boxs ne seront pas redémarrées ni reconfigurées ! Ce
-                                    changement ne sera effectif <strong>qu'en base de données</strong>. Par exemple,
-                                    il est conseillé de redémarrer les boxs avec les deux adresses MAC afin
-                                    de ne pas avoir de duplication d'adresse.</p>}
-                            >
-                                Valider nouvelle mac
-                            </ConfirmableButton>}
-                            <br />
-                            <strong>Type</strong> : {box.type}<br />
-                            {user.membership.type === MembershipType.FTTH && (
-                                <>
-                                    <strong>Profil Ptah</strong> :<span className="pr-2" />
-                                    {editingPtahProfile ? (
-                                        <Autocomplete
-                                            options={ptahProfiles}
-                                            loading={ptahProfilesLoading}
-                                            value={newPtahProfile}
-                                            onChange={(event, newValue) => setNewPtahProfile(newValue)}
-                                            sx={{ width: 250, display: 'inline-block', verticalAlign: 'middle' }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                                <TextField {...params} label="Profil Ptah" />
-                                            )}
-                                        />
-                                    ) : (
-                                        <span>{box.ptah_profile}</span>
-                                    )}
-
-                                    {isMainUnet && <IconButton onClick={() => setEditingPtahProfile(!editingPtahProfile)}><EditIcon /></IconButton>}
-
-                                    {editingPtahProfile && (
-                                        <ConfirmableButton
-                                            variant="contained"
-                                            buttonColor="error"
-                                            onConfirm={onUpdatePtahProfile}
-                                            confirmationText={<p>Le profil Ptah de la box sera modifié. Ceci peut entraîner une coupure de service temporaire le temps que la box soit reconfigurée.</p>}
-                                        >
-                                            Valider
-                                        </ConfirmableButton>
-                                    )}
-                                    <div style={{ marginTop: '8px' }}>
-                                        <Button
-                                            size="small"
-                                            variant="outlined"
-                                            onClick={async () => {
-                                                setIsDownloadingPtah(true);
-                                                try {
-                                                    await Api.downloadPtahImage(box.mac, box.ptah_profile);
-                                                } catch (e) {
-                                                    alert("Erreur lors du téléchargement de l'image : " + e);
-                                                } finally {
-                                                    setIsDownloadingPtah(false);
-                                                }
-                                            }}
-                                            disabled={isDownloadingPtah}
-                                            startIcon={isDownloadingPtah ? <CircularProgress size={16} /> : <Download />}
-                                        >
-                                            {isDownloadingPtah ? 'Génération de l\'image...' : 'Image Ptah'}
-                                        </Button>
-                                    </div>
-                                </>
-                            )}
-                            <br />
-                            {mainUser &&
-                                <>
-                                    <strong>User principal</strong> :
-                                    <Link underline="hover" className="pl-2" href={`/admin/users/${mainUser?.id}`}>{mainUser?.first_name}</Link> ({box?.main_unet_id})
-                                    <br />
-                                </>
-                            }
-                            <strong>Autres adhérents</strong> :
-                            {!usersOnBox || usersOnBox.length <= 0 && <CircularProgress />}
-                            {usersOnBox?.length === 1 && "Aucun"}
-                            {usersOnBox?.length > 1 && <>
-                                <ul className="mt-2">
-                                    {usersOnBox.filter(u => u != mainUser).map(u => (
-                                        <li key={u.id}><Link underline="hover" href={`/admin/users/${u.id}`} key={u.id}>{u.first_name + " " + u.last_name}</Link> ({u.membership?.unetid})</li>
-                                    ))}
-                                </ul>
-                            </>
-                            }
-                        </div>
-                        <div>
-                            <Typography variant="h6" align="left" component="div" >
-                                UNetProfile
-                            </Typography>
-                            {!myUnetProfile && <Alert severity="warning">Rechargez la page pour voir toutes les infos</Alert>}
-                            <strong>Unet ID de {user.first_name}</strong> : {myUnetProfile?.unet_id}<br />
-                            <strong>IPv4 WAN</strong> : {myUnetProfile?.network.wan_ipv4.ip}<br />
-                            <strong>IPv6 WAN</strong> : {myUnetProfile?.network.wan_ipv6.ip}<br />
-                            <strong>SSID</strong> : {myUnetProfile?.wifi.ssid}<br /> 
-                            <strong>PSK</strong> : {maskedPsk}<br />
-                            <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>Afficher PSK</Button><br />
-                            <FormControlLabel label={wifiStatusString} control={
-                                <Switch checked={isWifiDisabled} disabled={isMainUnet} onChange={handleDisableWifi} color="warning" />} 
-                            />
-
-                        </div>
-                        
-                        {/* Section Ports ouverts / Redirections */}
-                        {myUnetProfile?.firewall && (
-                            <div className="mt-4">
-                                <Typography variant="h6" align="left" component="div">
-                                    Ports ouverts / Redirections
-                                </Typography>
-                                
-                                {/* IPv4 Port Forwarding */}
-                                {myUnetProfile.firewall.ipv4_port_forwarding && myUnetProfile.firewall.ipv4_port_forwarding.length > 0 && (
-                                    <div className="mt-2">
-                                        <Typography variant="subtitle2" align="left" component="div" sx={{ fontWeight: 'bold' }}>
-                                            Redirections de ports IPv4
-                                        </Typography>
-                                        <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-                                            <Table size="small">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell>Nom</TableCell>
-                                                        <TableCell>Port WAN</TableCell>
-                                                        <TableCell>IP LAN</TableCell>
-                                                        <TableCell>Port LAN</TableCell>
-                                                        <TableCell>Proto</TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {myUnetProfile.firewall.ipv4_port_forwarding.map((rule, index) => (
-                                                        <TableRow key={index}>
-                                                            <TableCell>{rule.name || "-"}</TableCell>
-                                                            <TableCell>{rule.wan_port}</TableCell>
-                                                            <TableCell>{rule.lan_ip}</TableCell>
-                                                            <TableCell>{rule.lan_port}</TableCell>
-                                                            <TableCell>{rule.protocol}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
-                                    </div>
-                                )}
-                                
-                                {/* IPv6 Port Opening */}
-                                {myUnetProfile.firewall.ipv6_port_opening && myUnetProfile.firewall.ipv6_port_opening.length > 0 && (
-                                    <div className="mt-3">
-                                        <Typography variant="subtitle2" align="left" component="div" sx={{ fontWeight: 'bold' }}>
-                                            Ports ouverts IPv6
-                                        </Typography>
-                                        <TableContainer component={Paper} variant="outlined" sx={{ mt: 1 }}>
-                                            <Table size="small">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell>Nom</TableCell>
-                                                        <TableCell>IP</TableCell>
-                                                        <TableCell>Port</TableCell>
-                                                        <TableCell>Proto</TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {myUnetProfile.firewall.ipv6_port_opening.map((rule, index) => (
-                                                        <TableRow key={index}>
-                                                            <TableCell>{rule.name || "-"}</TableCell>
-                                                            <TableCell sx={{ fontSize: '0.75rem', maxWidth: 180, wordBreak: 'break-all' }}>{rule.ip}</TableCell>
-                                                            <TableCell>{rule.port}</TableCell>
-                                                            <TableCell>{rule.protocol}</TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
-                                    </div>
-                                )}
-                                
-                                {(!myUnetProfile.firewall.ipv4_port_forwarding || myUnetProfile.firewall.ipv4_port_forwarding.length === 0) &&
-                                    (!myUnetProfile.firewall.ipv6_port_opening || myUnetProfile.firewall.ipv6_port_opening.length === 0) && (
-                                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                                        Aucun port ouvert
-                                    </Typography>
-                                )}
-                            </div>
-                        )}
-                        
-                        <div>
-                            {isMainUnet &&
-                                <ConfirmableButton
-                                    disabled={box.unets.length > 1 || ont !== null}
-                                    variant="text"
-                                    buttonColor="error"
-                                    onConfirm={onDeleteBox}
-                                    startIcon={<TrashIcon />}
-                                    confirmationText="Le déprovisionning de la box est une action irreversible. Pensez à notez
-                                    l'adresse MAC de la box si vous souhaitez la réassigner. Le unet principal sera supprimé."
-                                >
-                                    {box.unets.length > 1 && `Reste ${box.unets.length - 1} autre(s) Unet(s)`}
-                                    {box.unets.length === 1 && ont && `ONT ${ont.serial_number} est associé`}
-                                    {box.unets.length === 1 && !ont && "Supprimer la box"}
-                                </ConfirmableButton>
-                            }
-                            {!isMainUnet &&
-                                <ConfirmableButton
-                                    variant="text"
-                                    buttonColor="error"
-                                    onConfirm={onDeleteUnet}
-                                    startIcon={<TrashIcon />}
-                                    confirmationText="Le déprovisionning de l'Unet est une action irreversible. Pensez à notez
-                                    ses informations si vous souhaitez les réutiliser."
-                                >
-                                    Supprimer l'Unet
-                                </ConfirmableButton>
-                            }
-                        </div>
-                    </>
+  return (
+    <div className="mt-10 max-w-xs">
+      <Typography
+        variant="h5"
+        align="left"
+        color="text.primary"
+        component="div"
+      >
+        Réseau de l'adhérent (UNetProfile)
+        {user.membership.type === MembershipType.WIFI && (
+          <Tooltip title="Transférer le UnetProfile vers une autre box">
+            <IconButton onClick={() => setTransferDialogOpen(true)}>
+              <ExitToApp />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Typography>
+      <TransferUnetToMacDialog
+        unet_id={user.membership.unetid}
+        open={transferDialogOpen}
+        setTransferDialogOpen={setTransferDialogOpen}
+      />
+      <QRCodeScannerDialog
+        open={qrScannerOpen}
+        onClose={() => setQrScannerOpen(false)}
+        onScanSuccess={handleQRScanSuccess}
+        scanType="mac"
+      />
+      <Typography
+        variant="body1"
+        align="left"
+        color="text.secondary"
+        component="div"
+        sx={{ marginTop: 3 }}
+      >
+        {boxLoading && <p>Chargement...</p>}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          {!boxLoading && !box && (
+            <Stack direction={"column"} spacing={2}>
+              <Controller
+                name="isTelecomian"
+                control={control}
+                render={({ field: { onChange, value } }) => (
+                  <FormControlLabel
+                    control={<Checkbox checked={value} onChange={onChange} />}
+                    label="Assigner une IP du range 137.194.8.0/22 (Réservé au étudiants ou personnels de Télécom Paris)"
+                  />
                 )}
-            </Typography>
-        </div >
-    )
+              />
+              {user.membership.type === MembershipType.WIFI &&
+                user.membership.init.main_unet_id && (
+                  <Alert severity="info">
+                    L'adhérent indique capter le Wi-Fi correspondant au unet id{" "}
+                    {user.membership.init.main_unet_id}. La mac correspondante
+                    est pré-renseignée ci-dessous
+                  </Alert>
+                )}
+              {user.membership.type === MembershipType.WIFI &&
+                !user.membership.init.main_unet_id && (
+                  <Alert severity="error">
+                    L'adhérent avait indiqué un SSID avant le changement de
+                    système du 23/11/2024
+                    (https://gitlab.fai.rezel.net/fai/sadh/-/merge_requests/22)
+                    Il faut lui redemander le Wi-Fi qu'il capte.
+                  </Alert>
+                )}
+              <div
+                className={
+                  user.membership.type === MembershipType.WIFI ? "hidden" : ""
+                }
+              >
+                <FormControl>
+                  <InputLabel id="boxtype-label">Type de box</InputLabel>
+                  <Controller
+                    name="boxType"
+                    control={control}
+                    render={({ field: { onChange, value } }) => (
+                      <Select
+                        className="bg-white"
+                        labelId="boxtype-label"
+                        id="boxtype-select"
+                        label="Type de box"
+                        value={value}
+                        onChange={onChange}
+                      >
+                        <MenuItem value="ac2350">AC 2350 (Box orange)</MenuItem>
+                      </Select>
+                    )}
+                  />
+                </FormControl>
+              </div>
+              <Stack direction="row" spacing={2}>
+                <Controller
+                  name="macAddress"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      className="bg-white"
+                      required
+                      fullWidth
+                      label="Adresse MAC"
+                      {...field}
+                    />
+                  )}
+                />
+                <Tooltip title="Scanner le code barre de la box">
+                  <IconButton onClick={() => setQrScannerOpen(true)}>
+                    <QrCodeScanner />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+              {user.membership.type === MembershipType.FTTH && (
+                <Controller
+                  name="ptahProfile"
+                  control={control}
+                  render={({ field: { onChange, value } }) => (
+                    <Autocomplete
+                      options={ptahProfiles}
+                      loading={ptahProfilesLoading}
+                      value={value}
+                      onChange={(event, newValue) => onChange(newValue)}
+                      sx={{ width: 300 }}
+                      renderInput={(params) => (
+                        <FormControl fullWidth required>
+                          <InputLabel {...params.InputLabelProps}>
+                            Profil Ptah
+                          </InputLabel>
+                          <OutlinedInput
+                            {...params.InputProps}
+                            inputProps={params.inputProps}
+                            label="Profil Ptah"
+                            endAdornment={
+                              <>
+                                {ptahProfilesLoading ? (
+                                  <CircularProgress
+                                    color="inherit"
+                                    size={20}
+                                    sx={{ mr: 1 }}
+                                  />
+                                ) : null}
+                                {params.InputProps.endAdornment}
+                              </>
+                            }
+                          />
+                        </FormControl>
+                      )}
+                    />
+                  )}
+                />
+              )}
+              <Button variant="contained" type="submit">
+                {user.membership.type === MembershipType.FTTH
+                  ? "Assigner la box"
+                  : "Créer un Unet sur cette box"}
+              </Button>
+            </Stack>
+          )}
+        </form>
+
+        {!boxLoading && box && (
+          <>
+            <div className="mb-4">
+              <Typography variant="h6" align="left" component="div">
+                Box
+              </Typography>
+              <div style={{ margin: "0.5rem 0" }}>
+                {box.ping_history &&
+                  box.ping_history.length > 0 &&
+                  (() => {
+                    const lastPing = box.ping_history[0]; // Le ping le plus récent
+                    const lastSuccessfulPing = box.ping_history.find(
+                      (p) => p.success,
+                    );
+                    const lastPingDate = new Date(lastPing.timestamp * 1000);
+                    const isDataObsolete =
+                      new Date().getTime() - lastPingDate.getTime() >
+                      6 * 60 * 60 * 1000;
+
+                    return (
+                      <>
+                        {isDataObsolete && (
+                          <Alert severity="warning" sx={{ mb: 2 }}>
+                            Attention : La supervision semble obsolète. La
+                            dernière donnée date du{" "}
+                            {lastPingDate.toLocaleString("fr-FR")}.
+                          </Alert>
+                        )}
+                        <strong>Ping fonctionnel</strong> :{" "}
+                        {lastPing.success ? (
+                          <Chip
+                            variant="outlined"
+                            color="success"
+                            label="Oui"
+                          />
+                        ) : (
+                          <Chip color="error" label="Non" />
+                        )}
+                        <br />
+                        <strong>Dernier ping réussi</strong> :{" "}
+                        {lastSuccessfulPing
+                          ? new Date(
+                              lastSuccessfulPing.timestamp * 1000,
+                            ).toLocaleString("fr-FR")
+                          : " Jamais"}
+                      </>
+                    );
+                  })()}
+              </div>
+              <Button
+                onClick={() =>
+                  navigator.clipboard.writeText(
+                    generateManagementIPv6(box?.mac),
+                  )
+                }
+                startIcon={<ContentCopy />}
+                size="small"
+              >
+                {generateManagementIPv6(box?.mac)}
+              </Button>
+              <br />
+              <strong>MAC</strong> :<span className="pr-2" />
+              {editingMac ? (
+                <TextField
+                  value={newMac}
+                  onChange={(e) => setNewMac(e.target.value)}
+                  size="small"
+                />
+              ) : (
+                <Button
+                  onClick={() => navigator.clipboard.writeText(box.mac)}
+                  startIcon={<ContentCopy />}
+                  size="small"
+                >
+                  {box.mac}
+                </Button>
+              )}
+              {isMainUnet && (
+                <IconButton onClick={() => setEditingMac(!editingMac)}>
+                  <EditIcon />
+                </IconButton>
+              )}
+              {editingMac && (
+                <ConfirmableButton
+                  variant="contained"
+                  buttonColor="error"
+                  onConfirm={onUpdateMac}
+                  confirmationText={
+                    <p>
+                      La MAC de la box sera modifée en base de donnée, et l'ONT
+                      associé sera mis à jour avec la nouvelle MAC.
+                      <br />
+                      <br />
+                      Les boxs ne seront pas redémarrées ni reconfigurées ! Ce
+                      changement ne sera effectif{" "}
+                      <strong>qu'en base de données</strong>. Par exemple, il
+                      est conseillé de redémarrer les boxs avec les deux
+                      adresses MAC afin de ne pas avoir de duplication
+                      d'adresse.
+                    </p>
+                  }
+                >
+                  Valider nouvelle mac
+                </ConfirmableButton>
+              )}
+              <br />
+              <strong>Type</strong> : {box.type}
+              <br />
+              {user.membership.type === MembershipType.FTTH && (
+                <>
+                  <strong>Profil Ptah</strong> :<span className="pr-2" />
+                  {editingPtahProfile ? (
+                    <Autocomplete
+                      options={ptahProfiles}
+                      loading={ptahProfilesLoading}
+                      value={newPtahProfile}
+                      onChange={(event, newValue) =>
+                        setNewPtahProfile(newValue)
+                      }
+                      sx={{
+                        width: 250,
+                        display: "inline-block",
+                        verticalAlign: "middle",
+                      }}
+                      size="small"
+                      renderInput={(params) => (
+                        <TextField {...params} label="Profil Ptah" />
+                      )}
+                    />
+                  ) : (
+                    <span>{box.ptah_profile}</span>
+                  )}
+                  {isMainUnet && (
+                    <IconButton
+                      onClick={() => setEditingPtahProfile(!editingPtahProfile)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  )}
+                  {editingPtahProfile && (
+                    <ConfirmableButton
+                      variant="contained"
+                      buttonColor="error"
+                      onConfirm={onUpdatePtahProfile}
+                      confirmationText={
+                        <p>
+                          Le profil Ptah de la box sera modifié. Ceci peut
+                          entraîner une coupure de service temporaire le temps
+                          que la box soit reconfigurée.
+                        </p>
+                      }
+                    >
+                      Valider
+                    </ConfirmableButton>
+                  )}
+                  <div style={{ marginTop: "8px" }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={async () => {
+                        setIsDownloadingPtah(true);
+                        try {
+                          await Api.downloadPtahImage(
+                            box.mac,
+                            box.ptah_profile,
+                          );
+                        } catch (e) {
+                          alert(
+                            "Erreur lors du téléchargement de l'image : " + e,
+                          );
+                        } finally {
+                          setIsDownloadingPtah(false);
+                        }
+                      }}
+                      disabled={isDownloadingPtah}
+                      startIcon={
+                        isDownloadingPtah ? (
+                          <CircularProgress size={16} />
+                        ) : (
+                          <Download />
+                        )
+                      }
+                    >
+                      {isDownloadingPtah
+                        ? "Génération de l'image..."
+                        : "Image Ptah"}
+                    </Button>
+                  </div>
+                </>
+              )}
+              <br />
+              {mainUser && (
+                <>
+                  <strong>User principal</strong> :
+                  <Link
+                    underline="hover"
+                    className="pl-2"
+                    href={`/admin/users/${mainUser?.id}`}
+                  >
+                    {mainUser?.first_name}
+                  </Link>{" "}
+                  ({box?.main_unet_id})
+                  <br />
+                </>
+              )}
+              <strong>Autres adhérents</strong> :
+              {!usersOnBox || (usersOnBox.length <= 0 && <CircularProgress />)}
+              {usersOnBox?.length === 1 && "Aucun"}
+              {usersOnBox?.length > 1 && (
+                <>
+                  <ul className="mt-2">
+                    {usersOnBox
+                      .filter((u) => u != mainUser)
+                      .map((u) => (
+                        <li key={u.id}>
+                          <Link
+                            underline="hover"
+                            href={`/admin/users/${u.id}`}
+                            key={u.id}
+                          >
+                            {u.first_name + " " + u.last_name}
+                          </Link>{" "}
+                          ({u.membership?.unetid})
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              )}
+            </div>
+            <div>
+              <Typography variant="h6" align="left" component="div">
+                UNetProfile
+              </Typography>
+              {!myUnetProfile && (
+                <Alert severity="warning">
+                  Rechargez la page pour voir toutes les infos
+                </Alert>
+              )}
+              <strong>Unet ID de {user.first_name}</strong> :{" "}
+              {myUnetProfile?.unet_id}
+              <br />
+              <strong>IPv4 WAN</strong> : {myUnetProfile?.network.wan_ipv4.ip}
+              <br />
+              <strong>IPv6 WAN</strong> : {myUnetProfile?.network.wan_ipv6.ip}
+              <br />
+              <strong>SSID</strong> : {myUnetProfile?.wifi.ssid}
+              <br />
+              <strong>PSK</strong> : {maskedPsk}
+              <br />
+              <Button onClick={() => setMaskedPsk(myUnetProfile?.wifi.psk)}>
+                Afficher PSK
+              </Button>
+              <br />
+              <FormControlLabel
+                label={wifiStatusString}
+                control={
+                  <Switch
+                    checked={isWifiDisabled}
+                    disabled={isMainUnet}
+                    onChange={handleDisableWifi}
+                    color="warning"
+                  />
+                }
+              />
+            </div>
+
+            {/* Section Ports ouverts / Redirections */}
+            {myUnetProfile?.firewall && (
+              <div className="mt-4">
+                <Typography variant="h6" align="left" component="div">
+                  Ports ouverts / Redirections
+                </Typography>
+
+                {/* IPv4 Port Forwarding */}
+                {myUnetProfile.firewall.ipv4_port_forwarding &&
+                  myUnetProfile.firewall.ipv4_port_forwarding.length > 0 && (
+                    <div className="mt-2">
+                      <Typography
+                        variant="subtitle2"
+                        align="left"
+                        component="div"
+                        sx={{ fontWeight: "bold" }}
+                      >
+                        Redirections de ports IPv4
+                      </Typography>
+                      <TableContainer
+                        component={Paper}
+                        variant="outlined"
+                        sx={{ mt: 1 }}
+                      >
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Nom</TableCell>
+                              <TableCell>Port WAN</TableCell>
+                              <TableCell>IP LAN</TableCell>
+                              <TableCell>Port LAN</TableCell>
+                              <TableCell>Proto</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {myUnetProfile.firewall.ipv4_port_forwarding.map(
+                              (rule, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>{rule.name || "-"}</TableCell>
+                                  <TableCell>{rule.wan_port}</TableCell>
+                                  <TableCell>{rule.lan_ip}</TableCell>
+                                  <TableCell>{rule.lan_port}</TableCell>
+                                  <TableCell>{rule.protocol}</TableCell>
+                                </TableRow>
+                              ),
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </div>
+                  )}
+
+                {/* IPv6 Port Opening */}
+                {myUnetProfile.firewall.ipv6_port_opening &&
+                  myUnetProfile.firewall.ipv6_port_opening.length > 0 && (
+                    <div className="mt-3">
+                      <Typography
+                        variant="subtitle2"
+                        align="left"
+                        component="div"
+                        sx={{ fontWeight: "bold" }}
+                      >
+                        Ports ouverts IPv6
+                      </Typography>
+                      <TableContainer
+                        component={Paper}
+                        variant="outlined"
+                        sx={{ mt: 1 }}
+                      >
+                        <Table size="small">
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>Nom</TableCell>
+                              <TableCell>IP</TableCell>
+                              <TableCell>Port</TableCell>
+                              <TableCell>Proto</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {myUnetProfile.firewall.ipv6_port_opening.map(
+                              (rule, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>{rule.name || "-"}</TableCell>
+                                  <TableCell
+                                    sx={{
+                                      fontSize: "0.75rem",
+                                      maxWidth: 180,
+                                      wordBreak: "break-all",
+                                    }}
+                                  >
+                                    {rule.ip}
+                                  </TableCell>
+                                  <TableCell>{rule.port}</TableCell>
+                                  <TableCell>{rule.protocol}</TableCell>
+                                </TableRow>
+                              ),
+                            )}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </div>
+                  )}
+
+                {(!myUnetProfile.firewall.ipv4_port_forwarding ||
+                  myUnetProfile.firewall.ipv4_port_forwarding.length === 0) &&
+                  (!myUnetProfile.firewall.ipv6_port_opening ||
+                    myUnetProfile.firewall.ipv6_port_opening.length === 0) && (
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mt: 1 }}
+                    >
+                      Aucun port ouvert
+                    </Typography>
+                  )}
+              </div>
+            )}
+
+            <div>
+              {isMainUnet && (
+                <ConfirmableButton
+                  disabled={box.unets.length > 1 || ont !== null}
+                  variant="text"
+                  buttonColor="error"
+                  onConfirm={onDeleteBox}
+                  startIcon={<TrashIcon />}
+                  confirmationText="Le déprovisionning de la box est une action irreversible. Pensez à notez
+                                    l'adresse MAC de la box si vous souhaitez la réassigner. Le unet principal sera supprimé."
+                >
+                  {box.unets.length > 1 &&
+                    `Reste ${box.unets.length - 1} autre(s) Unet(s)`}
+                  {box.unets.length === 1 &&
+                    ont &&
+                    `ONT ${ont.serial_number} est associé`}
+                  {box.unets.length === 1 && !ont && "Supprimer la box"}
+                </ConfirmableButton>
+              )}
+              {!isMainUnet && (
+                <ConfirmableButton
+                  variant="text"
+                  buttonColor="error"
+                  onConfirm={onDeleteUnet}
+                  startIcon={<TrashIcon />}
+                  confirmationText="Le déprovisionning de l'Unet est une action irreversible. Pensez à notez
+                                    ses informations si vous souhaitez les réutiliser."
+                >
+                  Supprimer l'Unet
+                </ConfirmableButton>
+              )}
+            </div>
+          </>
+        )}
+      </Typography>
+    </div>
+  );
 }
 
-function TransferUnetToMacDialog({ unet_id, open, setTransferDialogOpen }: { unet_id: string, open: boolean, setTransferDialogOpen: (open: boolean) => void }) {
-    if (!open) return null;
-    const transferForm = useForm(
-        {
-            defaultValues: {
-                macAddress: "",
-            }
-        }
-    );
+function TransferUnetToMacDialog({
+  unet_id,
+  open,
+  setTransferDialogOpen,
+}: {
+  unet_id: string;
+  open: boolean;
+  setTransferDialogOpen: (open: boolean) => void;
+}) {
+  if (!open) return null;
+  const transferForm = useForm({
+    defaultValues: {
+      macAddress: "",
+    },
+  });
 
-    const onSubmit = (data: { macAddress: string }) => {
-        Api.transferUnet(unet_id, data.macAddress).then(() => {
-            window.location.reload();
-        }).catch(e => {
-            alert("Erreur lors du transfert : " + e);
-        });
-    }
+  const onSubmit = (data: { macAddress: string }) => {
+    Api.transferUnet(unet_id, data.macAddress)
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((e) => {
+        alert("Erreur lors du transfert : " + e);
+      });
+  };
 
-    return (
-        <Dialog open={open} onClose={() => setTransferDialogOpen(false)}>
-            <DialogTitle>Transférer le UnetProfile</DialogTitle>
-            <DialogContent>
-                <div>
-                    <p>
-                        Indiquez l'adresse MAC de la box vers laquelle vous souhaitez transférer le UnetProfile.<br />
-                        <br />
-                        Le changement ne sera effectif qu'en base de données ! Il faudra redémarrer les deux boxes
-                        ou attendre la prochaine synchronisation à 6h00 pour que le changement soit effectif.
-                    </p>
-                    <Typography variant="body1" align="left" color="text.secondary" component="div" sx={{ marginTop: 3 }}>
-                        <Stack direction={"column"}
-                            spacing={2}>
-                            <TextField
-                                label="Adresse MAC"
-                                {...transferForm.register("macAddress")}
-                            />
-                            <Button variant="contained" onClick={transferForm.handleSubmit(onSubmit)}>
-                                Transférer
-                            </Button>
-                        </Stack>
-                    </Typography>
-                </div>
-            </DialogContent>
-        </Dialog>
-    )
+  return (
+    <Dialog open={open} onClose={() => setTransferDialogOpen(false)}>
+      <DialogTitle>Transférer le UnetProfile</DialogTitle>
+      <DialogContent>
+        <div>
+          <p>
+            Indiquez l'adresse MAC de la box vers laquelle vous souhaitez
+            transférer le UnetProfile.
+            <br />
+            <br />
+            Le changement ne sera effectif qu'en base de données ! Il faudra
+            redémarrer les deux boxes ou attendre la prochaine synchronisation à
+            6h00 pour que le changement soit effectif.
+          </p>
+          <Typography
+            variant="body1"
+            align="left"
+            color="text.secondary"
+            component="div"
+            sx={{ marginTop: 3 }}
+          >
+            <Stack direction={"column"} spacing={2}>
+              <TextField
+                label="Adresse MAC"
+                {...transferForm.register("macAddress")}
+              />
+              <Button
+                variant="contained"
+                onClick={transferForm.handleSubmit(onSubmit)}
+              >
+                Transférer
+              </Button>
+            </Stack>
+          </Typography>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function generateManagementIPv6(macAddress: string): string {
-    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-    if (!macRegex.test(macAddress)) {
-        throw new Error("Invalid MAC address format.");
-    }
+  const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+  if (!macRegex.test(macAddress)) {
+    throw new Error("Invalid MAC address format.");
+  }
 
-    const normalizedMac = macAddress.replace(/[:-]/g, "");
+  const normalizedMac = macAddress.replace(/[:-]/g, "");
 
-    const eui64Mac = `${normalizedMac.slice(0, 6)}fffe${normalizedMac.slice(6)}`;
+  const eui64Mac = `${normalizedMac.slice(0, 6)}fffe${normalizedMac.slice(6)}`;
 
-    const firstOctet = parseInt(eui64Mac.slice(0, 2), 16);
-    const invertedFirstOctet = (firstOctet ^ 0x02).toString(16).padStart(2, "0"); // XOR with 0x02
-    const eui64 = `${invertedFirstOctet}${eui64Mac.slice(2)}`;
+  const firstOctet = parseInt(eui64Mac.slice(0, 2), 16);
+  const invertedFirstOctet = (firstOctet ^ 0x02).toString(16).padStart(2, "0"); // XOR with 0x02
+  const eui64 = `${invertedFirstOctet}${eui64Mac.slice(2)}`;
 
-    const ipv6Address = `fd99:fa1:ad4:65:${eui64.match(/.{1,4}/g)!.join(":")}`;
+  const ipv6Address = `fd99:fa1:ad4:65:${eui64.match(/.{1,4}/g)!.join(":")}`;
 
-    return ipv6Address;
+  return ipv6Address;
 }
-

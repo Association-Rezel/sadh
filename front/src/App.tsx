@@ -29,126 +29,139 @@ import PagePayments from "./pages/account/PagePayments";
 import Overdue from "./components/AdminDashboard/Overdue/Overdue";
 
 function AppRouter() {
-    const { user, admin, isLoading } = useAuthContext();
+  const { user, admin, isLoading } = useAuthContext();
 
-    if (isLoading) {
-        return <div className="flex justify-center items-center h-screen">
-            <CircularProgress />
-        </div>;
-    }
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
 
-    return <BrowserRouter>
-        <Routes>
-            <Route path="/">
-                <Route index element={<Index />} />
-                <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
-                <Route path="adherer/*" Component={user ? BecomeMember : LoginOrSignupPage} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/">
+          <Route index element={<Index />} />
+          <Route path="login/auth-error" element={<AuthCallbackErrorPage />} />
+          <Route
+            path="adherer/*"
+            Component={user ? BecomeMember : LoginOrSignupPage}
+          />
 
-                {accountRoute({ user })}
+          {accountRoute({ user })}
 
-                {admin ? (
-                    <Route path="admin" element={<AdminDashboard />}>
-                        <Route index Component={PageAdmin} />
-                        <Route path="calendar" Component={CalendarComponent} />
-                        <Route path="users" Component={Users} />
-                        <Route path="users/:user_id" Component={UserComponent} />
-                        <Route path="olt-debug" Component={OLTDebug} />
-                        <Route path="logs-ipam" Component={IpamLogs} />
-                        <Route path="partial-refunds" Component={PartialRefunds} />
-                        <Route path="overdue" Component={Overdue} />
-                        <Route path="scholarship-student" Component={ScholarshipStudent} />
-                        <Route path="ptah-images" Component={PtahImageDownloader} />
-                    </Route>
-                ): (
-                    <Route path="admin/*" element={<AdminLoginRedirect />} />
-                )}
-
-                <Route path="appointment" element={<Navigate to="/account/appointment" />} />
-                <Route path="*" Component={Page404} />
+          {admin ? (
+            <Route path="admin" element={<AdminDashboard />}>
+              <Route index Component={PageAdmin} />
+              <Route path="calendar" Component={CalendarComponent} />
+              <Route path="users" Component={Users} />
+              <Route path="users/:user_id" Component={UserComponent} />
+              <Route path="olt-debug" Component={OLTDebug} />
+              <Route path="logs-ipam" Component={IpamLogs} />
+              <Route path="partial-refunds" Component={PartialRefunds} />
+              <Route path="overdue" Component={Overdue} />
+              <Route
+                path="scholarship-student"
+                Component={ScholarshipStudent}
+              />
+              <Route path="ptah-images" Component={PtahImageDownloader} />
             </Route>
-        </Routes>
-        <ToastContainer
-            autoClose={3000}
-            position='top-right'
-            pauseOnFocusLoss={false}
-            hideProgressBar
-        />
+          ) : (
+            <Route path="admin/*" element={<AdminLoginRedirect />} />
+          )}
+
+          <Route
+            path="appointment"
+            element={<Navigate to="/account/appointment" />}
+          />
+          <Route path="*" Component={Page404} />
+        </Route>
+      </Routes>
+      <ToastContainer
+        autoClose={3000}
+        position="top-right"
+        pauseOnFocusLoss={false}
+        hideProgressBar
+      />
     </BrowserRouter>
+  );
 }
 
 function App() {
-    return (
-        <AuthProvider>
-            <AppRouter />
-        </AuthProvider>
-
-    );
+  return (
+    <AuthProvider>
+      <AppRouter />
+    </AuthProvider>
+  );
 }
 
 function accountRoute({ user }: { user?: any } = {}) {
-    const appointmentRoute = (
-        <Route path="appointment" Component={PageAppointment} />
-    );
-    const networkSettingsRoute = (
-        <Route path="network" element={<PageNetworkSettings />} />
-    );
-    const bankSettingsRoute = (
-        <Route path="bank-settings" element={<PageNetworkSettings />} />
-    );
-    const networkManagementRoute = (
-        <Route path="connected-devices" element={<ConnectedDevices />} />
-    );
-    const resiliationRoute = (
-        <Route path="resiliation" element={<PageResiliation />} />
-    );
-    const paymentsRoute = (
-        <Route path="payments" element={<PagePayments />} />
-    );
+  const appointmentRoute = (
+    <Route path="appointment" Component={PageAppointment} />
+  );
+  const networkSettingsRoute = (
+    <Route path="network" element={<PageNetworkSettings />} />
+  );
+  const bankSettingsRoute = (
+    <Route path="bank-settings" element={<PageNetworkSettings />} />
+  );
+  const networkManagementRoute = (
+    <Route path="connected-devices" element={<ConnectedDevices />} />
+  );
+  const resiliationRoute = (
+    <Route path="resiliation" element={<PageResiliation />} />
+  );
+  const paymentsRoute = <Route path="payments" element={<PagePayments />} />;
 
-    if (!user) {
-        return <Route path="account" element={<LoginRedirect/>} />
+  if (!user) {
+    return <Route path="account" element={<LoginRedirect />} />;
+  } else if (
+    [MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(
+      user.membership?.status,
+    )
+  ) {
+    if (user.membership?.type == MembershipType.FTTH) {
+      if (user.membership?.unetid) {
+        return (
+          <Route path="account" element={<AccountDashboard />}>
+            {appointmentRoute}
+            {networkSettingsRoute}
+            {bankSettingsRoute}
+            {paymentsRoute}
+            {networkManagementRoute}
+            {resiliationRoute}
+          </Route>
+        );
+      } else {
+        // S'il n'a pas encore eu son rendez-vous
+        return (
+          <Route path="account" element={<AccountDashboard />}>
+            {appointmentRoute}
+            {paymentsRoute}
+            {resiliationRoute}
+          </Route>
+        );
+      }
+    } else {
+      // WIFI
+      return (
+        <Route path="account" element={<AccountDashboard />}>
+          {networkSettingsRoute}
+          {paymentsRoute}
+          {networkManagementRoute}
+          {resiliationRoute}
+        </Route>
+      );
     }
-    else if ([MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(user.membership?.status)) {
-        if (user.membership?.type == MembershipType.FTTH) {
-            if (user.membership?.unetid) {
-                return (
-                    <Route path="account" element={<AccountDashboard />}>
-                        {appointmentRoute}
-                        {networkSettingsRoute}
-                        {bankSettingsRoute}
-                        {paymentsRoute}
-                        {networkManagementRoute}
-                        {resiliationRoute}
-                    </Route>
-                )
-            } else { // S'il n'a pas encore eu son rendez-vous
-                return (
-                    <Route path="account" element={<AccountDashboard />}>
-                        {appointmentRoute}
-                        {paymentsRoute}
-                        {resiliationRoute}
-                    </Route>
-                )
-            }
-        } else { // WIFI
-            return (
-                <Route path="account" element={<AccountDashboard />}>
-                    {networkSettingsRoute}
-                    {paymentsRoute}
-                    {networkManagementRoute}
-                    {resiliationRoute}
-                </Route>
-            )
-        }
-    }
-
-    else if (user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION) {
-        return <Route path="account" element={<Navigate to="/adherer" />} />
-    }
-
-    else {
-        return <Route path="account" element={<LoginRedirect />} />
-    }
+  } else if (
+    user?.membership?.status == MembershipStatus.REQUEST_PENDING_VALIDATION
+  ) {
+    return <Route path="account" element={<Navigate to="/adherer" />} />;
+  } else {
+    return <Route path="account" element={<LoginRedirect />} />;
+  }
 }
 
 export default App;

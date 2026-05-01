@@ -12,16 +12,16 @@ export interface JwtUserData {
 }
 
 export interface BackendAuthSuccessResponse {
-    status: string;
-    session_type: 'user' | 'admin';
-    user: JwtUserData;
+  status: string;
+  session_type: "user" | "admin";
+  user: JwtUserData;
 }
 
 export interface BackendErrorResponse {
-    detail: string;
+  detail: string;
 }
 
-export type AuthCallbackStatus = 'loading' | 'success' | 'error';
+export type AuthCallbackStatus = "loading" | "success" | "error";
 
 export interface LogoutResponse {
   user_cleared: boolean;

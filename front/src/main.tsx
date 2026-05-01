@@ -5,17 +5,17 @@ import "./index.css";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 const theme = createTheme({
-    palette: {
-        primary: {
-            main: "#1c3d50",
-        },
-    }
+  palette: {
+    primary: {
+      main: "#1c3d50",
+    },
+  },
 });
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-    <React.StrictMode>
-        <ThemeProvider theme={theme}>
-            <App />
-        </ThemeProvider>
-    </React.StrictMode>
+  <React.StrictMode>
+    <ThemeProvider theme={theme}>
+      <App />
+    </ThemeProvider>
+  </React.StrictMode>,
 );

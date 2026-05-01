@@ -1,12 +1,12 @@
 # Site web fai.rezel.net
 
-Ce repository contient l'interface de gestion du FAI.  
+Ce repository contient l'interface de gestion du FAI.
 
 - `./` Racine du projet
 - `front/` : Le frontend, en Typescript/React
 - `back/` : Le backend, en Python/FastAPI
 - `Caddyfile.dev` écoute sur le port 6100 et redistribue le traffic entre le frontend et le backend (`/auth/*` et `/api/*`)
-  
+
 ## Ouvrir le projet sous VS Code
 
 Pour parcourir le code, ouvrez le workspace [VS-Code](https://code.visualstudio.com/insiders/) avec :

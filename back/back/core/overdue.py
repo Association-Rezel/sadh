@@ -3,6 +3,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
+import pytz
+from babel.dates import format_datetime
 from common_models.user_models import MembershipStatus, User
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
@@ -102,12 +104,36 @@ async def list_overdue_users(
 async def remind(
     user: User, db: AsyncIOMotorDatabase, kind: ReminderKind
 ) -> dict[str, Any]:
+    info = compute_subscription_info(user)
+    expiration_ts = (
+        info.get("subscription_end")
+        if info and kind == ReminderKind.SUBSCRIPTION
+        else info.get("membership_end") if info else None
+    )
+    expiration_date = None
+    if expiration_ts:
+        expiration_date = format_datetime(
+            datetime.fromtimestamp(int(expiration_ts)),
+            "d MMMM yyyy",
+            locale="fr_FR",
+        )
+
     if kind == ReminderKind.SUBSCRIPTION:
-        result, created, months = await ensure_subscription_reminder_invoice(user, db)
-        send_payment_reminder_subscription(user, months)
+        result, created, _ = await ensure_subscription_reminder_invoice(user, db)
+        amount = _amount_owed(user, ReminderKind.SUBSCRIPTION)
+        send_payment_reminder_subscription(
+            user,
+            amount=amount,
+            expiration_date=expiration_date,
+        )
     else:
         result, created = await ensure_membership_reminder_invoice(user, db)
-        send_payment_reminder_cotisation(user)
+        amount = _amount_owed(user, ReminderKind.MEMBERSHIP)
+        send_payment_reminder_cotisation(
+            user,
+            amount=amount,
+            expiration_date=expiration_date,
+        )
 
     await db.users.update_one(
         {"_id": str(user.id)},

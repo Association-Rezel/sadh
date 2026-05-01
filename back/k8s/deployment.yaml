@@ -21,7 +21,8 @@ spec:
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "sadh_${DEPLOY_ENV}"
-        vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
+        vault.hashicorp.com/agent-inject-template-env:
+          | # Writes at /vault/secrets/env
           {{ with secret "kv/data/sadh_${DEPLOY_ENV}" -}}
             MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
             MATRIX_PASSWORD="{{ .Data.data.matrix_password }}"
@@ -40,21 +41,21 @@ spec:
     spec:
       serviceAccountName: sadh-back-ksa
       containers:
-      - name: sadh-back-container
-        image: $BACK_IMAGE_TAG
-        ports:
-        - containerPort: 80
-        resources:
-          limits:
-            cpu: "1"
-            memory: "512Mi"
-          requests:
-            cpu: "0.2"
-            memory: "256Mi"
-        env:
-        - name: DEPLOY_ENV
-          value: "${DEPLOY_ENV}"
-        - name: VAULT_ROLE_NAME
-          value: "sadh_${DEPLOY_ENV}"
+        - name: sadh-back-container
+          image: $BACK_IMAGE_TAG
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+            requests:
+              cpu: "0.2"
+              memory: "256Mi"
+          env:
+            - name: DEPLOY_ENV
+              value: "${DEPLOY_ENV}"
+            - name: VAULT_ROLE_NAME
+              value: "sadh_${DEPLOY_ENV}"
       imagePullSecrets:
-       - name: gitlab-registery-credentials
+        - name: gitlab-registery-credentials

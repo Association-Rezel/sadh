@@ -8,7 +8,7 @@ import PhoneSection from "./PhoneSection";
 import { useEffect, useState } from "react";
 import Api from "../../../utils/Api";
 import { Membership, MembershipType, User } from "../../../utils/types/types";
-import { SubmitHandler, useForm } from "react-hook-form"
+import { SubmitHandler, useForm } from "react-hook-form";
 import AppointmentSection from "./AppointmentSection";
 import InteropSection from "./InteropSection";
 import { Button, Typography } from "@mui/material";
@@ -18,97 +18,146 @@ import { ONTInfo } from "../../../utils/types/pon_types";
 import AttachedAdherents from "./PartialRefunds/AttachedAdherents";
 import PartialRefundSection from "./PartialRefunds/PartialRefundSection";
 
-
 function UserComponent() {
-    const { user_id } = useParams<string>();
-    const [user, setUser] = useState<User>(null);
-    const [box, setBox] = useState<Box | null>(null);
-    const [boxLoading, setBoxLoading] = useState<boolean>(true);
-    const [ont, setONT] = useState<ONTInfo | null>(null);
-    const [ontLoading, setONTLoading] = useState<boolean>(true);
+  const { user_id } = useParams<string>();
+  const [user, setUser] = useState<User>(null);
+  const [box, setBox] = useState<Box | null>(null);
+  const [boxLoading, setBoxLoading] = useState<boolean>(true);
+  const [ont, setONT] = useState<ONTInfo | null>(null);
+  const [ontLoading, setONTLoading] = useState<boolean>(true);
 
-    const { register, handleSubmit, reset, formState, control } = useForm<Membership>({
-        defaultValues: user?.membership
+  const { register, handleSubmit, reset, formState, control } =
+    useForm<Membership>({
+      defaultValues: user?.membership,
     });
 
-    const onSubmit: SubmitHandler<Membership> = (membership: Membership) => {
-        Api.updateMembership(user.id, membership)
-            .then((updatedUser) => {
-                if (updatedUser === null) {
-                    alert("Erreur lors de la modification. Veuillez essayer de recharger la page.");
-                    return;
-                }
-                setUser(updatedUser);
-                reset(updatedUser.membership);
-            }).catch((error) => {
-                alert("Erreur lors de la modification. Veuillez essayer de recharger la page. Message d'erreur : " + error.message);
-            });
-    }
+  const onSubmit: SubmitHandler<Membership> = (membership: Membership) => {
+    Api.updateMembership(user.id, membership)
+      .then((updatedUser) => {
+        if (updatedUser === null) {
+          alert(
+            "Erreur lors de la modification. Veuillez essayer de recharger la page.",
+          );
+          return;
+        }
+        setUser(updatedUser);
+        reset(updatedUser.membership);
+      })
+      .catch((error) => {
+        alert(
+          "Erreur lors de la modification. Veuillez essayer de recharger la page. Message d'erreur : " +
+            error.message,
+        );
+      });
+  };
 
-    useEffect(() => {
-        Api.fetchUser(user_id).then((user: User) => {
-            setUser(user);
-            reset(user.membership);
-        });
+  useEffect(() => {
+    Api.fetchUser(user_id).then((user: User) => {
+      setUser(user);
+      reset(user.membership);
+    });
 
-        setBoxLoading(true);
-        Api.fetchUserBox(user_id)
-            .then(box => setBox(box))
-            .finally(() => setBoxLoading(false));
-    }, [user_id]);
+    setBoxLoading(true);
+    Api.fetchUserBox(user_id)
+      .then((box) => setBox(box))
+      .finally(() => setBoxLoading(false));
+  }, [user_id]);
 
-    useEffect(() => {
-        setONTLoading(true);
-        Api.fetchONT(user_id)
-            .then(ont => setONT(ont))
-            .finally(() => setONTLoading(false));
-    }, [box]);
+  useEffect(() => {
+    setONTLoading(true);
+    Api.fetchONT(user_id)
+      .then((ont) => setONT(ont))
+      .finally(() => setONTLoading(false));
+  }, [box]);
 
-    // Reste form when user changes. For example if the tstae is updaed
-    // Via the status update section
-    useEffect(() => {
-        reset(user?.membership);
-    }, [user]);
+  // Reste form when user changes. For example if the tstae is updaed
+  // Via the status update section
+  useEffect(() => {
+    reset(user?.membership);
+  }, [user]);
 
-    const saveButton =
-        <div className="mt-10">
-            <Button color="error" disabled={!formState.isDirty} variant={formState.isDirty ? "contained" : "outlined"} onClick={handleSubmit(onSubmit)} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Enregistrer
-            </Button>
-        </div>
+  const saveButton = (
+    <div className="mt-10">
+      <Button
+        color="error"
+        disabled={!formState.isDirty}
+        variant={formState.isDirty ? "contained" : "outlined"}
+        onClick={handleSubmit(onSubmit)}
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Enregistrer
+      </Button>
+    </div>
+  );
 
-    return (
-        <div>
-            <UserSection user={user} />
-            {!user && <p>Chargement...</p>}
-            {user && !user?.membership &&
-                <Typography variant="h5" align="left" color="text.primary" component="div" sx={{ marginTop: 10 }}>
-                    Utilisateur n'est pas abonné et n'a pas de demande d'abonnement en cours.<br />
-                    {user?.prev_memberships && user.prev_memberships.length} ancien(s) abonnement(s) ou demandes trouvée(s).
-                </Typography>}
-            {user && user?.membership && (
-                <>
-                    {saveButton}
-                    <div className="flex gap-x-20 flex-wrap justify-around">
-                        <MembershipSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} formControl={control} />
-                        <StatusUpdateSection user={user} setUser={setUser} />
-                        <UnetSection user={user} box={box} setBox={setBox} ont={ont} boxLoading={boxLoading} setBoxLoading={setBoxLoading} />
-                        {user.membership.type === MembershipType.FTTH && (
-                            <>
-                                <AppointmentSection user={user} setUser={setUser} registerToMembershipUpdateForm={register} />
-                                <ONTSection user_id={user_id} box={box} ont={ont} setONT={setONT} ontLoading={ontLoading} setONTLoading={setONTLoading} />
-                                <InteropSection registerToMembershipUpdateForm={register} user={user} />
-                                <IbanSection user={user} setUser={setUser} />
-                                <PhoneSection user={user} setUser={setUser} />
-                                <PartialRefundSection user={user} setUser={setUser} />
-                            </>
-                        )}
-                    </div>
-                    {saveButton}
-                </>
+  return (
+    <div>
+      <UserSection user={user} />
+      {!user && <p>Chargement...</p>}
+      {user && !user?.membership && (
+        <Typography
+          variant="h5"
+          align="left"
+          color="text.primary"
+          component="div"
+          sx={{ marginTop: 10 }}
+        >
+          Utilisateur n'est pas abonné et n'a pas de demande d'abonnement en
+          cours.
+          <br />
+          {user?.prev_memberships && user.prev_memberships.length} ancien(s)
+          abonnement(s) ou demandes trouvée(s).
+        </Typography>
+      )}
+      {user && user?.membership && (
+        <>
+          {saveButton}
+          <div className="flex gap-x-20 flex-wrap justify-around">
+            <MembershipSection
+              user={user}
+              setUser={setUser}
+              registerToMembershipUpdateForm={register}
+              formControl={control}
+            />
+            <StatusUpdateSection user={user} setUser={setUser} />
+            <UnetSection
+              user={user}
+              box={box}
+              setBox={setBox}
+              ont={ont}
+              boxLoading={boxLoading}
+              setBoxLoading={setBoxLoading}
+            />
+            {user.membership.type === MembershipType.FTTH && (
+              <>
+                <AppointmentSection
+                  user={user}
+                  setUser={setUser}
+                  registerToMembershipUpdateForm={register}
+                />
+                <ONTSection
+                  user_id={user_id}
+                  box={box}
+                  ont={ont}
+                  setONT={setONT}
+                  ontLoading={ontLoading}
+                  setONTLoading={setONTLoading}
+                />
+                <InteropSection
+                  registerToMembershipUpdateForm={register}
+                  user={user}
+                />
+                <IbanSection user={user} setUser={setUser} />
+                <PhoneSection user={user} setUser={setUser} />
+                <PartialRefundSection user={user} setUser={setUser} />
+              </>
             )}
-        </div>
-    );
-};
+          </div>
+          {saveButton}
+        </>
+      )}
+    </div>
+  );
+}
 
 export default UserComponent;

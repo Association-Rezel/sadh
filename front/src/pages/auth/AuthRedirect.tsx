@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 function AuthRedirect({
   basePath,
   params,
-  customSuccessURI
+  customSuccessURI,
 }: {
   basePath: string;
   params?: Record<string, string>;
@@ -14,10 +14,13 @@ function AuthRedirect({
   const location = useLocation();
 
   useEffect(() => {
-    window.location.href = basePath + "?" + new URLSearchParams({
-      ...params,
-      success_uri: customSuccessURI || location.pathname + location.search
-    }).toString();
+    window.location.href =
+      basePath +
+      "?" +
+      new URLSearchParams({
+        ...params,
+        success_uri: customSuccessURI || location.pathname + location.search,
+      }).toString();
   }, []);
 
   return (
@@ -25,17 +28,44 @@ function AuthRedirect({
       <CircularProgress />
     </div>
   );
+}
+
+export const AdminLoginRedirect = ({
+  customSuccessURI,
+}: {
+  customSuccessURI?: string;
+}) => {
+  return (
+    <AuthRedirect
+      basePath={`/auth/login/admin`}
+      customSuccessURI={customSuccessURI}
+    />
+  );
 };
 
-export const AdminLoginRedirect = ({ customSuccessURI }: { customSuccessURI?: string }) => {
-  return <AuthRedirect basePath={`/auth/login/admin`} customSuccessURI={customSuccessURI} />;
+export const LoginRedirect = ({
+  customSuccessURI,
+}: {
+  customSuccessURI?: string;
+}) => {
+  return (
+    <AuthRedirect
+      basePath={`/auth/login/user`}
+      customSuccessURI={customSuccessURI}
+    />
+  );
 };
 
-export const LoginRedirect = ({ customSuccessURI }: { customSuccessURI?: string }) => {
-  return <AuthRedirect basePath={`/auth/login/user`} customSuccessURI={customSuccessURI} />;
+export const SignupRedirect = ({
+  customSuccessURI,
+}: {
+  customSuccessURI?: string;
+}) => {
+  return (
+    <AuthRedirect
+      basePath={`/auth/login/user`}
+      params={{ prompt: "create" }}
+      customSuccessURI={customSuccessURI}
+    />
+  );
 };
-
-export const SignupRedirect = ({ customSuccessURI }: { customSuccessURI?: string }) => {
-  return <AuthRedirect basePath={`/auth/login/user`} params={{ prompt: "create"}} customSuccessURI={customSuccessURI} />;
-};
-

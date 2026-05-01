@@ -1,12 +1,27 @@
 import { useState } from "react";
-import { Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, IconButton, Icon } from "@mui/material";
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  IconButton,
+  Icon,
+} from "@mui/material";
 
 interface ConfirmableButtonProps {
   children: React.ReactNode;
   confirmationText?: string | React.ReactNode;
   onConfirm: () => void;
   dialogTitle?: string;
-  buttonColor?: "primary" | "secondary" | "error" | "warning" | "info" | "success";
+  buttonColor?:
+    | "primary"
+    | "secondary"
+    | "error"
+    | "warning"
+    | "info"
+    | "success";
   buttonSize?: "small" | "medium" | "large";
   variant?: "contained" | "outlined" | "text";
   startIcon?: React.ReactNode;
@@ -24,7 +39,7 @@ export default function ConfirmableButton({
   variant = "contained",
   startIcon = null,
   disabled = false,
-  type = "button"
+  type = "button",
 }: ConfirmableButtonProps) {
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -38,7 +53,7 @@ export default function ConfirmableButton({
 
   return (
     <>
-      {type === "iconbutton" ?
+      {type === "iconbutton" ? (
         <IconButton
           size={buttonSize}
           color={buttonColor}
@@ -47,7 +62,7 @@ export default function ConfirmableButton({
         >
           {children}
         </IconButton>
-        :
+      ) : (
         <Button
           size={buttonSize}
           variant={variant}
@@ -58,7 +73,7 @@ export default function ConfirmableButton({
         >
           {children}
         </Button>
-      }
+      )}
 
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>{dialogTitle}</DialogTitle>
@@ -67,7 +82,12 @@ export default function ConfirmableButton({
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Annuler</Button>
-          <Button onClick={() => { onConfirm(); handleCloseDialog() }}>
+          <Button
+            onClick={() => {
+              onConfirm();
+              handleCloseDialog();
+            }}
+          >
             Confirmer
           </Button>
         </DialogActions>

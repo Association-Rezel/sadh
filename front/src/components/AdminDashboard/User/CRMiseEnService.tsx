@@ -1,122 +1,130 @@
-import Button from '@mui/material/Button';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import DialogTitle from '@mui/material/DialogTitle';
-import Dialog from '@mui/material/Dialog';
-import { CRMiseEnService, User } from '../../../utils/types/types';
-import { DialogActions, TextField } from '@mui/material';
-import Api from '../../../utils/Api';
-import dayjs from 'dayjs';
-import { useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
-import { ONTInfo } from '../../../utils/types/pon_types';
+import Button from "@mui/material/Button";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import DialogTitle from "@mui/material/DialogTitle";
+import Dialog from "@mui/material/Dialog";
+import { CRMiseEnService, User } from "../../../utils/types/types";
+import { DialogActions, TextField } from "@mui/material";
+import Api from "../../../utils/Api";
+import dayjs from "dayjs";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { ONTInfo } from "../../../utils/types/pon_types";
 
 export interface CRMESDialogProps {
-    open: boolean;
-    onClose: () => void;
-    user: User;
+  open: boolean;
+  onClose: () => void;
+  user: User;
 }
 
 export interface CSVFile {
-    filename: string;
-    content: string;
+  filename: string;
+  content: string;
 }
-
 
 export default function CRMESDialog({ open, onClose, user }: CRMESDialogProps) {
-    const [hasONT, setHasONT] = useState<boolean>(false);
+  const [hasONT, setHasONT] = useState<boolean>(false);
 
-    const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>({
-        defaultValues: {
-            ref_interne_rezel_commande: "",
-            residence: "",
-            ref_appartement: "",
-            ref_prestation_prise: "",
-            date_mise_en_service: "",
-            ref_pto: "",
-        }
+  const { register, handleSubmit, getValues, reset } = useForm<CRMiseEnService>(
+    {
+      defaultValues: {
+        ref_interne_rezel_commande: "",
+        residence: "",
+        ref_appartement: "",
+        ref_prestation_prise: "",
+        date_mise_en_service: "",
+        ref_pto: "",
+      },
+    },
+  );
+
+  useEffect(() => {
+    if (!user?.membership) return;
+
+    Api.fetchONT(user.id).then((ont: ONTInfo) => {
+      setHasONT(ont !== null);
+      if (ont === null) return;
+
+      reset({
+        ref_interne_rezel_commande: user.membership.ref_commande,
+        residence: user.membership.address.residence,
+        ref_appartement: user.membership.address.appartement_id,
+        ref_prestation_prise: user.membership.ref_prestation,
+        date_mise_en_service: dayjs(
+          user.membership.appointment?.slot.end,
+        ).format("YYYYMMDD HH:mm"),
+        ref_pto: "",
+        numero_sequence: "1",
+      });
     });
+  }, [user]);
 
-    useEffect(() => {
-        if (!user?.membership) return;
+  const sendData = (info: CRMiseEnService) => {
+    Api.sendCRMiseEnService(info).then((res) => {
+      res.json().then((json) => {
+        if (!res.ok) {
+          alert("Nix a retourné une erreur : \n" + JSON.stringify(json));
+          return;
+        } else {
+          const fileContent = json.content;
+          const filename = json.filename;
 
-        Api.fetchONT(user.id).then((ont: ONTInfo) => {
-            setHasONT(ont !== null);
-            if (ont === null) return;
+          // Create a Blob object containing the file content
+          const blob = new Blob([fileContent], {
+            type: "application/octet-stream",
+          });
 
-            reset({
-                ref_interne_rezel_commande: user.membership.ref_commande,
-                residence: user.membership.address.residence,
-                ref_appartement: user.membership.address.appartement_id,
-                ref_prestation_prise: user.membership.ref_prestation,
-                date_mise_en_service: dayjs(user.membership.appointment?.slot.end).format("YYYYMMDD HH:mm"),
-                ref_pto: "",
-                numero_sequence: "1",
-            });
-        })
-    }, [user]);
+          // Create a URL for the Blob
+          const url = window.URL.createObjectURL(blob);
 
-    const sendData = (info: CRMiseEnService) => {
-        Api.sendCRMiseEnService(info).then((res) => {
-            res.json().then((json) => {
-                if (!res.ok) {
-                    alert("Nix a retourné une erreur : \n" + JSON.stringify(json));
-                    return;
-                }
-                else {
-                    const fileContent = json.content;
-                    const filename = json.filename;
+          // Create an <a> element to trigger the download
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
 
-                    // Create a Blob object containing the file content
-                    const blob = new Blob([fileContent], { type: 'application/octet-stream' });
+          // Trigger a click event on the <a> element
+          a.click();
 
-                    // Create a URL for the Blob
-                    const url = window.URL.createObjectURL(blob);
+          // Clean up by revoking the Blob URL
+          window.URL.revokeObjectURL(url);
+        }
+      });
+    });
+  };
 
-                    // Create an <a> element to trigger the download
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-
-                    // Trigger a click event on the <a> element
-                    a.click();
-
-                    // Clean up by revoking the Blob URL
-                    window.URL.revokeObjectURL(url);
-                 }
-            });
-        });
-    }
-
-    return (
-        <Dialog onClose={onClose} open={open} maxWidth="sm" fullWidth={true}>
-        <form onSubmit={handleSubmit(sendData)}>
-            {hasONT && (
-                <>
-                    <DialogTitle>Récapitulatif du CR MES</DialogTitle>
-                    <List sx={{ pt: 0 }}>
-                        {Object.keys(getValues()).map((key: keyof CRMiseEnService) => (
-                            <ListItem key={key} >
-                                <TextField
-                                    required={key !== "ref_pto"}
-                                    label={key}
-                                    {...register(key)}
-                                    size='small'
-                                    fullWidth={true} />
-                            </ListItem>
-                        ))}
-                    </List>
-                </>
-            )}
-            {!hasONT && (
-                <DialogTitle>Vous devez d'abord assigner un ONT</DialogTitle>
-            )}
-            <DialogActions>
-                <Button variant="outlined" onClick={onClose}>Annuler</Button>
-                <Button variant="contained" type="submit">Télécharger le CSV</Button>
-            </DialogActions>
-        </form>
-        </Dialog>
-    );
+  return (
+    <Dialog onClose={onClose} open={open} maxWidth="sm" fullWidth={true}>
+      <form onSubmit={handleSubmit(sendData)}>
+        {hasONT && (
+          <>
+            <DialogTitle>Récapitulatif du CR MES</DialogTitle>
+            <List sx={{ pt: 0 }}>
+              {Object.keys(getValues()).map((key: keyof CRMiseEnService) => (
+                <ListItem key={key}>
+                  <TextField
+                    required={key !== "ref_pto"}
+                    label={key}
+                    {...register(key)}
+                    size="small"
+                    fullWidth={true}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </>
+        )}
+        {!hasONT && (
+          <DialogTitle>Vous devez d'abord assigner un ONT</DialogTitle>
+        )}
+        <DialogActions>
+          <Button variant="outlined" onClick={onClose}>
+            Annuler
+          </Button>
+          <Button variant="contained" type="submit">
+            Télécharger le CSV
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
 }
-

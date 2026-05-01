@@ -9,7 +9,7 @@ stages:
   - publish
 
 include:
-  - project: 'rezel/shared-ci'
+  - project: "rezel/shared-ci"
     file: .gitlab-ci-template-publish_to_github.yml
     inputs:
       vault_secrets_role: service_sadh
@@ -29,6 +29,16 @@ linting:
   script:
     - black --version
     - black --check --verbose --diff --color -- .
+
+prettier:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  stage: pre_checks
+  image: node:alpine
+  script:
+    - npx prettier --version
+    - npx prettier --check .
 
 # From https://docs.gitlab.com/ee/ci/docker/using_kaniko.html#building-a-docker-image-with-kaniko
 buildfrontend:
@@ -94,7 +104,7 @@ deploybackend:
     - when: never
   image:
     name: dtzar/helm-kubectl
-    entrypoint: ['']
+    entrypoint: [""]
   before_script:
     - apk add envsubst
   script:
@@ -127,7 +137,7 @@ deployfrontend:
     - when: never
   image:
     name: dtzar/helm-kubectl
-    entrypoint: ['']
+    entrypoint: [""]
   before_script:
     - apk add envsubst
   script:

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   TableCell,
   Popover,
   Checkbox,
   FormControlLabel,
   Box,
-} from '@mui/material';
+} from "@mui/material";
 
 interface SelectableTableCellProps {
   selectedFields: string[];
@@ -34,36 +34,39 @@ const SelectableTableCell: React.FC<SelectableTableCellProps> = ({
 
   const toggleField = (field: string) => {
     const updated = selectedFields.includes(field)
-      ? selectedFields.filter(f => f !== field)
+      ? selectedFields.filter((f) => f !== field)
       : [...selectedFields, field];
     onChange(updated);
   };
 
   return (
     <>
-      <TableCell onClick={handleClick} className="cursor-pointer hover:bg-gray-100">
+      <TableCell
+        onClick={handleClick}
+        className="cursor-pointer hover:bg-gray-100"
+      >
         {children}
       </TableCell>
       <Popover
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
         <Box p={2}>
-          {possibleFields.map(field => (
+          {possibleFields.map((field) => (
             <>
-                <FormControlLabel
+              <FormControlLabel
                 key={field}
                 control={
-                    <Checkbox
+                  <Checkbox
                     checked={selectedFields.includes(field)}
                     onChange={() => toggleField(field)}
-                    />
+                  />
                 }
                 label={field}
-                />
-                <br />
+              />
+              <br />
             </>
           ))}
         </Box>

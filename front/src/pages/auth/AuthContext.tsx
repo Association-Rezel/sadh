@@ -1,9 +1,16 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { JwtUserData } from '../../utils/types/auth';
-import { toast } from 'react-toastify';
-import { User } from '../../utils/types/types';
-import Api from '../../utils/Api';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  ReactNode,
+} from "react";
+import type { JwtUserData } from "../../utils/types/auth";
+import { toast } from "react-toastify";
+import { User } from "../../utils/types/types";
+import Api from "../../utils/Api";
 
 export interface AuthContextProps {
   user: User | null;
@@ -16,7 +23,9 @@ export interface AuthContextProps {
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [admin, setAdmin] = useState<JwtUserData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -26,17 +35,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const [user, admin] = await Promise.all([
         Api.fetchMe(),
-        Api.checkAuthStatusForPath('admin'),
+        Api.checkAuthStatusForPath("admin"),
       ]).catch((error) => {
-        console.error('Error checking authentication status:', error);
-        toast.error('Failed to check authentication status. Please log in again.');
+        console.error("Error checking authentication status:", error);
+        toast.error(
+          "Failed to check authentication status. Please log in again.",
+        );
         return [null, null];
       });
       setUser(user);
       setAdmin(admin);
     } catch (error) {
-      console.error('Error checking authentication status:', error);
-      toast.error('Failed to check authentication status. Please log in again.');
+      console.error("Error checking authentication status:", error);
+      toast.error(
+        "Failed to check authentication status. Please log in again.",
+      );
       setUser(null);
       setAdmin(null);
     } finally {
@@ -63,7 +76,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuthContext = (): AuthContextProps => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

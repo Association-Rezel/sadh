@@ -33,6 +33,7 @@ def _send_email(
     attachments: list[str] | None = None,
     bcc: str | None = ENV.fai_email_address,
     html: bool = False,
+    reply_to: str | None = None,
 ) -> None:
     """Send email."""
 
@@ -46,6 +47,8 @@ def _send_email(
         message = MIMEMultipart("mixed")
         message["From"] = "FAI Rezel <fai@rezel.net>"
         message["To"] = to
+        if reply_to:
+            message["Reply-To"] = reply_to
         if bcc:
             message["Bcc"] = bcc
         message["Subject"] = subject
@@ -207,44 +210,44 @@ def send_mail_no_more_wifi_on_box(user: User) -> None:
     )
 
 
-def send_payment_reminder_subscription(user: User, num_months: int = 1) -> None:
-    if num_months <= 1:
-        invoice_desc = "Une facture correspondant à un mois d'abonnement"
+def send_payment_reminder_subscription(
+    user: User,
+    amount: float | None = None,
+    expiration_date: str | None = None,
+) -> None:
+    _send_payment_reminder(user, "subscription", amount, expiration_date)
+
+
+def send_payment_reminder_cotisation(
+    user: User,
+    amount: float | None = None,
+    expiration_date: str | None = None,
+) -> None:
+    _send_payment_reminder(user, "membership", amount, expiration_date)
+
+
+def _send_payment_reminder(
+    user: User,
+    kind: str,
+    amount: float | None = None,
+    expiration_date: str | None = None,
+) -> None:
+    if kind == "subscription":
+        subject = "Rezel - Rappel : ton abonnement FAI est arrivé à échéance"
     else:
-        invoice_desc = f"Une facture couvrant {num_months} mois "
-    body = (
-        f"<p>Bonjour {user.first_name},</p>"
-        "<p>Nous te contactons car ton abonnement au service FAI Rezel est arrivé à "
-        "échéance. Pour éviter toute interruption, merci de régulariser ton paiement "
-        'depuis ton espace <a href="https://fai.rezel.net/account/payments">Mes paiements</a>.</p>'
-        f"<p>{invoice_desc} est disponible pour paiement en ligne.</p>"
-        '<p>Pour toute question, contacte <a href="mailto:support@rezel.net">support@rezel.net</a>.</p>'
-        "<p>— L'équipe FAI Rezel</p>"
-    )
+        subject = "Rezel - Rappel : ta cotisation annuelle est arrivée à échéance"
+
     _send_email(
-        "Rezel - Rappel : ton abonnement FAI est arrivé à échéance",
-        body,
+        subject,
+        jinja2_emails_env.get_template("payment_reminder.html").render(
+            user=user,
+            kind=kind,
+            amount=f"{amount:.2f}" if amount is not None else None,
+            expiration_date=expiration_date,
+        ),
         user.email,
         html=True,
-    )
-
-
-def send_payment_reminder_cotisation(user: User) -> None:
-    body = (
-        f"<p>Bonjour {user.first_name},</p>"
-        "<p>Nous te contactons car ta cotisation annuelle à l'association Rezel est "
-        "arrivée à échéance. La cotisation est obligatoire pour bénéficier du service "
-        "FAI.</p>"
-        "<p>Une facture correspondant à la cotisation est disponible pour paiement en ligne"
-        'depuis ton espace <a href="https://fai.rezel.net/account/payments">Mes paiements</a>.</p>'
-        '<p>Pour toute question, contacte <a href="mailto:support@rezel.net">support@rezel.net</a>.</p>'
-        "<p>— L'équipe FAI Rezel</p>"
-    )
-    _send_email(
-        "Rezel - Rappel : ta cotisation annuelle est arrivée à échéance",
-        body,
-        user.email,
-        html=True,
+        reply_to="fai@rezel.net",
     )
 
 

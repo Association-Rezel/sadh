@@ -1,5 +1,5 @@
 export interface IpamLog {
-    timestamp: number;
-    source: string;
-    message: string;
+  timestamp: number;
+  source: string;
+  message: string;
 }

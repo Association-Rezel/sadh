@@ -1,26 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Tooltip, Box, Slider } from '@mui/material';
-import { Close, FlashlightOn, FlashlightOff, ZoomIn, QrCodeScanner} from '@mui/icons-material';
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Tooltip,
+  Box,
+  Slider,
+} from "@mui/material";
+import {
+  Close,
+  FlashlightOn,
+  FlashlightOff,
+  ZoomIn,
+  QrCodeScanner,
+} from "@mui/icons-material";
 let scanImageData: ((img: ImageData) => Promise<any[]>) | null = null;
 
 async function ensureZbarLoaded() {
   if (scanImageData) return;
   try {
-    const mod = await import('@undecaf/zbar-wasm');
+    const mod = await import("@undecaf/zbar-wasm");
 
     if ((mod as any).setModuleArgs) {
       (mod as any).setModuleArgs({
         locateFile: (filename: string, directory: string) => {
-          if (filename.endsWith('.wasm')) {
+          if (filename.endsWith(".wasm")) {
             return `https://cdn.jsdelivr.net/npm/@undecaf/zbar-wasm@0.11.0/dist/${filename}`;
           }
-          return directory + filename; 
-        }
+          return directory + filename;
+        },
       });
     }
     scanImageData = (mod as any).scanImageData as any;
   } catch (e) {
-    console.error('zbar-wasm import failed', e);
+    console.error("zbar-wasm import failed", e);
     throw e;
   }
 }
@@ -29,10 +44,15 @@ interface QRCodeScannerDialogProps {
   open: boolean;
   onClose: () => void;
   onScanSuccess: (value: string) => void;
-  scanType?: 'mac' | 'serial';
+  scanType?: "mac" | "serial";
 }
 
-export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, scanType = 'mac' }: QRCodeScannerDialogProps) {
+export default function QRCodeScannerDialogZbar({
+  open,
+  onClose,
+  onScanSuccess,
+  scanType = "mac",
+}: QRCodeScannerDialogProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [torchSupported, setTorchSupported] = useState(false);
@@ -48,7 +68,7 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
 
   const stopScan = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current?.getTracks().forEach((t) => t.stop());
     setTorchSupported(false);
     setTorchOn(false);
     setZoomSupported(false);
@@ -66,25 +86,25 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
       await track.applyConstraints({ advanced: [{ torch: !torchOn }] as any });
       setTorchOn(!torchOn);
     } catch (err) {
-      console.error('Erreur torche:', err);
+      console.error("Erreur torche:", err);
     }
   };
 
   const handleZoomChange = async (_: Event, newValue: number | number[]) => {
     const zoom = Array.isArray(newValue) ? newValue[0] : newValue;
     setZoomLevel(zoom);
-    
+
     if (!streamRef.current) return;
     const track = streamRef.current.getVideoTracks()[0];
     try {
       const caps = track.getCapabilities() as any;
       if (caps.zoom) {
         await track.applyConstraints({
-          advanced: [{ zoom: zoom }] as any
+          advanced: [{ zoom: zoom }] as any,
         });
       }
     } catch (err) {
-      console.error('Erreur zoom:', err);
+      console.error("Erreur zoom:", err);
     }
   };
 
@@ -97,8 +117,8 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
     try {
       await ensureZbarLoaded();
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },  // Démarrer la caméra avec width à 1280, contrainte IOS
-        audio: false
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } }, // Démarrer la caméra avec width à 1280, contrainte IOS
+        audio: false,
       });
       streamRef.current = stream;
       video.srcObject = stream;
@@ -109,7 +129,9 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
       setTorchSupported(Boolean(caps.torch));
       setZoomSupported(Boolean(caps.zoom));
 
-      const ctx = canvas.getContext('2d', { willReadFrequently: true } as any) as CanvasRenderingContext2D | null;
+      const ctx = canvas.getContext("2d", {
+        willReadFrequently: true,
+      } as any) as CanvasRenderingContext2D | null;
       if (!ctx) return;
 
       const loop = async () => {
@@ -141,17 +163,15 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
           if (!scanImageData) return;
           const symbols = await scanImageData(imageData);
 
-          const s = symbols.find(sym => 
-             sym.typeName === 'ZBAR_CODE128'
-          );
+          const s = symbols.find((sym) => sym.typeName === "ZBAR_CODE128");
           if (s) {
             const text = s.decode();
-            
-            if (scanType === 'mac' && MAC_REGEX.test(text)) {
+
+            if (scanType === "mac" && MAC_REGEX.test(text)) {
               onScanSuccess(text);
               handleClose();
               return;
-            } else if (scanType === 'serial') {
+            } else if (scanType === "serial") {
               const serialMatch = text.match(ONT_SERIAL_REGEX);
               if (serialMatch) {
                 const formatted = `${serialMatch[1]}:${serialMatch[2]}`;
@@ -161,60 +181,79 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
               }
             }
           }
-        } catch (err) {
-        }
+        } catch (err) {}
 
         rafRef.current = requestAnimationFrame(loop);
       };
 
       rafRef.current = requestAnimationFrame(loop);
     } catch (err) {
-      console.error('Erreur démarrage caméra/zbar:', err);
+      console.error("Erreur démarrage caméra/zbar:", err);
     }
   };
 
   useEffect(() => {
     if (open) {
       const timer = setTimeout(startScan, 100);
-      return () => { clearTimeout(timer); stopScan(); };
+      return () => {
+        clearTimeout(timer);
+        stopScan();
+      };
     } else {
       stopScan();
     }
   }, [open]);
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth PaperProps={{ sx: { minWidth: '40%' } }}>
+    <Dialog
+      open={open}
+      onClose={handleClose}
+      maxWidth="sm"
+      fullWidth
+      PaperProps={{ sx: { minWidth: "40%" } }}
+    >
       <DialogTitle sx={{ pr: 6 }}>
-        {scanType === 'mac' ? 'Scanner le code-barre de la box' : 'Scanner le numéro de série ONT'}
-        <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8 }}>
+        {scanType === "mac"
+          ? "Scanner le code-barre de la box"
+          : "Scanner le numéro de série ONT"}
+        <IconButton
+          onClick={handleClose}
+          sx={{ position: "absolute", right: 8, top: 8 }}
+        >
           <Close />
         </IconButton>
       </DialogTitle>
 
       <DialogContent>
-        <Box style={{ position: 'relative' }}>
-          <video ref={videoRef} autoPlay muted playsInline style={{ width: '100%' }} />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
+        <Box style={{ position: "relative" }}>
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            playsInline
+            style={{ width: "100%" }}
+          />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
           {/* Zone de scan en pointillés - correspond à la ROI analysée */}
           <Box
             style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              border: '2px dashed rgba(255, 255, 255, 0.8)',
-              width: '90%',
-              height: '25%',
-              pointerEvents: 'none'
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              border: "2px dashed rgba(255, 255, 255, 0.8)",
+              width: "90%",
+              height: "25%",
+              pointerEvents: "none",
             }}
           />
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: 'space-between', px: 3, pb: 2 }}>
+      <DialogActions sx={{ justifyContent: "space-between", px: 3, pb: 2 }}>
         {zoomSupported && (
-          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, mr: 2 }}>
-            <ZoomIn sx={{ mr: 1, color: 'text.secondary' }} />
+          <Box sx={{ display: "flex", alignItems: "center", flex: 1, mr: 2 }}>
+            <ZoomIn sx={{ mr: 1, color: "text.secondary" }} />
             <Slider
               value={zoomLevel}
               onChange={handleZoomChange}
@@ -229,7 +268,7 @@ export default function QRCodeScannerDialogZbar({ open, onClose, onScanSuccess, 
           </Box>
         )}
         {torchSupported && (
-          <Tooltip title={torchOn ? 'Éteindre la torche' : 'Allumer la torche'}>
+          <Tooltip title={torchOn ? "Éteindre la torche" : "Allumer la torche"}>
             <IconButton onClick={toggleTorch}>
               {torchOn ? <FlashlightOff /> : <FlashlightOn />}
             </IconButton>

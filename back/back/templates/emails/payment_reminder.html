@@ -1,0 +1,33 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+  </head>
+  <body>
+    Bonjour {{user.first_name}},<br />
+    <br />
+    Tu as actuellement un abonnement à Rezel pour un service d'accès à
+    Internet.<br />
+    <br />
+    Sauf erreur de notre part, {% if kind == 'subscription' %}ton abonnement{%
+    else %}ta cotisation{% endif %} {% if amount %} d'un montant de {{amount}}
+    €{% endif %} a expiré{% if expiration_date %} le {{expiration_date}}{% endif
+    %}. Tu es donc actuellement débiteur{% if amount %} d'un montant de
+    {{amount}} €{% endif %}. Est-il possible de régulariser au plus vite ta
+    situation ? Dans le cas contraire, nous serons contraints de couper ton
+    accès à Internet.<br />
+    <br />
+    Pour régulariser ta situation, tu peux payer en ligne depuis ton espace
+    <a href="https://fai.rezel.net/account/payments">Mes paiements</a>.<br />
+    <br />
+    Tu peux également payer {% if kind == 'subscription' %}ton abonnement{% else
+    %}ta cotisation{% endif %} en espèces au local Rezel (19 place Marguerite
+    Perey, 91120 Palaiseau) ou par virement à l'IBAN suivant : FR76 3000 4033
+    6400 0100 0660 667.<br />
+    <br />
+    Si tu as des questions ou des difficultés de paiement, n'hésite pas à
+    répondre à ce mail.<br />
+    <br />
+    Cordialement,<br />
+    L'équipe FAI Rezel
+  </body>
+</html>
