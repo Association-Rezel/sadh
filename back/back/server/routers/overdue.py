@@ -1,10 +1,13 @@
 import logging
 from datetime import datetime
 
+from typing import Any
+
 from common_models.base import RezelBaseModel
 from common_models.user_models import User
 from fastapi import APIRouter, Depends, HTTPException
 
+from back.core.auto_invoicing import run_auto_invoicing
 from back.core.overdue import (
     ReminderKind,
     list_overdue_users,
@@ -96,3 +99,8 @@ async def remind_all_subscription(db: GetDatabase) -> list[ReminderResult]:
 @router.post("/remind-all-cotisation", response_model=list[ReminderResult])
 async def remind_all_cotisation(db: GetDatabase) -> list[ReminderResult]:
     return await remind_all(db, ReminderKind.MEMBERSHIP)
+
+
+@router.post("/trigger-job")
+async def trigger_job(db: GetDatabase) -> dict[str, Any]:
+    return await run_auto_invoicing(db)

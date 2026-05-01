@@ -38,9 +38,10 @@ export default function Overdue() {
     const [cotisationExpired, setCotisationExpired] = useState<OverdueEntry[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [pendingIds, setPendingIds] = useState<Set<string>>(new Set());
-    const [bulkLoading, setBulkLoading] = useState<Record<ReminderType, boolean>>({
+    const [bulkLoading, setBulkLoading] = useState<Record<ReminderType | "job", boolean>>({
         subscription: false,
         cotisation: false,
+        job: false,
     });
 
     const remindApi: Record<ReminderType, (userId: string) => Promise<unknown>> = {
@@ -101,13 +102,36 @@ export default function Overdue() {
         }
     };
 
+    const handleTriggerJob = async () => {
+        setBulkLoading((prev) => ({ ...prev, job: true }));
+        try {
+            await Api.triggerOverdueJob();
+            await refresh();
+        } catch (e: any) {
+            setError(e.message || "Erreur lors du lancement du job");
+        } finally {
+            setBulkLoading((prev) => ({ ...prev, job: false }));
+        }
+    };
+
     if (loading) {
         return <div className="flex justify-center"><CircularProgress /></div>;
     }
 
     return (
         <div className="flex flex-col gap-8">
-            <Typography variant="h4">Impayés</Typography>
+            <div className="flex justify-between items-center">
+                <Typography variant="h4">Impayés</Typography>
+                <Button
+                    variant="outlined"
+                    color="primary"
+                    disabled={bulkLoading.job}
+                    onClick={handleTriggerJob}
+                    startIcon={bulkLoading.job ? <CircularProgress size={18} color="inherit" /> : null}
+                >
+                    {bulkLoading.job ? "Lancement..." : "Lancer le job de facturation"}
+                </Button>
+            </div>
             {error && <Alert severity="error" onClose={() => setError(null)}>{error}</Alert>}
 
             <OverdueTable

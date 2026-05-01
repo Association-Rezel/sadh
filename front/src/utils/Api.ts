@@ -486,6 +486,10 @@ class Api {
     async remindAllOverdueCotisation(): Promise<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]> {
         return await this.myFetcher<{ user_id: string; invoice_id: number | null; mail_sent: boolean }[]>("/overdue/remind-all-cotisation", null, "POST");
     }
+
+    async triggerOverdueJob(): Promise<any> {
+        return await this.myFetcher<any>("/overdue/trigger-job", null, "POST");
+    }
 }
 
 export default new Api();
