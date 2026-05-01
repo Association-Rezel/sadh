@@ -1109,7 +1109,10 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     # On commence donc à compter les mois payés à partir du changement du système, ou de la vraie date
     # de début d'abonnement si elle est postérieure
     start_date_at_system_change = datetime(2025, 12, user.membership.start_date.day)
-    start_date = max(start_date_at_system_change.replace(tzinfo=None), user.membership.start_date.replace(tzinfo=None))
+    start_date = max(
+        start_date_at_system_change.replace(tzinfo=None),
+        user.membership.start_date.replace(tzinfo=None),
+    )
 
     if start_date is None:
         return {
