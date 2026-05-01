@@ -11,6 +11,11 @@ import {
   TableHead,
   TableRow,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import Api, { OverdueEntry } from "../../../utils/Api";
@@ -49,6 +54,14 @@ export default function Overdue() {
     cotisation: false,
     job: false,
   });
+
+  // Confirmation dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [reminderConfirmOptions, setReminderConfirmOptions] = useState<
+    | { mode: "single"; user: User; type: ReminderType }
+    | { mode: "all"; type: ReminderType }
+    | null
+  >(null);
 
   const remindApi: Record<ReminderType, (userId: string) => Promise<unknown>> =
     {
@@ -122,6 +135,35 @@ export default function Overdue() {
     }
   };
 
+  const openConfirmForUser = (user: User, type: ReminderType) => {
+    setReminderConfirmOptions({ mode: "single", user, type });
+    setConfirmOpen(true);
+  };
+
+  const openConfirmForAll = (type: ReminderType) => {
+    setReminderConfirmOptions({ mode: "all", type });
+    setConfirmOpen(true);
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmOpen(false);
+    setReminderConfirmOptions(null);
+  };
+
+  const handleConfirm = async () => {
+    if (!reminderConfirmOptions) return;
+    setConfirmOpen(false);
+    try {
+      if (reminderConfirmOptions.mode === "single") {
+        await handleRemind(reminderConfirmOptions.user, reminderConfirmOptions.type);
+      } else {
+        await handleRemindAll(reminderConfirmOptions.type);
+      }
+    } finally {
+      setReminderConfirmOptions(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center">
@@ -132,6 +174,30 @@ export default function Overdue() {
 
   return (
     <div className="flex flex-col gap-8">
+      <Dialog open={confirmOpen} onClose={handleCancelConfirm}>
+        <DialogTitle>
+          {reminderConfirmOptions?.mode === "single"
+            ? `Confirmer la relance` 
+            : `Confirmer la relance groupée`}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {reminderConfirmOptions?.mode === "single" && reminderConfirmOptions?.user
+              ? `Voulez-vous vraiment envoyer une relance à ${reminderConfirmOptions.user.first_name} ${reminderConfirmOptions.user.last_name} (${reminderConfirmOptions.type === 'subscription' ? 'abonnement' : 'cotisation'}) ?`
+              : reminderConfirmOptions?.mode === "all" && reminderConfirmOptions?.type
+              ? `Voulez-vous vraiment envoyer des relances à tous les 'abonnés' concernés ?`
+              : ""
+            }
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelConfirm}>Annuler</Button>
+          <Button variant="contained" color="warning" onClick={handleConfirm}>
+            Confirmer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <div className="flex justify-between items-center">
         <Typography variant="h4">Impayés</Typography>
         <Button
@@ -159,8 +225,8 @@ export default function Overdue() {
         description="Abonnés dont la période de service payée est terminée."
         entries={subscriptionExpired}
         pendingIds={pendingIds}
-        onRemind={(u) => handleRemind(u, "subscription")}
-        onRemindAll={() => handleRemindAll("subscription")}
+        onRemind={(u) => openConfirmForUser(u, "subscription")}
+        onRemindAll={() => openConfirmForAll("subscription")}
         bulkLoading={bulkLoading.subscription}
         bulkLabel="Relancer tous les abonnements"
         actionLabel="Relancer"
@@ -171,8 +237,8 @@ export default function Overdue() {
         description="Adhérents dont la cotisation annuelle est arrivée à échéance."
         entries={cotisationExpired}
         pendingIds={pendingIds}
-        onRemind={(u) => handleRemind(u, "cotisation")}
-        onRemindAll={() => handleRemindAll("cotisation")}
+        onRemind={(u) => openConfirmForUser(u, "cotisation")}
+        onRemindAll={() => openConfirmForAll("cotisation")}
         bulkLoading={bulkLoading.cotisation}
         bulkLabel="Relancer toutes les cotisations"
         actionLabel="Relancer"
