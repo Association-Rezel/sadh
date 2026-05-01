@@ -981,10 +981,10 @@ async def ensure_subscription_reminder_invoice(
         existing_months = _subscription_reminder_months(
             existing.get("note_private") or ""
         )
-        if existing_months is None or existing_months >= needed_months:
+        if existing_months == needed_months:
             return ({"invoice_id": existing.get("id")}, False, needed_months)
         logger.info(
-            "Cancelling undersized subscription reminder invoice %s (%d mois) "
+            "Cancelling incorrect subscription reminder invoice %s (%s mois) "
             "to recreate at %d mois for user %s",
             existing.get("id"),
             existing_months,
@@ -1105,16 +1105,12 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
         }
 
     # Suite au changement de système de facturation en décembre 2025, on ne peut prendre en compte
-    # que les factures émises après cette date. On considère les paiements antérieurs comme à jour
-    # On commence donc à compter les mois payés à partir du changement du système, ou de la vraie date
-    # de début d'abonnement si elle est postérieure
-    start_date_at_system_change = datetime(2025, 12, user.membership.start_date.day)
-    start_date = max(
-        start_date_at_system_change.replace(tzinfo=None),
-        user.membership.start_date.replace(tzinfo=None),
-    )
+    # que les factures émises après cette date. On considère les paiements antérieurs comme à jour.
+    # On commence donc à compter les mois payés à partir du changement du système (ou de la vraie date
+    # de début d'abonnement si elle est postérieure).
 
-    if start_date is None:
+    start_val = user.membership.start_date
+    if start_val is None:
         return {
             "total_months_paid": total_months,
             "subscription_end": membership_end,
@@ -1122,11 +1118,19 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
         }
 
     start_dt = (
-        datetime.fromtimestamp(start_date)
-        if isinstance(start_date, (int, float))
-        else start_date
+        datetime.fromtimestamp(start_val)
+        if isinstance(start_val, (int, float))
+        else start_val
     )
-    end_dt = _add_calendar_months(start_dt, total_months)
+    # On s'assure d'avoir un datetime naïf pour la comparaison
+    start_dt = start_dt.replace(tzinfo=None)
+
+    # On commence à compter au plus tôt en décembre 2025, en gardant le même jour du mois
+    # pour conserver le cycle de facturation de l'adhérent.
+    system_change_dt = datetime(2025, 12, start_dt.day)
+
+    effective_start_dt = max(start_dt, system_change_dt)
+    end_dt = _add_calendar_months(effective_start_dt, total_months)
 
     return {
         "total_months_paid": total_months,
