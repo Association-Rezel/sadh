@@ -697,11 +697,15 @@ class Api {
     total_months_paid: number | null;
     subscription_end: number | null;
     membership_end: number | null;
+    subscription_expired: boolean | null;
+    membership_expired: boolean | null;
   }> {
     return await this.myFetcher<{
       total_months_paid: number | null;
       subscription_end: number | null;
       membership_end: number | null;
+      subscription_expired: boolean | null;
+      membership_expired: boolean | null;
     }>("/payments/me/subscription-info");
   }
 
@@ -709,11 +713,15 @@ class Api {
     total_months_paid: number | null;
     subscription_end: number | null;
     membership_end: number | null;
+    subscription_expired: boolean | null;
+    membership_expired: boolean | null;
   }> {
     return await this.myFetcher<{
       total_months_paid: number | null;
       subscription_end: number | null;
       membership_end: number | null;
+      subscription_expired: boolean | null;
+      membership_expired: boolean | null;
     }>(`/payments/${userId}/subscription-info`);
   }
 

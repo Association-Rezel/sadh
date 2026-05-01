@@ -48,7 +48,12 @@ def _classify(user: User, now_ts: int) -> tuple[bool, bool]:
         return (False, False)
     sub_end = info.get("subscription_end")
     mem_end = info.get("membership_end")
-    sub_expired = bool(sub_end and int(sub_end) < now_ts)
+    inactive_ts = None
+    if user.membership and user.membership.inactive_date is not None:
+        dt = user.membership.inactive_date
+        inactive_ts = int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
+    reference_ts = inactive_ts if inactive_ts and inactive_ts <= now_ts else now_ts
+    sub_expired = bool(sub_end and int(sub_end) < reference_ts)
     cot_expired = bool(mem_end and int(mem_end) < now_ts)
     return (sub_expired, cot_expired)
 
@@ -85,6 +90,20 @@ async def list_overdue_users(
         ReminderKind.MEMBERSHIP: [],
     }
     for u in users:
+        # Ignorer complètement les utilisateurs dont l'abonnement est terminé (inactive_date passée)
+        inactive_ts = None
+        if u.membership and u.membership.inactive_date is not None:
+            dt = u.membership.inactive_date
+            inactive_ts = int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
+        
+        if inactive_ts and inactive_ts <= now_ts:
+            logger.debug(
+                "Skipping overdue check for user %s (subscription inactive since %s)",
+                u.id,
+                datetime.fromtimestamp(inactive_ts).date(),
+            )
+            continue
+        
         try:
             sub, cot = _classify(u, now_ts)
         except Exception as e:

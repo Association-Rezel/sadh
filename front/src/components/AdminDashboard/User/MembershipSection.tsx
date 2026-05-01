@@ -67,6 +67,8 @@ export default function MembershipSection({
     useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<number | null>(null);
+  const [subscriptionExpired, setSubscriptionExpired] =
+    useState<boolean | null>(null);
 
   const onRecreateContract = () => {
     setRecreateContractLoading(true);
@@ -123,6 +125,7 @@ export default function MembershipSection({
       Api.fetchUserSubscriptionInfo(user.id)
         .then((info) => {
           setSubscriptionEnd(info.subscription_end);
+          setSubscriptionExpired(info.subscription_expired);
         })
         .catch(() => {});
     }
@@ -327,7 +330,7 @@ export default function MembershipSection({
                     : "---"}
                 </span>
                 {subscriptionEnd != null &&
-                  subscriptionEnd * 1000 < Date.now() && (
+                  subscriptionExpired && (
                     <Typography variant="caption" color="error" display="block">
                       Abonnement non à jour
                     </Typography>

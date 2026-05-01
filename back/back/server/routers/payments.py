@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from common_models.base import RezelBaseModel
 from common_models.user_models import (
@@ -271,22 +272,48 @@ class SubscriptionInfoResponse(RezelBaseModel):
     total_months_paid: int | None
     subscription_end: int | None  # unix timestamp
     membership_end: int | None  # unix timestamp
+    subscription_expired: bool | None
+    membership_expired: bool | None
+
+
+def _inactive_date_ts(user: User) -> int | None:
+    if user.membership is None or user.membership.inactive_date is None:
+        return None
+    dt = user.membership.inactive_date
+    return int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
 
 
 def _build_subscription_info_response(user: User) -> SubscriptionInfoResponse:
     if user.dolibarr_id is None or user.membership is None:
         return SubscriptionInfoResponse(
-            total_months_paid=None, subscription_end=None, membership_end=None
+            total_months_paid=None,
+            subscription_end=None,
+            membership_end=None,
+            subscription_expired=None,
+            membership_expired=None,
         )
     info = compute_subscription_info(user)
     if info is None:
         return SubscriptionInfoResponse(
-            total_months_paid=None, subscription_end=None, membership_end=None
+            total_months_paid=None,
+            subscription_end=None,
+            membership_end=None,
+            subscription_expired=None,
+            membership_expired=None,
         )
+    now_ts = int(datetime.now().timestamp())
+    inactive_ts = _inactive_date_ts(user)
+    reference_ts = inactive_ts if inactive_ts and inactive_ts <= now_ts else now_ts
+    subscription_end = info.get("subscription_end")
+    membership_end = info.get("membership_end")
     return SubscriptionInfoResponse(
         total_months_paid=info["total_months_paid"],
-        subscription_end=info.get("subscription_end"),
-        membership_end=info.get("membership_end"),
+        subscription_end=subscription_end,
+        membership_end=membership_end,
+        subscription_expired=bool(
+            subscription_end and int(subscription_end) < reference_ts
+        ),
+        membership_expired=bool(membership_end and int(membership_end) < now_ts),
     )
 
 

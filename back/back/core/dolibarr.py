@@ -985,8 +985,18 @@ async def ensure_subscription_reminder_invoice(
         else:
             inactive_ts = int(dt.timestamp())
 
+    # Si l'abonnement a une date de fin (inactive_date) passée, ne pas générer de facture de rappel
+    now_ts = int(datetime.now().timestamp())
+    if inactive_ts and inactive_ts <= now_ts:
+        logger.info(
+            "Subscription is inactive since %s for user %s, skipping reminder invoice",
+            datetime.fromtimestamp(inactive_ts).date(),
+            user.id,
+        )
+        return None, False, 0
+
     needed_months = _subscription_catchup_months(
-        sub_end, int(datetime.now().timestamp()), inactive_ts
+        sub_end, now_ts, inactive_ts
     )
 
     existing = find_unpaid_invoice_for(user, "subscription")
