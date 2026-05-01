@@ -958,12 +958,16 @@ async def create_subscription_reminder_invoice(
     }
 
 
-def _subscription_catchup_months(sub_end: int | None, now_ts: int) -> int:
+def _subscription_catchup_months(
+    sub_end: int | None, now_ts: int, inactive_ts: int | None = None
+) -> int:
     if sub_end is None:
         return 1
-    overdue_seconds = now_ts - int(sub_end)
+    # On plafonne la date de fin de calcul si une date de fin d'abonnement (inactive_date) est définie
+    limit_ts = min(now_ts, inactive_ts) if inactive_ts else now_ts
+    overdue_seconds = limit_ts - int(sub_end)
     if overdue_seconds <= 0:
-        return 1
+        return 0
     return overdue_seconds // (30 * 86400) + 1
 
 
@@ -972,8 +976,17 @@ async def ensure_subscription_reminder_invoice(
 ) -> tuple[dict[str, Any] | None, bool, int]:
     info = compute_subscription_info(user)
     sub_end = info.get("subscription_end") if info else None
+
+    inactive_ts = None
+    if user.membership and user.membership.inactive_date:
+        dt = user.membership.inactive_date
+        if isinstance(dt, (int, float)):
+            inactive_ts = int(dt)
+        else:
+            inactive_ts = int(dt.timestamp())
+
     needed_months = _subscription_catchup_months(
-        sub_end, int(datetime.now().timestamp())
+        sub_end, int(datetime.now().timestamp()), inactive_ts
     )
 
     existing = find_unpaid_invoice_for(user, "subscription")
@@ -992,6 +1005,9 @@ async def ensure_subscription_reminder_invoice(
             user.id,
         )
         _client.cancel_invoice(existing.get("id"))
+
+    if needed_months <= 0:
+        return None, False, 0
 
     result = await create_subscription_reminder_invoice(user, db, needed_months)
     return (result, result is not None, needed_months)

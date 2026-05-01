@@ -368,6 +368,10 @@ class StatusUpdateManager:
                         db, user, MembershipStatus.PENDING_INACTIVE
                     ),
                 ),
+                StatusUpdateEffect(
+                    "Mise à jour de la date de fin d'abonnement à aujourd'hui",
+                    _set_inactive_date_today,
+                ),
             ],
         )
 
@@ -489,6 +493,10 @@ class StatusUpdateManager:
                     ),
                 ),
                 StatusUpdateEffect(
+                    "Mise à jour de la date de fin d'abonnement à aujourd'hui",
+                    _set_inactive_date_today,
+                ),
+                StatusUpdateEffect(
                     " ".join(
                         [
                             "S'il s'agit du dernier adhérent Wi-Fi sur la box,",
@@ -568,6 +576,16 @@ async def _update_membership_status(
     )
 
     return User.model_validate(userdict)
+
+
+def _inactive_date_timestamp(value: object) -> int | None:
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return int(value)
+    if hasattr(value, "timestamp"):
+        return int(value.timestamp())
+    return None
 
 
 async def _send_mail_if_no_more_wifi_on_box(
@@ -671,6 +689,25 @@ async def _set_adhesion_date_today(user: User, db: AsyncIOMotorDatabase) -> User
     await db.users.update_one(
         {"_id": str(user.id)},
         {"$set": {"membership.start_date": user.membership.start_date}},
+    )
+    return user
+
+
+async def _set_inactive_date_today(user: User, db: AsyncIOMotorDatabase) -> User:
+    if not user.membership:
+        raise ValueError("User has no membership")
+
+    now = datetime.now()
+    now_ts = int(now.timestamp())
+    current_ts = _inactive_date_timestamp(user.membership.inactive_date)
+
+    if current_ts is not None and current_ts <= now_ts:
+        return user
+
+    user.membership.inactive_date = now
+    await db.users.update_one(
+        {"_id": str(user.id)},
+        {"$set": {"membership.inactive_date": user.membership.inactive_date}},
     )
     return user
 

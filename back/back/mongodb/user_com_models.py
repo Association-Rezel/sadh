@@ -35,6 +35,7 @@ class MembershipUpdate(RezelBaseModel):
     contract_signed: Optional[bool] = Field(None)
     appointment: Optional[Appointment] = Field(None)
     start_date: Optional[PortableDatetime] = Field(None)
+    inactive_date: Optional[PortableDatetime] = Field(None)
     attached_wifi_adherents: Optional[list[AttachedWifiAdherent]] = Field(None)
 
 

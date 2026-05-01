@@ -94,6 +94,7 @@ export interface Membership {
   dolibarr_payment_url?: string;
   deleted_date?: Date;
   start_date?: Date;
+  inactive_date?: Date;
   attached_wifi_adherents: AttachedWifiAdherent[];
 }
 

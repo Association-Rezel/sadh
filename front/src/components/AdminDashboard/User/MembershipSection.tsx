@@ -59,6 +59,8 @@ export default function MembershipSection({
   ] = useState<boolean>(false);
   const [confirmedStartDateEdit, setConfirmedStartDateEdit] =
     useState<boolean>(false);
+  const [confirmedInactiveDateEdit, setConfirmedInactiveDateEdit] =
+    useState<boolean>(false);
   const [openDialogTransferMembership, setOpenDialogTransferMembership] =
     useState<boolean>(false);
   const [recreateContractLoading, setRecreateContractLoading] =
@@ -95,17 +97,25 @@ export default function MembershipSection({
       });
   };
 
-  const startDateForm = useForm({
+  const dateForm = useForm({
     defaultValues: {
       start: user.membership
         ? dayjs(user.membership.start_date)
-        : (null as Dayjs),
+        : (null as any),
+      inactive: user.membership
+        ? dayjs(user.membership.inactive_date)
+        : (null as any),
     },
   });
 
   useEffect(() => {
     if (user?.membership)
-      startDateForm.reset({ start: dayjs(user.membership.start_date) });
+      dateForm.reset({
+        start: dayjs(user.membership.start_date),
+        inactive: user.membership.inactive_date
+          ? dayjs(user.membership.inactive_date)
+          : null,
+      });
   }, [user]);
 
   useEffect(() => {
@@ -116,15 +126,34 @@ export default function MembershipSection({
         })
         .catch(() => {});
     }
-  }, [user?.id, user?.membership?.status, user?.membership?.start_date]);
+  }, [
+    user?.id,
+    user?.membership?.status,
+    user?.membership?.start_date,
+    user?.membership?.inactive_date,
+  ]);
 
   const onEditStartDate = () => {
-    const date: Date = startDateForm.getValues("start").toDate();
+    const date: Date = dateForm.getValues("start").toDate();
     Api.updateMembership(user.id, { start_date: date })
       .then(() => {
         setUser({
           ...user,
           membership: { ...user.membership, start_date: date },
+        });
+      })
+      .catch(alert);
+  };
+
+  const onEditInactiveDate = () => {
+    const date: Date | null = dateForm.getValues("inactive")
+      ? dateForm.getValues("inactive").toDate()
+      : null;
+    Api.updateMembership(user.id, { inactive_date: date as any })
+      .then(() => {
+        setUser({
+          ...user,
+          membership: { ...user.membership, inactive_date: date as any },
         });
       })
       .catch(alert);
@@ -201,7 +230,7 @@ export default function MembershipSection({
                   >
                     <Controller
                       name="start"
-                      control={startDateForm.control}
+                      control={dateForm.control}
                       render={({ field }) => (
                         <DatePicker
                           {...field}
@@ -235,16 +264,58 @@ export default function MembershipSection({
                 </div>
               </>
             )}
-            {confirmedStartDateEdit && startDateForm.formState.isDirty && (
+            {confirmedStartDateEdit && dateForm.formState.isDirty && (
               <Button
                 className="col-span-3"
-                onClick={startDateForm.handleSubmit(onEditStartDate)}
+                onClick={dateForm.handleSubmit(onEditStartDate)}
                 variant="contained"
                 color="warning"
               >
                 Enregistrer la date de début
               </Button>
             )}
+
+            {user.membership.type && (
+              <>
+                <strong>Fin de l'abonnement (prévue)</strong>
+                <div className="flex flex-row gap-4 col-span-2">
+                  <LocalizationProvider
+                    dateAdapter={AdapterDayjs}
+                    adapterLocale="fr"
+                  >
+                    <Controller
+                      name="inactive"
+                      control={dateForm.control}
+                      render={({ field }) => (
+                        <DatePicker
+                          {...field}
+                          slotProps={{ textField: { variant: "standard" } }}
+                          disabled={!confirmedInactiveDateEdit}
+                        />
+                      )}
+                    />
+                  </LocalizationProvider>
+                  <IconButton
+                    onClick={() =>
+                      setConfirmedInactiveDateEdit(!confirmedInactiveDateEdit)
+                    }
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </div>
+              </>
+            )}
+            {confirmedInactiveDateEdit && dateForm.formState.isDirty && (
+              <Button
+                className="col-span-3"
+                onClick={dateForm.handleSubmit(onEditInactiveDate)}
+                variant="contained"
+                color="warning"
+              >
+                Enregistrer la date de fin prévue
+              </Button>
+            )}
+
             <>
               <strong>Abonné jusqu'au</strong>
               <div className="col-span-2">

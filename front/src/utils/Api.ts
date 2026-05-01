@@ -185,6 +185,12 @@ class Api {
       data.membership.start_date = new Date(data.membership.start_date * 1000);
     }
 
+    if (data?.membership?.inactive_date) {
+      data.membership.inactive_date = new Date(
+        data.membership.inactive_date * 1000,
+      );
+    }
+
     if (data?.membership?.deleted_date) {
       data.membership.deleted_date = new Date(
         data.membership.deleted_date * 1000,

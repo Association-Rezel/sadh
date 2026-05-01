@@ -517,6 +517,26 @@ async def _user_update_membership(
         ).items()
     }
 
+    status_value = updatedict.get("status")
+    status_is_inactive = status_value in (
+        MembershipStatus.PENDING_INACTIVE,
+        MembershipStatus.INACTIVE,
+        MembershipStatus.PENDING_INACTIVE.value,
+        MembershipStatus.INACTIVE.value,
+    )
+
+    if status_is_inactive and "inactive_date" not in updatedict:
+        now = datetime.now()
+        now_ts = int(now.timestamp())
+        existing_ts = None
+        if user.membership and user.membership.inactive_date is not None:
+            dt = user.membership.inactive_date
+            existing_ts = (
+                int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
+            )
+        if existing_ts is None or existing_ts > now_ts:
+            updatedict["inactive_date"] = now
+
     updated = user.membership.model_copy(update=updatedict)
 
     userdict = await db.users.find_one_and_update(
