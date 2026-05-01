@@ -1104,7 +1104,13 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
             "membership_end": membership_end,
         }
 
-    start_date = user.membership.start_date
+    # Suite au changement de système de facturation en décembre 2025, on ne peut prendre en compte
+    # que les factures émises après cette date. On considère les paiements antérieurs comme à jour
+    # On commence donc à compter les mois payés à partir du changement du système, ou de la vraie date
+    # de début d'abonnement si elle est postérieure
+    start_date_at_system_change = datetime(2025, 12, user.membership.start_date.day)
+    start_date = max(start_date_at_system_change, user.membership.start_date)
+
     if start_date is None:
         return {
             "total_months_paid": total_months,
