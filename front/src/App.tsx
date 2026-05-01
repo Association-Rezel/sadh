@@ -116,7 +116,12 @@ function accountRoute({ user }: { user?: any } = {}) {
   const paymentsRoute = <Route path="payments" element={<PagePayments />} />;
 
   if (!user) {
-    return <Route path="account" element={<LoginRedirect />} />;
+    return (
+      <>
+        <Route path="account/payments" element={<PagePayments />} />
+        <Route path="account" element={<LoginRedirect />} />
+      </>
+    );
   } else if (
     [MembershipStatus.ACTIVE, MembershipStatus.PENDING_INACTIVE].includes(
       user.membership?.status,

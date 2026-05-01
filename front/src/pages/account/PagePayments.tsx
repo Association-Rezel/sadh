@@ -216,6 +216,10 @@ export default function PagePayments() {
   );
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     const fetchData = async () => {
       try {
         const [, invs, archived, subInfo] = await Promise.all([
@@ -236,7 +240,7 @@ export default function PagePayments() {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     return () => {
@@ -354,6 +358,34 @@ export default function PagePayments() {
       setError(e.message || "Impossible de télécharger la facture");
     }
   };
+
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          p: 3,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <Typography variant="h6" align="center">
+          Connectez-vous pour acceder a vos paiements.
+        </Typography>
+        <Button
+          variant="contained"
+          onClick={() =>
+            (window.location.href =
+              "/auth/login/user?success_uri=" +
+              encodeURIComponent(window.location.pathname + window.location.search))
+          }
+        >
+          Se connecter
+        </Button>
+      </Box>
+    );
+  }
 
   if (loading) {
     return (
