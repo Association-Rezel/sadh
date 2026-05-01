@@ -3,7 +3,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-import pytz
 from babel.dates import format_datetime
 from common_models.user_models import MembershipStatus, User
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -94,8 +93,10 @@ async def list_overdue_users(
         inactive_ts = None
         if u.membership and u.membership.inactive_date is not None:
             dt = u.membership.inactive_date
-            inactive_ts = int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
-        
+            inactive_ts = (
+                int(dt) if isinstance(dt, (int, float)) else int(dt.timestamp())
+            )
+
         if inactive_ts and inactive_ts <= now_ts:
             logger.debug(
                 "Skipping overdue check for user %s (subscription inactive since %s)",
@@ -103,7 +104,7 @@ async def list_overdue_users(
                 datetime.fromtimestamp(inactive_ts).date(),
             )
             continue
-        
+
         try:
             sub, cot = _classify(u, now_ts)
         except Exception as e:

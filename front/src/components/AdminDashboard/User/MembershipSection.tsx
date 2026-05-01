@@ -67,8 +67,9 @@ export default function MembershipSection({
     useState<boolean>(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [subscriptionEnd, setSubscriptionEnd] = useState<number | null>(null);
-  const [subscriptionExpired, setSubscriptionExpired] =
-    useState<boolean | null>(null);
+  const [subscriptionExpired, setSubscriptionExpired] = useState<
+    boolean | null
+  >(null);
 
   const onRecreateContract = () => {
     setRecreateContractLoading(true);
@@ -329,12 +330,11 @@ export default function MembershipSection({
                       )
                     : "---"}
                 </span>
-                {subscriptionEnd != null &&
-                  subscriptionExpired && (
-                    <Typography variant="caption" color="error" display="block">
-                      Abonnement non à jour
-                    </Typography>
-                  )}
+                {subscriptionEnd != null && subscriptionExpired && (
+                  <Typography variant="caption" color="error" display="block">
+                    Abonnement non à jour
+                  </Typography>
+                )}
               </div>
             </>
             <strong>Statut</strong>

@@ -995,9 +995,7 @@ async def ensure_subscription_reminder_invoice(
         )
         return None, False, 0
 
-    needed_months = _subscription_catchup_months(
-        sub_end, now_ts, inactive_ts
-    )
+    needed_months = _subscription_catchup_months(sub_end, now_ts, inactive_ts)
 
     existing = find_unpaid_invoice_for(user, "subscription")
     if existing is not None:
