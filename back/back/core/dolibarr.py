@@ -31,7 +31,7 @@ TAG_SEP = "|"
 
 def _strip_meta_prefixes(note: str | None) -> str:
     n = (note or "").strip()
-    for meta in ARCHIVED_TAG:
+    for meta in ("__sadh__", ARCHIVED_TAG):
         prefix = f"{meta}{TAG_SEP}"
         while n.startswith(prefix):
             n = n[len(prefix) :]
@@ -1100,7 +1100,7 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     if total_months == 0:
         return {
             "total_months_paid": 0,
-            "subscription_end": None,
+            "subscription_end": membership_end,
             "membership_end": membership_end,
         }
 
@@ -1108,7 +1108,7 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     if start_date is None:
         return {
             "total_months_paid": total_months,
-            "subscription_end": None,
+            "subscription_end": membership_end,
             "membership_end": membership_end,
         }
 
