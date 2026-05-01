@@ -155,7 +155,10 @@ export default function Overdue() {
     setConfirmOpen(false);
     try {
       if (reminderConfirmOptions.mode === "single") {
-        await handleRemind(reminderConfirmOptions.user, reminderConfirmOptions.type);
+        await handleRemind(
+          reminderConfirmOptions.user,
+          reminderConfirmOptions.type,
+        );
       } else {
         await handleRemindAll(reminderConfirmOptions.type);
       }
@@ -177,17 +180,18 @@ export default function Overdue() {
       <Dialog open={confirmOpen} onClose={handleCancelConfirm}>
         <DialogTitle>
           {reminderConfirmOptions?.mode === "single"
-            ? `Confirmer la relance` 
+            ? `Confirmer la relance`
             : `Confirmer la relance groupée`}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {reminderConfirmOptions?.mode === "single" && reminderConfirmOptions?.user
-              ? `Voulez-vous vraiment envoyer une relance à ${reminderConfirmOptions.user.first_name} ${reminderConfirmOptions.user.last_name} (${reminderConfirmOptions.type === 'subscription' ? 'abonnement' : 'cotisation'}) ?`
-              : reminderConfirmOptions?.mode === "all" && reminderConfirmOptions?.type
-              ? `Voulez-vous vraiment envoyer des relances à tous les 'abonnés' concernés ?`
-              : ""
-            }
+            {reminderConfirmOptions?.mode === "single" &&
+            reminderConfirmOptions?.user
+              ? `Voulez-vous vraiment envoyer une relance à ${reminderConfirmOptions.user.first_name} ${reminderConfirmOptions.user.last_name} (${reminderConfirmOptions.type === "subscription" ? "abonnement" : "cotisation"}) ?`
+              : reminderConfirmOptions?.mode === "all" &&
+                  reminderConfirmOptions?.type
+                ? `Voulez-vous vraiment envoyer des relances à tous les 'abonnés' concernés ?`
+                : ""}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
