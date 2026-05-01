@@ -378,7 +378,9 @@ export default function PagePayments() {
           onClick={() =>
             (window.location.href =
               "/auth/login/user?success_uri=" +
-              encodeURIComponent(window.location.pathname + window.location.search))
+              encodeURIComponent(
+                window.location.pathname + window.location.search,
+              ))
           }
         >
           Se connecter
