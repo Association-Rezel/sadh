@@ -89,13 +89,13 @@ async def list_overdue_users(
             logger.error("Error classifying overdue for user %s: %s", u.id, e)
             continue
         if sub:
-            buckets[ReminderKind.SUBSCRIPTION].append(
-                await _enrich(u, ReminderKind.SUBSCRIPTION, db)
-            )
+            entry = await _enrich(u, ReminderKind.SUBSCRIPTION, db)
+            if entry.get("amount_owed", 0) > 0:
+                buckets[ReminderKind.SUBSCRIPTION].append(entry)
         if cot:
-            buckets[ReminderKind.MEMBERSHIP].append(
-                await _enrich(u, ReminderKind.MEMBERSHIP, db)
-            )
+            entry = await _enrich(u, ReminderKind.MEMBERSHIP, db)
+            if entry.get("amount_owed", 0) > 0:
+                buckets[ReminderKind.MEMBERSHIP].append(entry)
     return buckets
 
 

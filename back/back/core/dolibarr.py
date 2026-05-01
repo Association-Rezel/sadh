@@ -1100,7 +1100,7 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     if total_months == 0:
         return {
             "total_months_paid": 0,
-            "subscription_end": None,
+            "subscription_end": membership_end,
             "membership_end": membership_end,
         }
 
@@ -1108,7 +1108,7 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     if start_date is None:
         return {
             "total_months_paid": total_months,
-            "subscription_end": None,
+            "subscription_end": membership_end,
             "membership_end": membership_end,
         }
 
