@@ -416,7 +416,8 @@ export default function PagePayments() {
     );
   }
 
-  const noData = invoices.length === 0;
+  const visibleInvoices = invoices.filter((invoice) => invoice.statut !== "3");
+  const noData = visibleInvoices.length === 0;
   const visibleArchivedInvoices = archivedInvoices.filter(
     (invoice) => invoice.statut !== "3",
   );
@@ -471,7 +472,7 @@ export default function PagePayments() {
         </Alert>
       )}
 
-      {invoices.length > 0 && (
+      {visibleInvoices.length > 0 && (
         <>
           <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
             Factures actuelles
@@ -490,7 +491,7 @@ export default function PagePayments() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {invoices.map((inv) => {
+                {visibleInvoices.map((inv) => {
                   const status = invoiceStatusLabel(inv.statut);
                   const isUnpaid = inv.statut === "1";
                   const isPaying = payingInvoiceId === inv.id;
