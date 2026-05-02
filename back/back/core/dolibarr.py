@@ -1106,10 +1106,17 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     for inv in get_member_invoices(user):
         if inv.get("paye") not in ("1", 1):
             continue
+        note = inv.get("note_private") or ""
+        tagged_months = _subscription_reminder_months(note) or 0
+        items = _parse_selective_tag(note)
+        if items and "first_month" in items:
+            tagged_months = max(tagged_months, 1)
+        invoice_months = 0
         for line in inv.get("lines", []):
             fk = line.get("fk_product")
             if fk and int(fk) == service_id:
-                total_months += int(float(line.get("qty", 0)))
+                invoice_months += int(float(line.get("qty", 0)))
+        total_months += max(invoice_months, tagged_months)
 
     membership_end: int | None = None
     member = _client.get_member(user.dolibarr_id)
@@ -1121,13 +1128,6 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
             except (TypeError, ValueError):
                 membership_end = None
 
-    if total_months == 0:
-        return {
-            "total_months_paid": 0,
-            "subscription_end": membership_end,
-            "membership_end": membership_end,
-        }
-
     # Suite au changement de système de facturation en décembre 2025, on ne peut prendre en compte
     # que les factures émises après cette date. On considère les paiements antérieurs comme à jour.
     # On commence donc à compter les mois payés à partir du changement du système (ou de la vraie date
@@ -1137,7 +1137,7 @@ def compute_subscription_info(user: User) -> dict[str, Any] | None:
     if start_val is None:
         return {
             "total_months_paid": total_months,
-            "subscription_end": membership_end,
+            "subscription_end": None,
             "membership_end": membership_end,
         }
 
