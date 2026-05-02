@@ -417,6 +417,9 @@ export default function PagePayments() {
   }
 
   const noData = invoices.length === 0;
+  const visibleArchivedInvoices = archivedInvoices.filter(
+    (invoice) => invoice.statut !== "3",
+  );
   const maxAdvanceMonths =
     totalMonthsPaid !== null ? Math.max(0, 12 - totalMonthsPaid) : 0;
   const canPayAdvance =
@@ -568,7 +571,7 @@ export default function PagePayments() {
         </>
       )}
 
-      {archivedInvoices.length > 0 && (
+      {visibleArchivedInvoices.length > 0 && (
         <>
           <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>
             Anciennes factures
@@ -587,7 +590,7 @@ export default function PagePayments() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {archivedInvoices.map((inv) => {
+                {visibleArchivedInvoices.map((inv) => {
                   const status = invoiceStatusLabel(inv.statut);
                   return (
                     <TableRow key={inv.id}>
