@@ -21,7 +21,7 @@ def _esc(s: str) -> str:
     return s.replace("\\", "\\\\").replace("'", "\\'")
 
 
-TYPE_ADHERENT = "2"  # adhérent 1€/an
+TYPE_ADHERENT = "1"  # adhérent 1€/an
 ADVANCE_INVOICE_TAG = "__advance_payment__"
 SELECTIVE_TAG_PREFIX = "__selective__:"
 SUBSCRIPTION_REMINDER_TAG = "__subscription_reminder__"
