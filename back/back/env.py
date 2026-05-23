@@ -97,6 +97,7 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
     dolibarr_api_token: str
     dolibarr_base_url: str
+    dolibarr_member_type_id: int
     dolibarr_service_ftth_id: int | None
     dolibarr_service_wifi_id: int | None
     dolibarr_product_deposit_id: int | None
@@ -185,6 +186,9 @@ class Env:  # pylint: disable=too-many-instance-attributes
 
         self.dolibarr_api_token = get_or_raise("DOLIBARR_API_TOKEN")
         self.dolibarr_base_url = get_or_raise("DOLIBARR_BASE_URL")
+        self.dolibarr_member_type_id = int(
+            get_or_default("DOLIBARR_MEMBER_TYPE_ID", "1")
+        )
         _svc_ftth = get_or_none("DOLIBARR_SERVICE_FTTH_ID")
         self.dolibarr_service_ftth_id = int(_svc_ftth) if _svc_ftth else None
         _svc_wifi = get_or_none("DOLIBARR_SERVICE_WIFI_ID")
