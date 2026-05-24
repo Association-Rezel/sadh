@@ -6,6 +6,7 @@ and retrieve available IP ranges and addresses.
 
 """
 
+from itertools import islice
 from ipaddress import IPv4Address, IPv4Interface, IPv6Interface, IPv6Network
 from typing import Tuple
 
@@ -44,7 +45,10 @@ class MongoIpam:
         # Find the first available IP
         for ipv4network in ipv4_nets:
             network = ipv4network.network
-            for ip in network.hosts():
+            for ip in islice(
+                network.hosts(), 10, None
+            ):  # Skip the first 10 addresses (reserved for gateway and tests)
+
                 if ip not in used_ipv4:
                     return WanIpv4(
                         ip=IPv4Interface(f"{ip}/{network.prefixlen}"),
