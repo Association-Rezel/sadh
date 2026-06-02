@@ -39,7 +39,7 @@ def root() -> RedirectResponse:
 def build() -> FastAPI:
     """Build the app from interfaces."""
     init_logger()
-    app = FastAPI()
+    app = FastAPI(root_path="/api")
     app.openapi_version = "3.0.3"
 
     if ENV.deploy_env in ["dev", "local"]:
