@@ -323,7 +323,9 @@ function PartialRefundCard({
               </Tooltip>
             </Link>
             <Tooltip
-              title={`Abonnement FTTH entre le ${month_start.format("DD/MM/YYYY")} et le ${month_end.format("DD/MM/YYYY")}`}
+              title={`Abonnement FTTH entre le ${month_start.format(
+                "DD/MM/YYYY",
+              )} et le ${month_end.format("DD/MM/YYYY")}`}
               placement="right"
             >
               <Chip

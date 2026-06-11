@@ -74,7 +74,7 @@ class MongoIpam:
             [_, _, _, z] = str(ipv4_addr).split(".")
             prefix = f"2a09:6847:4{int(z):02x}::/48"
             public_ip = f"2a09:6847:ffff::4{int(z):02x}/64"
-        return WanIpv6(ip=IPv6Interface(public_ip), vlan=103), IPv6Network(prefix)
+        return WanIpv6(ip=IPv6Interface(public_ip), vlan=104), IPv6Network(prefix)
 
     async def __get_all_used_ip_addresses(self) -> list[Box]:
         """Retrieve all the boxes from the database

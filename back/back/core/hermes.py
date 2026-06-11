@@ -23,16 +23,16 @@ from xkcdpass import xkcd_password
 from back.core.ipam import MongoIpam
 from back.core.ipam_logging import create_log
 
-ADH_TP_IPV4_WAN_VLAN = WanVlan(
-    vlan_id=101, ipv4_gateway=IPv4Address("137.194.11.254"), ipv6_gateway=None
+ADH_TELECOMMIEN_IPV4_V6_WAN_VLAN = WanVlan(
+    vlan_id=104,
+    ipv4_gateway=IPv4Address("137.194.8.1"),
+    ipv6_gateway=IPv6Address("2a09:6847:ffff::1"),
 )
-ADH_EXTE_IPV4_WAN_VLAN = WanVlan(
-    vlan_id=102,
-    ipv4_gateway=IPv4Address("195.14.28.254"),
-    ipv6_gateway=None,
-)
-ADH_IPV6_WAN_VLAN = WanVlan(
-    vlan_id=103, ipv4_gateway=None, ipv6_gateway=IPv6Address("2a09:6847:ffff::1")
+
+ADH_EXTE_IPV4_V6_WAN_VLAN = WanVlan(
+    vlan_id=104,
+    ipv4_gateway=IPv4Address("195.14.28.1"),
+    ipv6_gateway=IPv6Address("2a09:6847:ffff::1"),
 )
 
 
@@ -93,7 +93,13 @@ async def register_box_for_new_ftth_adh(
                 ),
             )
         ],
-        wan_vlan=[ADH_TP_IPV4_WAN_VLAN, ADH_EXTE_IPV4_WAN_VLAN, ADH_IPV6_WAN_VLAN],
+        wan_vlan=[
+            (
+                ADH_TELECOMMIEN_IPV4_V6_WAN_VLAN
+                if telecom_ip
+                else ADH_EXTE_IPV4_V6_WAN_VLAN
+            )
+        ],
         ping_history=[],
     )
 

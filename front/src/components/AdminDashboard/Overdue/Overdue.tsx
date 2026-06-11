@@ -187,7 +187,13 @@ export default function Overdue() {
           <DialogContentText>
             {reminderConfirmOptions?.mode === "single" &&
             reminderConfirmOptions?.user
-              ? `Voulez-vous vraiment envoyer une relance à ${reminderConfirmOptions.user.first_name} ${reminderConfirmOptions.user.last_name} (${reminderConfirmOptions.type === "subscription" ? "abonnement" : "cotisation"}) ?`
+              ? `Voulez-vous vraiment envoyer une relance à ${
+                  reminderConfirmOptions.user.first_name
+                } ${reminderConfirmOptions.user.last_name} (${
+                  reminderConfirmOptions.type === "subscription"
+                    ? "abonnement"
+                    : "cotisation"
+                }) ?`
               : reminderConfirmOptions?.mode === "all" &&
                   reminderConfirmOptions?.type
                 ? `Voulez-vous vraiment envoyer des relances à tous les 'abonnés' concernés ?`

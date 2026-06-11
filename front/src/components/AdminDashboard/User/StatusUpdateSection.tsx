@@ -108,7 +108,9 @@ export default function StatusUpdateSection({
           >
             {updating
               ? "Application en cours..."
-              : `Passer à l'état suivant (${MembershipStatus[nextUpdate.to_status]})`}
+              : `Passer à l'état suivant (${
+                  MembershipStatus[nextUpdate.to_status]
+                })`}
           </Button>
         </div>
       </Typography>

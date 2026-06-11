@@ -34,7 +34,11 @@ export default function PageResiliation() {
 
     let userInfo = "";
     if (user) {
-      userInfo = `\n\nPour faciliter le traitement de ma demande, voici mes informations :\n- Nom et prénom : ${user.first_name} ${user.last_name}\n- Type d'abonnement : ${user.membership?.type || "Non renseigné"}`;
+      userInfo = `\n\nPour faciliter le traitement de ma demande, voici mes informations :\n- Nom et prénom : ${
+        user.first_name
+      } ${user.last_name}\n- Type d'abonnement : ${
+        user.membership?.type || "Non renseigné"
+      }`;
     }
 
     const formattedDate = resiliationDate
@@ -42,7 +46,9 @@ export default function PageResiliation() {
       : "[Date de résiliation]";
 
     const body = encodeURIComponent(
-      `Bonjour l'équipe Rezel,\n\nPar la présente, je vous informe de ma volonté de résilier mon abonnement internet.\n\nJe souhaiterais que cette résiliation soit effective à partir du ${formattedDate}.${userInfo}\n\nJe vous remercie par avance de bien vouloir me confirmer la prise en compte de cette demande.\n\nCordialement,\n${user ? `${user.first_name} ${user.last_name}` : ""}`,
+      `Bonjour l'équipe Rezel,\n\nPar la présente, je vous informe de ma volonté de résilier mon abonnement internet.\n\nJe souhaiterais que cette résiliation soit effective à partir du ${formattedDate}.${userInfo}\n\nJe vous remercie par avance de bien vouloir me confirmer la prise en compte de cette demande.\n\nCordialement,\n${
+        user ? `${user.first_name} ${user.last_name}` : ""
+      }`,
     );
     window.location.href = `mailto:fai@rezel.net?subject=${subject}&body=${body}`;
   };

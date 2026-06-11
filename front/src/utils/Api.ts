@@ -553,7 +553,9 @@ class Api {
   }
 
   async fetchIpamLogs(start: Date, end: Date): Promise<IpamLog[]> {
-    const url = `/logging/ipam?start=${Math.floor(start.getTime() / 1000)}&end=${Math.floor(end.getTime() / 1000)}`;
+    const url = `/logging/ipam?start=${Math.floor(
+      start.getTime() / 1000,
+    )}&end=${Math.floor(end.getTime() / 1000)}`;
     const data = await this.fetchOrDefault<object[]>(url, []);
     return data.map((usage: any) => this.parseIpamLog(usage));
   }

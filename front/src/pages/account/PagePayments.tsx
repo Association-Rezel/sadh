@@ -455,7 +455,9 @@ export default function PagePayments() {
             endTs={subscriptionEnd}
             expired={subscriptionExpired}
             expiredMessage={`expiré depuis le ${formatDate(subscriptionEnd)}`}
-            validMessage={`${totalMonthsPaid} mois - valide jusqu'au ${formatDate(subscriptionEnd)}`}
+            validMessage={`${totalMonthsPaid} mois - valide jusqu'au ${formatDate(
+              subscriptionEnd,
+            )}`}
             fallbackMessage={
               totalMonthsPaid !== null
                 ? `${totalMonthsPaid} mois payés (date de début non définie)`
